@@ -1,6 +1,12 @@
 // =============================================================================
 //  frontend/src/app/pages/admin/dashboard-home.component.ts
-//  BACKOFFICE — Panoramica HUD decostruita (bento asimmetrico, clip-path cyber).
+//  Prima schermata del backoffice: quanti contenuti esistono, quanti sono
+//  pubblicati e su cosa si è autorizzati a intervenire, con il collegamento
+//  diretto alla sezione corrispondente.
+//
+//  I tre riquadri sono di dimensioni diverse di proposito: il peso visivo
+//  segue l'importanza del dato. Su schermo stretto tornano tutti uguali,
+//  perché in colonna lo sfalsamento produce solo spazi vuoti.
 // =============================================================================
 
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
@@ -19,7 +25,7 @@ import { AuthService } from '../../services/auth.service';
   template: `
   <div class="dash">
     <header class="head">
-      <span class="sys">SYS // NODE.01</span>
+      <span class="sys">Federazione Innovazione, Digitale e Cybersicurezza</span>
       <h1>Panoramica</h1>
       <p>{{ auth.isSuperUser()
             ? 'Stai visualizzando i dati dell\\'intera Federazione.'
@@ -30,39 +36,44 @@ import { AuthService } from '../../services/auth.service';
       <article class="tile events hud-cut">
         <span class="kpi" aria-hidden="true">{{ eventi().length }}</span>
         <span class="kicker">Eventi</span>
-        <h2 class="lbl">Eventi totali</h2>
-        <span class="sub">{{ eventiPubblicati() }} pubblicati · {{ eventi().length - eventiPubblicati() }} bozze</span>
-        <a routerLink="/admin/eventi" class="go">Gestisci →</a>
+        <h2 class="lbl">{{ eventi().length }} eventi in archivio</h2>
+        <span class="sub">{{ eventiPubblicati() }} pubblicati · {{ eventi().length - eventiPubblicati() }} in bozza</span>
+        <a routerLink="/admin/eventi" class="go">Gestisci gli eventi →</a>
       </article>
 
       <article class="tile news hud-cut-alt">
         <span class="kpi" aria-hidden="true">{{ news().length }}</span>
-        <span class="kicker">Feed</span>
-        <h2 class="lbl">News totali</h2>
-        <span class="sub">{{ newsPubblicate() }} pubblicate · {{ news().length - newsPubblicate() }} bozze</span>
-        <a routerLink="/admin/news" class="go">Gestisci →</a>
+        <span class="kicker">Comunicazione</span>
+        <h2 class="lbl">{{ news().length }} news in archivio</h2>
+        <span class="sub">{{ newsPubblicate() }} pubblicate · {{ news().length - newsPubblicate() }} in bozza</span>
+        <a routerLink="/admin/news" class="go">Gestisci le news →</a>
       </article>
 
       <article class="tile scope hud-cut">
-        <span class="kpi" aria-hidden="true">{{ auth.isSuperUser() ? '∞' : '1' }}</span>
-        <span class="kicker">RBAC</span>
-        <h2 class="lbl">Ambito</h2>
-        <span class="sub">{{ auth.isSuperUser() ? 'Tutti gli autori' : 'Solo i tuoi contenuti' }}</span>
-        <span class="go static">Lock attivo</span>
+        <span class="kicker">Permessi</span>
+        <h2 class="lbl">{{ auth.isSuperUser() ? 'Direzione' : 'Redazione' }}</h2>
+        <span class="sub">{{ auth.isSuperUser()
+              ? 'Puoi intervenire sui contenuti di tutti gli autori.'
+              : 'Puoi intervenire solo sui contenuti di cui sei autore.' }}</span>
+        <a *ngIf="auth.isSuperUser()" routerLink="/admin/utenti" class="go">Gestisci gli utenti →</a>
       </article>
     </div>
 
-    <p class="loading" *ngIf="caricamento()">Sincronizzazione nodi…</p>
+    <p class="loading" *ngIf="caricamento()">Caricamento dei dati in corso…</p>
   </div>
   `,
   styles: [`
-    .dash { max-width: 1180px; color: var(--c-cream); position: relative; overflow: visible; }
+    .dash { max-width: 1180px; color: var(--text); position: relative; overflow: visible; }
     .head { margin: 0 0 8px 8px; max-width: 520px; }
-    .sys { display:block; font-family: var(--font-display); font-size:.72rem; letter-spacing:.22em;
-           color: var(--c-peach); margin-bottom: 6px; }
-    .head h1 { margin:0 0 8px; font-size: clamp(2.4rem, 5vw, 4.2rem); font-family: var(--font-display);
-               line-height:.9; letter-spacing:-.03em; }
-    .head p { margin:0 0 36px; color: rgba(255,240,217,.7); max-width: 380px; }
+    /* Il nome esteso dell'ente sopra il titolo: chi apre il backoffice deve
+       vedere per esteso di quale organizzazione sta gestendo i contenuti. */
+    .sys { display:block; font-family: var(--font-display); font-size:.7rem; letter-spacing:.14em;
+           text-transform:uppercase; color: var(--accent); margin-bottom: 8px; }
+    /* Titolo contenuto: su un sito istituzionale la dimensione serve a dare
+       gerarchia, non a fare effetto. */
+    .head h1 { margin:0 0 8px; font-size: clamp(2rem, 3.4vw, 3rem); font-family: var(--font-display);
+               line-height:1.05; letter-spacing:-.02em; }
+    .head p { margin:0 0 36px; color: var(--text-soft); max-width: 380px; }
 
     .bento {
       display: grid;
@@ -78,10 +89,10 @@ import { AuthService } from '../../services/auth.service';
       overflow: visible;
       isolation: isolate;
       padding: 28px 26px 22px;
-      background: var(--glass-bg);
-      border: 1px solid var(--glass-border);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      backdrop-filter: blur(var(--surface-blur));
+      -webkit-backdrop-filter: blur(var(--surface-blur));
       min-height: 160px;
     }
     .hud-cut {
@@ -96,32 +107,42 @@ import { AuthService } from '../../services/auth.service';
     .scope { grid-column: 2; grid-row: 2; width: 82%; justify-self: end; margin-top: 12px; }
 
     .kicker { position: relative; z-index: 1; font-size:.72rem; font-weight:800; letter-spacing:.16em;
-              text-transform:uppercase; color: var(--c-peach); }
+              text-transform:uppercase; color: var(--accent); }
     .lbl { position: relative; z-index: 1; margin: 10px 0 6px; font-size: 1.15rem; font-weight: 800; }
-    .sub { position: relative; z-index: 1; display:block; color: rgba(255,240,217,.65); font-size:.88rem; }
+    .sub { position: relative; z-index: 1; display:block; color: var(--text-soft); font-size:.88rem; }
+
+    /* Il numero grande resta come segno grafico del riquadro, ma dentro i suoi
+       bordi e con poco contrasto: deve accompagnare il dato, non sovrastarlo.
+       Prima sbordava e sembrava il punteggio di un gioco. */
     .kpi {
-      position: absolute; right: -12px; top: -28px; z-index: 0;
-      font-family: var(--font-display); font-size: clamp(5.2rem, 10vw, 8.5rem);
-      font-weight: 700; line-height: .78; letter-spacing: -.06em;
-      color: var(--c-peach); opacity: .28;
+      position: absolute; right: 18px; bottom: 12px; z-index: 0;
+      font-family: var(--font-display); font-size: clamp(3.2rem, 5vw, 4.6rem);
+      font-weight: 700; line-height: .85; letter-spacing: -.04em;
+      color: var(--accent); opacity: .16;
       pointer-events: none; user-select: none;
     }
-    .events .kpi { color: var(--c-purple); opacity: .42; left: auto; right: -8px; top: 18%; font-size: 11rem; }
-    .news .kpi { color: var(--c-peach); }
-    .scope .kpi { right: 8px; top: -18px; font-size: 5.4rem; opacity: .5; }
+    .events .kpi { font-size: clamp(4rem, 6vw, 5.6rem); }
+    .scope .kpi { font-size: 3.2rem; }
 
     .go { position: relative; z-index: 1; margin-top: 22px; display:inline-block; font-weight:800;
-          color: var(--c-peach); text-decoration:none; clip-path: polygon(0 0, 100% 0, 92% 100%, 0 100%);
-          padding: 6px 16px 6px 0; }
-    .go:hover { text-shadow: 0 0 14px rgba(255,207,149,.75); }
-    .go.static { color: rgba(255,240,217,.45); }
-    .loading { margin-top:18px; color: rgba(255,240,217,.6); font-style:italic; }
+          color: var(--accent); text-decoration:none;
+          padding: 6px 0; border-bottom: 2px solid transparent; }
+    .go:hover { border-bottom-color: var(--accent); }
+    .go:focus-visible { outline: none; box-shadow: var(--glow-focus); }
+    .go.static { color: var(--text-muted); }
+    .loading { margin-top:18px; color: var(--text-muted); font-style:italic; }
 
+    /* Su schermo stretto i riquadri si impilano e tornano tutti della stessa
+       forma: lo sfalsamento funziona in orizzontale, in colonna produrrebbe
+       solo altezze disuguali e spazi vuoti. */
     @media (max-width: 820px) {
-      .bento { grid-template-columns: 1fr; grid-template-rows: auto; padding: 0; }
-      .events, .news, .scope { grid-column: 1; grid-row: auto; transform: none; width: 100%;
-                               margin: 0; min-height: 180px; }
-      .events .kpi { font-size: 6rem; top: -10px; }
+      .bento { grid-template-columns: 1fr; grid-template-rows: auto; padding: 0; gap: 16px; }
+      .events, .news, .scope {
+        grid-column: 1; grid-row: auto; transform: none; width: 100%;
+        margin: 0; min-height: 150px; justify-self: stretch;
+      }
+      .events .kpi, .news .kpi, .scope .kpi { font-size: 3.4rem; }
+      .head h1 { font-size: 1.9rem; }
     }
   `]
 })

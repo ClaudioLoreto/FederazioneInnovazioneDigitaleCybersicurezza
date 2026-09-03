@@ -91,10 +91,12 @@ Angular resta in ascolto sui file: ogni modifica al codice ricarica il browser d
 2. Vai su <http://localhost:4200/admin/login>.
 3. Inserisci una delle utenze elencate in **[UTENTI-E-RUOLI.md](UTENTI-E-RUOLI.md)**.
 
-In ambiente di sviluppo compare anche un pulsante **"DEV: Auto-Login"** che compila le
-credenziali della Direzione ed entra con un clic. È una scorciatoia pensata per le prove:
-in produzione non viene nemmeno generata, perché dipende da
-`environment.prod.ts`, dove il valore è `null`.
+In ambiente di sviluppo, in fondo al modulo, compare il riquadro **"Utenze di prova"**
+con i tre account già pronti: un clic compila le credenziali ed entra. Serve a passare da
+Direzione a Redazione in un secondo mentre si collaudano i permessi.
+
+In produzione il riquadro **non viene nemmeno costruito**: l'elenco delle utenze arriva
+da `environment.ts` e nel file di produzione è vuoto.
 
 ---
 

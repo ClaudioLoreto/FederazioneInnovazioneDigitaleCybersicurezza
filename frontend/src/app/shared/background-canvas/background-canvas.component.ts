@@ -12,14 +12,29 @@ import {
   ElementRef,
   NgZone,
   OnDestroy,
-  ViewChild
+  ViewChild,
+  effect,
+  inject
 } from '@angular/core';
 import type { WebGLRenderer, Scene, PerspectiveCamera, Points, LineSegments, Material } from 'three';
+import { ThemeService } from '../theme/theme.service';
 
-/** Palette FIDC congelata in hex numerico (unica fonte: gli stessi 4 colori). */
+/**
+ * Colori di riserva, usati solo se per qualche motivo non si riesce a leggere
+ * il tema dal foglio di stile (per esempio durante i test). In condizioni
+ * normali i colori arrivano dai token --canvas-bg, --accent e --accent-2.
+ */
 const C_DEEP = 0x333d6d;
 const C_PURPLE = 0x723ec3;
 const C_PEACH = 0xffcf95;
+
+/** I tre colori che la scena legge dal tema attivo. */
+interface ColoriScena {
+  sfondo: number;
+  nodo: number;
+  nodoAlt: number;
+  opacita: number;
+}
 
 /**
  * Ambiente cyber-spaziale persistente: resti visibile sotto landing, login,
@@ -37,11 +52,21 @@ const C_PEACH = 0xffcf95;
       display: block;
       pointer-events: none;
     }
-    .gl { width: 100%; height: 100%; display: block; }
+    .gl {
+      width: 100%;
+      height: 100%;
+      display: block;
+      /* Sui veli con sfondo chiaro la scena si attenua, altrimenti coprirebbe
+         il colore scelto nel Theme Builder. */
+      opacity: var(--canvas-alpha, 1);
+      transition: opacity .6s ease;
+    }
   `]
 })
 export class BackgroundCanvasComponent implements AfterViewInit, OnDestroy {
   @ViewChild('gl', { static: true }) private readonly canvasRef!: ElementRef<HTMLCanvasElement>;
+
+  private readonly theme = inject(ThemeService);
 
   private renderer?: WebGLRenderer;
   private scene?: Scene;
@@ -52,6 +77,10 @@ export class BackgroundCanvasComponent implements AfterViewInit, OnDestroy {
   private raf = 0;
   private disposed = false;
   private reduceMotion = false;
+  /** Riferimento alla libreria, tenuto per ricolorare la scena a caldo. */
+  private three?: typeof import('three');
+  /** Per ogni nodo: 0 usa l'accento secondario, 1 il primario. */
+  private accentoNodi?: Uint8Array;
   private pointer = { x: 0, y: 0 };
   private camTarget = { x: 0, y: 0 };
   private tunnelZ = 0;
@@ -60,7 +89,13 @@ export class BackgroundCanvasComponent implements AfterViewInit, OnDestroy {
   private readonly onPointer = (e: PointerEvent) => this.trackPointer(e);
   private readonly onHudMove = (e: MouseEvent) => this.lightHud(e);
 
-  constructor(private readonly zone: NgZone) {}
+  constructor(private readonly zone: NgZone) {
+    // Quando il velo cambia, la scena si ricolora senza essere ricostruita.
+    effect(() => {
+      this.theme.config();
+      this.applicaColoriTema();
+    });
+  }
 
   /** Avvia WebGL dopo il primo paint (dynamic import → chunk Three.js separato). */
   async ngAfterViewInit(): Promise<void> {
@@ -92,18 +127,20 @@ export class BackgroundCanvasComponent implements AfterViewInit, OnDestroy {
 
   private boot(THREE: typeof import('three')): void {
     const canvas = this.canvasRef.nativeElement;
+    const colori = this.leggiColoriTema();
+
     const renderer = new THREE.WebGLRenderer({
       canvas,
       antialias: true,
       alpha: false,
       powerPreference: 'high-performance'
     });
-    renderer.setClearColor(C_DEEP, 1);
+    renderer.setClearColor(colori.sfondo, 1);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
 
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(C_DEEP);
-    scene.fog = new THREE.FogExp2(C_DEEP, 0.042);
+    scene.background = new THREE.Color(colori.sfondo);
+    scene.fog = new THREE.FogExp2(colori.sfondo, 0.042);
 
     const camera = new THREE.PerspectiveCamera(62, 1, 0.1, 220);
     camera.position.set(0, 0, 0);
@@ -111,9 +148,10 @@ export class BackgroundCanvasComponent implements AfterViewInit, OnDestroy {
     this.renderer = renderer;
     this.scene = scene;
     this.camera = camera;
+    this.three = THREE;
 
-    this.buildTunnel(THREE, scene);
-    this.buildCore(THREE, scene);
+    this.buildTunnel(THREE, scene, colori);
+    this.buildCore(THREE, scene, colori);
     this.resize();
 
     window.addEventListener('resize', this.onResize, { passive: true });
@@ -140,7 +178,7 @@ export class BackgroundCanvasComponent implements AfterViewInit, OnDestroy {
    * Tunnel di dati: anelli di nodi + wireframe (collegamenti anello/asse)
    * e shortcut neurali. Colori rigorosamente purple/peach.
    */
-  private buildTunnel(THREE: typeof import('three'), scene: Scene): void {
+  private buildTunnel(THREE: typeof import('three'), scene: Scene, colori: ColoriScena): void {
     const rings = 56;
     const perRing = 22;
     const spacing = 4.6;
@@ -149,8 +187,11 @@ export class BackgroundCanvasComponent implements AfterViewInit, OnDestroy {
 
     const positions = new Float32Array(count * 3);
     const colors = new Float32Array(count * 3);
-    const purple = new THREE.Color(C_PURPLE);
-    const peach = new THREE.Color(C_PEACH);
+    // Per ogni nodo memorizziamo quale dei due accenti usa: serve a ricolorare
+    // il tunnel quando cambia il velo, senza ricostruire la geometria.
+    const accento = new Uint8Array(count);
+    const nodo = new THREE.Color(colori.nodo);
+    const nodoAlt = new THREE.Color(colori.nodoAlt);
 
     for (let i = 0; i < rings; i++) {
       for (let j = 0; j < perRing; j++) {
@@ -160,12 +201,15 @@ export class BackgroundCanvasComponent implements AfterViewInit, OnDestroy {
         positions[idx * 3] = Math.cos(a) * r;
         positions[idx * 3 + 1] = Math.sin(a) * r;
         positions[idx * 3 + 2] = i * spacing;
-        const c = (i + j) % 3 === 0 ? peach : purple;
+        const usaAlt = (i + j) % 3 === 0;
+        accento[idx] = usaAlt ? 1 : 0;
+        const c = usaAlt ? nodoAlt : nodo;
         colors[idx * 3] = c.r;
         colors[idx * 3 + 1] = c.g;
         colors[idx * 3 + 2] = c.b;
       }
     }
+    this.accentoNodi = accento;
 
     const pGeo = new THREE.BufferGeometry();
     pGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
@@ -203,7 +247,7 @@ export class BackgroundCanvasComponent implements AfterViewInit, OnDestroy {
     const lGeo = new THREE.BufferGeometry();
     lGeo.setAttribute('position', new THREE.Float32BufferAttribute(segs, 3));
     const lMat = new THREE.LineBasicMaterial({
-      color: C_PURPLE,
+      color: colori.nodo,
       transparent: true,
       opacity: 0.38,
       blending: THREE.AdditiveBlending,
@@ -214,11 +258,11 @@ export class BackgroundCanvasComponent implements AfterViewInit, OnDestroy {
   }
 
   /** Nucleo wireframe (icosaedro) in fondo al tunnel: “cervello” della rete. */
-  private buildCore(THREE: typeof import('three'), scene: Scene): void {
+  private buildCore(THREE: typeof import('three'), scene: Scene, colori: ColoriScena): void {
     const geo = new THREE.IcosahedronGeometry(2.4, 1);
     const wire = new THREE.WireframeGeometry(geo);
     const mat = new THREE.LineBasicMaterial({
-      color: C_PEACH,
+      color: colori.nodoAlt,
       transparent: true,
       opacity: 0.55,
       blending: THREE.AdditiveBlending
@@ -248,6 +292,68 @@ export class BackgroundCanvasComponent implements AfterViewInit, OnDestroy {
       this.core.rotation.y += 0.007;
       this.core.position.z = this.tunnelZ + 22;
     }
+  }
+
+  // ---- colori guidati dal tema ---------------------------------------------
+
+  /**
+   * Legge i colori della scena dai token del tema attivo, così il velo scelto
+   * nel Theme Builder vale anche per lo sfondo 3D e non solo per l'interfaccia.
+   */
+  private leggiColoriTema(): ColoriScena {
+    const riserva: ColoriScena = {
+      sfondo: C_DEEP, nodo: C_PURPLE, nodoAlt: C_PEACH, opacita: 1
+    };
+    if (typeof getComputedStyle !== 'function') return riserva;
+
+    const stile = getComputedStyle(document.documentElement);
+    const leggi = (token: string, predefinito: number) =>
+      this.hexToInt(stile.getPropertyValue(token).trim(), predefinito);
+
+    return {
+      sfondo: leggi('--canvas-bg', C_DEEP),
+      // Le linee usano l'accento secondario, i nodi in risalto il primario:
+      // così il tunnel resta leggibile qualunque coppia di colori sia attiva.
+      nodo: leggi('--accent-2', C_PURPLE),
+      nodoAlt: leggi('--accent', C_PEACH),
+      opacita: parseFloat(stile.getPropertyValue('--canvas-alpha')) || 1
+    };
+  }
+
+  /** Riapplica i colori del tema a una scena già costruita. */
+  private applicaColoriTema(): void {
+    const THREE = this.three;
+    if (!THREE || !this.renderer || !this.scene) return;
+
+    const colori = this.leggiColoriTema();
+
+    this.renderer.setClearColor(colori.sfondo, 1);
+    this.scene.background = new THREE.Color(colori.sfondo);
+    if (this.scene.fog) (this.scene.fog as { color: { set(v: number): void } }).color.set(colori.sfondo);
+
+    // Nodi del tunnel: si riscrive solo l'attributo colore, non la geometria.
+    const attr = this.points?.geometry.getAttribute('color');
+    if (attr && this.accentoNodi) {
+      const nodo = new THREE.Color(colori.nodo);
+      const nodoAlt = new THREE.Color(colori.nodoAlt);
+      for (let i = 0; i < this.accentoNodi.length; i++) {
+        const c = this.accentoNodi[i] ? nodoAlt : nodo;
+        attr.setXYZ(i, c.r, c.g, c.b);
+      }
+      attr.needsUpdate = true;
+    }
+
+    (this.lines?.material as { color?: { set(v: number): void } } | undefined)?.color?.set(colori.nodo);
+    (this.core?.material as { color?: { set(v: number): void } } | undefined)?.color?.set(colori.nodoAlt);
+
+    // Con il movimento disattivato non c'è un ciclo di disegno: si ridisegna qui.
+    if (this.reduceMotion && this.camera) this.renderer.render(this.scene, this.camera);
+  }
+
+  /** Converte "#RRGGBB" nel numero atteso da Three.js. */
+  private hexToInt(valore: string, predefinito: number): number {
+    const m = /^#?([0-9a-f]{6})$/i.exec(valore);
+    return m ? parseInt(m[1], 16) : predefinito;
   }
 
   private resize(): void {

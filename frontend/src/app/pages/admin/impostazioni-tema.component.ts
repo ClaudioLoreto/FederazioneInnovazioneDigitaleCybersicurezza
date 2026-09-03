@@ -86,6 +86,7 @@ type RuoloColore = 'colorePrimario' | 'coloreAccento' | 'coloreSfondo' | 'colore
               <button *ngFor="let s of palette" type="button" class="sw"
                       [style.background]="s.hex"
                       [class.on]="bozza()[r.key] === s.hex"
+                      [title]="s.nome + ' · ' + s.hex"
                       [attr.aria-label]="s.nome"
                       [attr.aria-pressed]="bozza()[r.key] === s.hex"
                       [disabled]="!bozza().personalizzato"
@@ -145,28 +146,34 @@ type RuoloColore = 'colorePrimario' | 'coloreAccento' | 'coloreSfondo' | 'colore
   </div>
   `,
   styles: [`
+    /* NOTA: in questa schermata i quattro colori istituzionali compaiono anche
+       come valori fissi. È l'unica eccezione ammessa e ha una ragione: gli
+       swatch e le anteprime devono mostrare il colore in quanto tale, non il
+       colore del tema attivo, altrimenti scegliendo un velo cambierebbero
+       anche i campioni con cui lo si sta scegliendo. Tutto il resto della
+       pagina usa i token, come ovunque. */
     .wrap { max-width: 1000px; }
-    .head h1 { margin:0 0 6px; font-size:1.8rem; color: var(--c-cream); font-family: var(--font-display); }
-    .head p { margin:0 0 26px; color: rgba(255,240,217,.7); max-width:720px; line-height:1.55; }
+    .head h1 { margin:0 0 6px; font-size:1.8rem; color: var(--text); font-family: var(--font-display); }
+    .head p { margin:0 0 26px; color: var(--text-soft); max-width:720px; line-height:1.55; }
 
     .block { margin: 0 0 34px; }
-    .block h2 { margin:0 0 4px; font-size:1.15rem; color: var(--c-cream); }
-    .hint { margin:0 0 16px; color: rgba(255,240,217,.65); font-size:.92rem; }
+    .block h2 { margin:0 0 4px; font-size:1.15rem; color: var(--text); }
+    .hint { margin:0 0 16px; color: var(--text-muted); font-size:.92rem; }
     .block-head { display:flex; justify-content:space-between; align-items:flex-start; gap:16px; flex-wrap:wrap; }
 
     .switch { display:inline-flex; align-items:center; gap:10px; cursor:pointer;
-      font-weight:700; color: var(--c-cream); }
-    .switch input { width:18px; height:18px; accent-color: var(--c-purple); cursor:pointer; }
+      font-weight:700; color: var(--text); }
+    .switch input { width:18px; height:18px; accent-color: var(--accent); cursor:pointer; }
 
-    /* ---- Temi base (mini anteprime coi 4 colori) ---- */
+    /* ---- Veli predefiniti (miniature con i colori reali) ---- */
     .themes { display:grid; grid-template-columns: repeat(auto-fit,minmax(240px,1fr)); gap:18px; }
-    .theme-card { text-align:left; cursor:pointer; background: var(--glass-bg); border:1px solid var(--glass-border);
-      border-radius:16px; padding:14px; display:flex; flex-direction:column; gap:10px;
-      backdrop-filter: blur(20px); transition: transform .28s, border-color .2s, box-shadow .28s; }
-    .theme-card:hover { transform: translateY(-3px); box-shadow: var(--glow-neon); border-color: var(--c-peach); }
-    .theme-card.active { border-color: var(--c-purple); box-shadow: 0 14px 36px rgba(114,62,195,.3); }
-    .theme-card:focus-visible { outline:none; border-color: var(--c-peach); }
-    .preview { display:block; border-radius:12px; overflow:hidden; border:1px solid rgba(51,61,109,.12); }
+    .theme-card { text-align:left; cursor:pointer; background: var(--surface); border:1px solid var(--surface-border);
+      border-radius: var(--radius); padding:14px; display:flex; flex-direction:column; gap:10px;
+      backdrop-filter: blur(var(--surface-blur)); transition: transform .28s, border-color .2s, box-shadow .28s; }
+    .theme-card:hover { transform: translateY(-3px); box-shadow: var(--glow-neon); border-color: var(--line-strong); }
+    .theme-card.active { border-color: var(--accent); box-shadow: var(--glow-accent); }
+    .theme-card:focus-visible { outline:none; box-shadow: var(--glow-focus); }
+    .preview { display:block; overflow:hidden; border:1px solid rgba(51,61,109,.12); }
     .p-bar { display:block; height:12px; }
     .p-hero { display:flex; gap:6px; padding:12px; height:66px; align-items:center; }
     .p-hero i { display:block; height:10px; border-radius:6px; }
@@ -179,7 +186,7 @@ type RuoloColore = 'colorePrimario' | 'coloreAccento' | 'coloreSfondo' | 'colore
     [data-preview='1'] .p-hero { background:#333D6D; }
     [data-preview='1'] .p-hero i:first-child { background:#FFCF95; }
     [data-preview='1'] .p-hero i:last-child { background:#723EC3; }
-    [data-preview='1'] .p-row b { background:#fff; border:1px solid rgba(51,61,109,.15); }
+    [data-preview='1'] .p-row b { background:#FFF0D9; border:1px solid rgba(51,61,109,.15); }
     [data-preview='2'].preview { background:#333D6D; }
     [data-preview='2'] .p-bar { background:#2b3460; }
     [data-preview='2'] .p-hero { background:#333D6D; }
@@ -191,37 +198,43 @@ type RuoloColore = 'colorePrimario' | 'coloreAccento' | 'coloreSfondo' | 'colore
     [data-preview='3'] .p-hero { background:linear-gradient(135deg,#723EC3,#FFCF95); }
     [data-preview='3'] .p-hero i:first-child { background:#FFF0D9; }
     [data-preview='3'] .p-hero i:last-child { background:#FFF0D9; }
-    [data-preview='3'] .p-row b { background:#fff; }
+    [data-preview='3'] .p-row b { background:#FFF0D9; }
     .info { display:flex; flex-direction:column; gap:2px; }
-    .info strong { color: var(--c-cream); }
-    .info small { color: rgba(255,240,217,.65); }
-    .chosen { align-self:flex-start; font-size:.72rem; font-weight:800; color: var(--c-cream);
-      background: var(--c-purple); padding:4px 12px; border-radius:999px; }
+    .info strong { color: var(--text); }
+    .info small { color: var(--text-muted); }
+    .chosen { align-self:flex-start; font-size:.72rem; font-weight:800; color: var(--on-accent);
+      background: var(--accent); padding:4px 12px;
+      clip-path: polygon(5px 0, 100% 0, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0 100%, 0 5px); }
 
-    /* ---- Builder ---- */
+    /* ---- Composizione del velo su misura ---- */
     .builder { margin-top:14px; transition: opacity .2s; }
     .builder.disabled { opacity:.42; pointer-events:none; }
     .ruoli { display:grid; grid-template-columns: repeat(auto-fit,minmax(220px,1fr)); gap:18px; margin-bottom:22px; }
     .ruolo, .opt { display:flex; flex-direction:column; gap:8px; }
-    .ruolo-lbl { font-weight:800; color: var(--c-cream); display:flex; flex-direction:column; }
-    .ruolo-lbl small { font-weight:500; color: rgba(255,240,217,.6); font-size:.8rem; }
+    .ruolo-lbl { font-weight:800; color: var(--text); display:flex; flex-direction:column; }
+    .ruolo-lbl small { font-weight:500; color: var(--text-muted); font-size:.8rem; }
     .swatches { display:flex; gap:8px; }
-    .sw { width:40px; height:40px; border-radius:10px; cursor:pointer; border:2px solid rgba(51,61,109,.15);
+    /* I campioni mostrano il colore vero: bordo e anello di selezione devono
+       restare visibili sia sui due colori chiari sia sui due scuri. */
+    .sw { width:40px; height:40px; cursor:pointer; border:2px solid var(--surface-border);
+      clip-path: polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px);
       transition: transform .15s, box-shadow .15s; }
     .sw:hover { transform: translateY(-2px); }
-    .sw.on { border-color: var(--c-deep-blue); box-shadow: 0 0 0 3px rgba(114,62,195,.35); }
-    .sw:focus-visible { outline:none; box-shadow: 0 0 0 3px var(--c-peach); }
+    .sw.on { border-color: var(--text); box-shadow: var(--glow-accent); }
+    .sw:focus-visible { outline:none; box-shadow: var(--glow-focus); }
 
     .opt { margin-bottom:18px; }
     .chips { display:flex; gap:10px; flex-wrap:wrap; }
-    .chip { padding:9px 18px; border-radius:999px; cursor:pointer; font-weight:700;
-      background: rgba(51,61,109,.4); color: var(--c-cream); border:1px solid var(--glass-border); transition: all .15s; }
-    .chip:hover { border-color: var(--c-purple); }
-    .chip.on { background: var(--c-purple); color: var(--c-cream); border-color: var(--c-purple); }
-    .chip:focus-visible { outline:none; border-color: var(--c-peach); }
+    .chip { padding:9px 18px; cursor:pointer; font-weight:700; font-family: inherit;
+      clip-path: polygon(7px 0, 100% 0, 100% calc(100% - 7px), calc(100% - 7px) 100%, 0 100%, 0 7px);
+      background: var(--surface-strong); color: var(--text); border:1px solid var(--surface-border);
+      transition: background .15s, color .15s, border-color .15s; }
+    .chip:hover { border-color: var(--line-strong); }
+    .chip.on { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+    .chip:focus-visible { outline:none; box-shadow: var(--glow-focus); }
 
-    /* ---- Mock anteprima ---- */
-    .mock { padding:16px; border:1px solid rgba(51,61,109,.14); }
+    /* ---- Anteprima in miniatura ---- */
+    .mock { padding:16px; border:1px solid var(--surface-border); }
     .mock-hero { display:flex; align-items:center; justify-content:space-between; gap:14px; padding:20px; }
     .mock-hero b { font-size:1.05rem; }
     .mock-cta { padding:8px 18px; font-weight:800; white-space:nowrap; }
@@ -230,8 +243,18 @@ type RuoloColore = 'colorePrimario' | 'coloreAccento' | 'coloreSfondo' | 'colore
     /* ---- Azioni ---- */
     .actions { display:flex; align-items:center; gap:14px; flex-wrap:wrap; margin-top:8px; }
     .msg { font-weight:700; font-size:.9rem; }
-    .msg.ok { color: var(--c-peach); }
-    .msg.err { color: var(--c-peach); }
+    .msg.ok { color: var(--accent); }
+    .msg.err { color: var(--accent-2); }
+
+    @media (max-width: 720px) {
+      .themes { grid-template-columns: 1fr; }
+      .head h1 { font-size:1.45rem; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .theme-card, .sw, .chip, .builder { transition:none; }
+      .theme-card:hover, .sw:hover { transform:none; }
+    }
   `]
 })
 export class ImpostazioniTemaComponent {
@@ -240,10 +263,10 @@ export class ImpostazioniTemaComponent {
 
   /** I 4 colori della palette FERREA (uniche opzioni ammesse). */
   readonly palette: Swatch[] = [
-    { hex: '#333D6D', nome: 'Deep Blue' },
-    { hex: '#723EC3', nome: 'Purple' },
-    { hex: '#FFCF95', nome: 'Peach' },
-    { hex: '#FFF0D9', nome: 'Cream' }
+    { hex: '#333D6D', nome: 'Blu profondo' },
+    { hex: '#723EC3', nome: 'Viola' },
+    { hex: '#FFCF95', nome: 'Pesca' },
+    { hex: '#FFF0D9', nome: 'Crema' }
   ];
 
   /** Ruoli cromatici configurabili nel builder. */

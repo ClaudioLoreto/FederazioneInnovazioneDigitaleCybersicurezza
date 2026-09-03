@@ -1,13 +1,20 @@
 // =============================================================================
 //  frontend/src/environments/environment.prod.ts
-//  Configurazione di PRODUZIONE. In prod il frontend e l'API condividono lo
-//  stesso dominio, quindi si usa un percorso relativo '/api'.
+//  Configurazione di PRODUZIONE. Sito e API stanno sullo stesso dominio,
+//  quindi basta un percorso relativo.
 // =============================================================================
+
+import type { ProfiloDiProva } from './tipi';
 
 export const environment = {
   production: true,
-  /** Base URL dell'API FIDC in produzione (stesso dominio del sito). */
+
+  /** Indirizzo base dell'API in produzione. */
   apiBaseUrl: '/api',
-  /** Assente in produzione: il bottone auto-login non viene renderizzato. */
-  devAutoLogin: null as { email: string; password: string } | null
+
+  /**
+   * Vuoto di proposito: in produzione non esistono utenze di prova e il
+   * riquadro di accesso rapido non viene nemmeno disegnato.
+   */
+  profiliDiProva: [] as ProfiloDiProva[]
 };

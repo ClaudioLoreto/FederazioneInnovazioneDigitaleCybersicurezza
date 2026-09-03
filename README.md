@@ -94,7 +94,8 @@ FIDC/
    ├─ app/content/home-content.ts testi istituzionali della home
    ├─ app/pages/                  una cartella per pagina
    ├─ app/services/               chiamate all'API, autenticazione, guardie di rotta
-   └─ app/shared/                 componenti riusabili (logo, sfondo 3D, tema)
+   └─ app/shared/                 componenti riusabili: marchio, sfondo 3D, gestione
+                                  del tema, finestre di dialogo, campi di modulo
 ```
 
 **Perché il backend è diviso in quattro progetti:** ogni livello può dipendere solo da

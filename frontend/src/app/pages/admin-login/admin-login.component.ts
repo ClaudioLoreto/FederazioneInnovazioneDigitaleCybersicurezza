@@ -9,11 +9,12 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute, RouterLink } from '@angular/router';
-import { NgIf } from '@angular/common';
+import { NgIf, NgFor } from '@angular/common';
 import { trigger, transition, style, animate } from '@angular/animations';
 import { AuthService } from '../../services/auth.service';
 import { AnimatedLogoComponent } from '../../shared/animated-logo/animated-logo.component';
 import { environment } from '../../../environments/environment';
+import type { ProfiloDiProva } from '../../../environments/tipi';
 
 /**
  * Pagina di login del backoffice. Form controllato (email + password), stato di
@@ -22,7 +23,7 @@ import { environment } from '../../../environments/environment';
 @Component({
   selector: 'fidc-admin-login',
   standalone: true,
-  imports: [FormsModule, NgIf, RouterLink, AnimatedLogoComponent],
+  imports: [FormsModule, NgIf, NgFor, RouterLink, AnimatedLogoComponent],
   styleUrls: ['../../shared/auth/auth-form.scss'],
   animations: [
     trigger('enter', [
@@ -66,10 +67,19 @@ import { environment } from '../../../environments/environment';
         </button>
       </form>
 
-      <button *ngIf="devCreds" type="button" class="dev-login"
-              [disabled]="caricamento() || shatter()" (click)="autoLoginDev()">
-        🔥 DEV: Auto-Login SuperUser
-      </button>
+      <!-- Accesso rapido alle utenze di prova. Esiste solo in sviluppo:
+           in produzione l'elenco è vuoto e questo blocco non viene disegnato. -->
+      <section class="dev-access" *ngIf="profili.length">
+        <p class="dev-titolo">Utenze di prova <span>ambiente di sviluppo</span></p>
+        <p class="dev-nota">Password comune a tutte: <code>{{ profili[0].password }}</code></p>
+        <button *ngFor="let p of profili" type="button" class="dev-profilo"
+                [disabled]="caricamento() || shatter()" (click)="accediCome(p)">
+          <span class="dev-ruolo">{{ p.ruolo }}</span>
+          <span class="dev-persona">{{ p.nome }}</span>
+          <span class="dev-mail">{{ p.email }}</span>
+          <span class="dev-ambito">{{ p.ambito }}</span>
+        </button>
+      </section>
 
       <p class="alt">Non hai un account? <a routerLink="/registrati">Registrati</a></p>
       <p class="footnote"><i class="lock">⛨</i> Accesso protetto · Accesso tracciato</p>
@@ -86,8 +96,11 @@ export class AdminLoginComponent {
   email = '';
   password = '';
 
-  /** Credenziali SuperUser del seeder — visibili solo se environment.devAutoLogin è valorizzato. */
-  readonly devCreds = environment.devAutoLogin;
+  /**
+   * Utenze di prova del seeder. In produzione l'elenco è vuoto, quindi il
+   * riquadro di accesso rapido semplicemente non esiste.
+   */
+  readonly profili = environment.profiliDiProva;
 
   /** Stato UI. */
   readonly caricamento = signal(false);
@@ -96,13 +109,14 @@ export class AdminLoginComponent {
   readonly shatter = signal(false);
 
   /**
-   * Compila email/password del SuperUser seed e lancia il login.
-   * Esiste solo in Development: in produzione `devAutoLogin` è null.
+   * Compila il modulo con l'utenza di prova scelta ed entra.
+   * Serve a collaudare i due livelli di permessi senza riscrivere ogni volta
+   * le credenziali. Disponibile solo in sviluppo.
    */
-  autoLoginDev(): void {
-    if (!this.devCreds || this.caricamento() || this.shatter()) return;
-    this.email = this.devCreds.email;
-    this.password = this.devCreds.password;
+  accediCome(profilo: ProfiloDiProva): void {
+    if (this.caricamento() || this.shatter()) return;
+    this.email = profilo.email;
+    this.password = profilo.password;
     this.accedi();
   }
 

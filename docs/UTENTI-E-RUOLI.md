@@ -18,6 +18,17 @@ ruoli diversi. Accesso da <http://localhost:4200/admin/login>.
 > (`DataSeeder.PasswordDefault`). Vale **solo** per gli ambienti di sviluppo e demo:
 > in produzione va cambiata al primo accesso.
 
+### Non serve digitarle
+
+In ambiente di sviluppo la pagina di accesso mostra in fondo un riquadro **"Utenze di
+prova"** con i tre account: un clic compila il modulo ed entra. Serve a collaudare i
+permessi passando da un ruolo all'altro in un secondo, senza tenere le credenziali su un
+foglietto a parte.
+
+Il riquadro è generato da `frontend/src/environments/environment.ts`. Il file di
+produzione (`environment.prod.ts`) espone un elenco vuoto, quindi in produzione il
+riquadro **non esiste**: non è nascosto con il CSS, proprio non viene costruito.
+
 **Perché provare anche i due Relatori:** hanno contenuti diversi assegnati. Giulia Ferraro
 è responsabile di tre eventi e di due news, Marco Bianchi degli altri. Entrando con l'uno
 o con l'altro si verifica che ciascuno veda davvero soltanto la propria roba: è il modo
@@ -43,10 +54,14 @@ Il sistema ha due soli livelli di accesso. Sono definiti in
 
 > ⚠️ **Nota per chi lavora sul codice:** i nomi `SuperUser` e `Relatore` sono nomi
 > *interni*, nati durante lo sviluppo. Non vanno mai mostrati nell'interfaccia:
-> un sito istituzionale scrive "Direzione", non "Super User". L'allineamento
-> dell'interfaccia a queste etichette è tra i lavori aperti in
-> [ROADMAP-UI.md](ROADMAP-UI.md). I valori tecnici **non si rinominano**, perché sono
-> scritti dentro i token JWT già emessi e dentro gli attributi `[Authorize]`.
+> un sito istituzionale scrive "Direzione", non "Super User".
+>
+> La traduzione avviene in un unico punto, `frontend/src/app/shared/ruoli.ts`. Nei
+> template si passa sempre da lì, mai scrivendo l'etichetta a mano: se il committente
+> un domani preferisce altre denominazioni, si cambia un file solo.
+>
+> I valori tecnici **non si rinominano**, perché sono scritti dentro i token JWT già
+> emessi e dentro gli attributi `[Authorize]` del backend.
 
 ---
 

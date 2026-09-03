@@ -9,6 +9,10 @@ import { NgFor, NgIf, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { trigger, transition, style, animate } from '@angular/animations';
 import { FidcApiService, News, Pilastro } from '../../services/fidc-api.service';
+import { DialogoService } from '../../shared/dialogo/dialogo.service';
+import { SelezioneComponent } from '../../shared/campi/selezione.component';
+import { EditorTestoComponent } from '../../shared/campi/editor-testo.component';
+import { PILASTRI } from '../../shared/opzioni';
 import { AuthService } from '../../services/auth.service';
 
 /** Modello del form news. */
@@ -37,7 +41,7 @@ const VUOTO: NewsForm = {
 @Component({
   selector: 'fidc-news-admin',
   standalone: true,
-  imports: [NgFor, NgIf, DatePipe, FormsModule],
+  imports: [NgFor, NgIf, DatePipe, FormsModule, SelezioneComponent, EditorTestoComponent],
   animations: [
     trigger('panel', [
       transition(':enter', [
@@ -68,18 +72,17 @@ const VUOTO: NewsForm = {
             <input name="slug" [(ngModel)]="f.slug" placeholder="es. cyber-summit-2026" />
           </label>
           <label><span>Pilastro</span>
-            <select name="pilastro" [(ngModel)]="f.pilastro">
-              <option value="Attivita">Attività</option>
-              <option value="Eventi">Eventi</option>
-              <option value="Formazione">Formazione</option>
-              <option value="Ricerca">Ricerca</option>
-            </select>
+            <fidc-selezione name="pilastro" [(ngModel)]="f.pilastro"
+                            [opzioni]="pilastri" etichetta="Pilastro"></fidc-selezione>
           </label>
           <label class="full"><span>Sommario</span>
-            <textarea name="sommario" [(ngModel)]="f.sommario" rows="2" required></textarea>
+            <textarea name="sommario" [(ngModel)]="f.sommario" rows="2" required
+                      placeholder="Due righe che riassumono la notizia: è il testo che compare in anteprima."></textarea>
           </label>
           <label class="full"><span>Contenuto</span>
-            <textarea name="contenuto" [(ngModel)]="f.contenuto" rows="5" required></textarea>
+            <fidc-editor-testo name="contenuto" [(ngModel)]="f.contenuto"
+                               etichetta="Contenuto della news"
+                               segnaposto="Scrivi qui l'articolo. Usa la barra sopra per titoli, elenchi e collegamenti."></fidc-editor-testo>
           </label>
           <label class="full"><span>Immagine copertina (URL, opz.)</span>
             <input name="immagineCopertina" [(ngModel)]="f.immagineCopertina" placeholder="https://…" />
@@ -133,6 +136,10 @@ const VUOTO: NewsForm = {
 })
 export class NewsAdminComponent implements OnInit {
   private readonly api = inject(FidcApiService);
+  private readonly dialogo = inject(DialogoService);
+
+  /** Voci della tendina "Pilastro" (condivise con la gestione eventi). */
+  readonly pilastri = PILASTRI;
   readonly auth = inject(AuthService);
 
   readonly news = signal<News[]>([]);
@@ -209,12 +216,22 @@ export class NewsAdminComponent implements OnInit {
     });
   }
 
-  /** Elimina con conferma. */
-  elimina(n: News): void {
-    if (!confirm(`Eliminare la news "${n.titolo}"?`)) return;
+  /** Elimina la news, previa conferma esplicita. */
+  async elimina(n: News): Promise<void> {
+    const ok = await this.dialogo.conferma({
+      titolo: 'Eliminare questa news?',
+      messaggio: `"${n.titolo}" verrà rimossa dal sito pubblico e dall'archivio. L'operazione non è reversibile.`,
+      azione: 'Elimina',
+      distruttiva: true
+    });
+    if (!ok) return;
+
     this.api.eliminaNews(n.id).subscribe({
       next: () => this.news.set(this.news().filter((x) => x.id !== n.id)),
-      error: () => alert('Eliminazione non riuscita.')
+      error: () => this.dialogo.avvisa(
+        'Eliminazione non riuscita',
+        'La news è ancora al suo posto. Riprova; se il problema persiste, verifica che il server sia raggiungibile.'
+      )
     });
   }
 

@@ -271,16 +271,29 @@ import { FidcApiService, Evento, News } from '../../services/fidc-api.service';
     /* hamburger legacy (mobile-menu overlay resta) */
     .burger { border: none; color: inherit; }
 
-    /* mobile menu overlay */
-    .mobile-menu { position:fixed; inset:0; z-index:25; background: color-mix(in srgb, var(--hero-bg, var(--text)) 75%, transparent);
-                   opacity:0; pointer-events:none; transition: opacity .25s; display:grid; place-items:start center; padding-top:96px; }
+    /* ---------- Menu su schermo stretto ----------
+       Il velo e il pannello devono essere OPACHI. Con un fondo trasparente la
+       cassaforte animata continuava a girare dietro le voci del menu, che
+       risultavano illeggibili e sembravano sovrapposte al contenuto.
+       Il colore usato è quello della scena 3D, così il passaggio non stona. */
+    .mobile-menu {
+      position:fixed; inset:0; z-index:25;
+      background: color-mix(in srgb, var(--canvas-bg) 88%, transparent);
+      backdrop-filter: blur(8px);
+      opacity:0; pointer-events:none; transition: opacity .25s;
+      display:grid; place-items:start center; padding-top:96px;
+      overflow-y:auto;
+    }
     .mobile-menu.open { opacity:1; pointer-events:auto; }
-    .mobile-menu nav { display:flex; flex-direction:column; gap:14px; width:min(420px,86vw);
-                       background: var(--bg-elev); color: var(--text); border:1px solid var(--line);
-                       clip-path: polygon(0 0, calc(100% - 22px) 0, 100% 22px, 100% 100%, 0 100%);
-                       padding:22px; box-shadow: var(--glow-purple); }
+    .mobile-menu nav {
+      display:flex; flex-direction:column; gap:14px; width:min(420px,86vw);
+      background: var(--canvas-bg); color: var(--text); border:1px solid var(--line-strong);
+      clip-path: polygon(0 0, calc(100% - 22px) 0, 100% 22px, 100% 100%, 0 100%);
+      padding:22px; box-shadow: var(--glow-deep);
+    }
     .mobile-menu nav a { font-weight:700; font-size:1.1rem; padding:10px 6px; border-bottom:1px solid var(--line); cursor:pointer; }
-    .mobile-menu nav button { width:100%; }
+    .mobile-menu nav a:last-of-type { border-bottom:none; }
+    .mobile-menu nav button, .mobile-menu nav .btn-accent { width:100%; }
 
     /* ---------- HERO ---------- */
     .hero { position:relative; overflow:hidden; background: transparent; color: var(--hero-text); }
@@ -302,7 +315,7 @@ import { FidcApiService, Evento, News } from '../../services/fidc-api.service';
 
     .hero-safe { display:flex; flex-direction:column; align-items:flex-end; justify-content:center; gap:14px; min-height:280px;
                  transform: translate(32px, -40px); }
-    .hero-safe fidc-safe-logo { display:block; width: min(340px, 78%); filter: drop-shadow(0 24px 50px rgba(51,61,109,.45)); }
+    .hero-safe fidc-safe-logo { display:block; width: min(340px, 78%); filter: drop-shadow(0 24px 50px var(--surface-strong)); }
     .safe-caption { color: var(--accent-2); font-weight:800; text-transform:uppercase; letter-spacing:.12em; font-size:.76rem; }
 
     /* ---------- PILASTRI / BENTO ASIMMETRICO ---------- */
@@ -328,7 +341,7 @@ import { FidcApiService, Evento, News } from '../../services/fidc-api.service';
     .pillar:nth-child(2) { grid-column: 3; grid-row: 1 / 3; margin-top: 56px; min-height: 320px; }
     .pillar:nth-child(3) { grid-column: 1; margin-left: -28px; transform: translateY(-12px); }
     .pillar:nth-child(4) { grid-column: 2 / 4; transform: translate(28px, -40px); }
-    .pillar:hover, .card:hover { transform: translateY(-6px); border-color: var(--c-peach); box-shadow: var(--glow-neon); }
+    .pillar:hover, .card:hover { transform: translateY(-6px); border-color: var(--line-strong); box-shadow: var(--glow-neon); }
     .pillar:nth-child(3):hover { transform: translateY(-18px); }
     .pillar:nth-child(4):hover { transform: translate(28px, -48px); }
     .kicker, .tag { color: var(--accent); font-weight:800; text-transform:uppercase; font-size:.78rem; }
@@ -347,7 +360,7 @@ import { FidcApiService, Evento, News } from '../../services/fidc-api.service';
                font-family: var(--font-display); line-height:.85; letter-spacing:-.04em;
                margin-left: -6px; }
     .stats span { color: color-mix(in srgb, var(--hero-text) 80%, transparent); }
-    .about-shield { width:min(220px,70%); justify-self:center; filter: drop-shadow(0 16px 36px rgba(114,62,195,.45)); }
+    .about-shield { width:min(220px,70%); justify-self:center; filter: drop-shadow(0 16px 36px var(--accent-2-soft)); }
 
     /* ---------- GOVERNANCE / FONDATORI ---------- */
     .governance { max-width:1200px; margin:0 auto; padding: 0 6vw 8vh; }
@@ -393,7 +406,7 @@ import { FidcApiService, Evento, News } from '../../services/fidc-api.service';
     .proj:nth-child(2) { grid-column: 3; grid-row: 1 / 3; margin-top: 40px; }
     .proj:nth-child(3) { transform: translateX(-20px); }
     .proj:nth-child(4) { transform: translate(16px, -24px); }
-    .proj:hover { transform: translateY(-4px); border-color: var(--c-peach); box-shadow: var(--glow-neon); }
+    .proj:hover { transform: translateY(-4px); border-color: var(--line-strong); box-shadow: var(--glow-neon); }
     .proj:nth-child(3):hover { transform: translateX(-20px) translateY(-6px); }
     .proj:nth-child(4):hover { transform: translate(16px, -32px); }
     .proj-top { display:flex; align-items:center; justify-content:space-between; }
@@ -404,7 +417,7 @@ import { FidcApiService, Evento, News } from '../../services/fidc-api.service';
                   clip-path: polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px);
                   background: color-mix(in srgb, var(--text) 8%, transparent); }
     .proj-state[data-stato="In corso"] { color: var(--on-accent); background: var(--accent); }
-    .proj-state[data-stato="In avvio"] { color: var(--c-deep-blue); background: var(--c-peach); }
+    .proj-state[data-stato="In avvio"] { color: var(--on-accent-2); background: var(--accent-2); }
     .proj-cat { font-size:.74rem; font-weight:800; text-transform:uppercase; letter-spacing:.05em;
                 color: var(--accent-2, var(--accent)); }
     .proj h3 { margin:0; font-size:1.2rem; }
@@ -441,12 +454,12 @@ import { FidcApiService, Evento, News } from '../../services/fidc-api.service';
     .nl-copy h2 { font-size:1.7rem; margin-bottom:8px; }
     .nl-copy p { color: var(--text-soft); line-height:1.6; max-width:680px; }
     .nl-form { display:flex; gap:12px; flex-wrap:wrap; }
-    .nl-form input { flex:1 1 260px; border:1px solid var(--glass-border); padding:14px 18px;
-                     font-size:.95rem; color: var(--c-cream); background: rgba(51,61,109,.4); outline:none; }
-    .nl-form input:focus { border-color: var(--c-peach); box-shadow: var(--glow-focus); }
+    .nl-form input { flex:1 1 260px; border:1px solid var(--surface-border); padding:14px 18px;
+                     font-size:.95rem; color: var(--text); background: var(--surface-strong); outline:none; }
+    .nl-form input:focus { border-color: var(--accent); box-shadow: var(--glow-focus); }
     .nl-msg { font-weight:700; }
     .nl-msg.ok { color: var(--accent); }
-    .nl-msg.err { color:#fff; background: var(--accent); padding:8px 14px; display:inline-block;
+    .nl-msg.err { color: var(--on-accent-2); background: var(--accent-2); padding:8px 14px; display:inline-block;
                   clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px); }
 
     /* ---------- FOOTER ---------- */

@@ -1,12 +1,21 @@
 // =============================================================================
 //  frontend/src/styles.scss
-//  Design system globale FIDC — HUD cyber decostruito sopra scena WebGL.
-//  Palette FERREA: solo i 4 colori + opacità. Bottoni affilati, input a mirino.
+//  Design system globale FIDC.
+//
+//  Qui vivono gli elementi comuni a tutto il sito: superfici di vetro, bottoni,
+//  campi dei moduli. I componenti devono usare queste classi invece di
+//  reinventarle: è ciò che tiene coerente l'aspetto di tutte le pagine.
+//
+//  ⚠️ In questo file NON compaiono colori fissi. Si usano solo i token
+//  semantici (--accent, --surface, --text...) definiti in styles/_palette.scss:
+//  è la condizione perché il Theme Builder possa cambiare l'aspetto del sito.
 // =============================================================================
 
 @use 'styles/palette' as *;
 @use 'styles/themes';
 
+// Angolo di rotazione del bordo animato dei bottoni. Dichiararlo come proprietà
+// personalizzata permette di animarlo: un semplice --var non sarebbe animabile.
 @property --hud-angle {
   syntax: '<angle>';
   inherits: false;
@@ -17,80 +26,71 @@
 
 html, body {
   min-height: 100%;
-  background: var(--c-deep-blue);
-  color: var(--text, var(--c-cream));
-  font-family: var(--font-body, system-ui, 'Segoe UI', Roboto, sans-serif);
+  // Colore visibile prima che la scena 3D sia pronta, e sui veli chiari.
+  background: var(--canvas-bg);
+  color: var(--text);
+  font-family: var(--font-body);
   -webkit-font-smoothing: antialiased;
 }
 
+// L'interfaccia sta sopra la scena 3D, che è in posizione fissa a z-index -1.
+// Lo sfondo qui è quello del velo: trasparente sui veli scuri (si vede il 3D),
+// pieno sui veli chiari.
 fidc-root {
   display: block;
   isolation: isolate;
   min-height: 100%;
   position: relative;
-  background: transparent;
+  background: var(--page-bg);
 }
 
 a { text-decoration: none; color: inherit; }
 
-::selection { background: var(--c-purple); color: var(--c-cream); }
+::selection { background: var(--accent); color: var(--on-accent); }
 
 /* =============================================================================
-   HUD GLASS — taglio cyber, niente pillole Material
+   SUPERFICI — i pannelli di vetro che contengono i contenuti
    ============================================================================= */
-.glass-card {
-  position: relative;
-  isolation: isolate;
-  background:
-    radial-gradient(
-      420px circle at var(--spot-x, 50%) var(--spot-y, 30%),
-      rgba(114, 62, 195, .22),
-      transparent 46%
-    ),
-    var(--glass-bg);
-  border: 1px solid var(--glass-border);
-  border-radius: 0;
-  clip-path: polygon(0 0, calc(100% - 18px) 0, 100% 18px, 100% 100%, 14px 100%, 0 calc(100% - 14px));
-  backdrop-filter: blur(var(--glass-blur, 20px));
-  -webkit-backdrop-filter: blur(var(--glass-blur, 20px));
-  box-shadow: var(--glow-deep), 0 0 0 1px rgba(255, 207, 149, .08) inset;
-  color: var(--text, var(--c-cream));
-  transition:
-    transform .35s var(--ease-spatial, cubic-bezier(.25, 1, .5, 1)),
-    border-color .35s var(--ease-spatial, cubic-bezier(.25, 1, .5, 1)),
-    box-shadow .35s var(--ease-spatial, cubic-bezier(.25, 1, .5, 1));
-}
 
+// Differenza fra le due: .glass-card ha gli angoli tagliati in diagonale ed è
+// pensata per le schede di contenuto; .hud-panel è rettangolare e serve per
+// barre e contenitori strutturali, che devono restare allineati ai bordi.
+.glass-card,
 .hud-panel {
   position: relative;
   isolation: isolate;
   background:
     radial-gradient(
       420px circle at var(--spot-x, 50%) var(--spot-y, 30%),
-      rgba(114, 62, 195, .22),
+      var(--surface-spot),
       transparent 46%
     ),
-    var(--glass-bg);
-  border: 1px solid var(--glass-border);
-  border-radius: 0;
-  backdrop-filter: blur(var(--glass-blur, 20px));
-  -webkit-backdrop-filter: blur(var(--glass-blur, 20px));
-  box-shadow: var(--glow-deep), 0 0 0 1px rgba(255, 207, 149, .08) inset;
-  color: var(--text, var(--c-cream));
+    var(--surface);
+  border: 1px solid var(--surface-border);
+  border-radius: var(--radius);
+  backdrop-filter: blur(var(--surface-blur));
+  -webkit-backdrop-filter: blur(var(--surface-blur));
+  box-shadow: var(--glow-deep);
+  color: var(--text);
   transition:
-    transform .35s var(--ease-spatial, cubic-bezier(.25, 1, .5, 1)),
-    border-color .35s var(--ease-spatial, cubic-bezier(.25, 1, .5, 1)),
-    box-shadow .35s var(--ease-spatial, cubic-bezier(.25, 1, .5, 1));
+    border-color .35s var(--ease-spatial),
+    box-shadow .35s var(--ease-spatial);
+}
+
+.glass-card {
+  clip-path: polygon(0 0, calc(100% - 18px) 0, 100% 18px, 100% 100%, 14px 100%, 0 calc(100% - 14px));
 }
 
 .glass-card:hover,
 .hud-panel:hover {
-  border-color: var(--c-peach);
+  border-color: var(--line-strong);
   box-shadow: var(--glow-neon);
 }
 
 /* =============================================================================
-   BOTTONI AFFILATI — clip diagonale, bordo conico animato, mirino, glitch
+   BOTTONI
+   Angoli tagliati, bordo animato, mirino agli angoli al passaggio del mouse.
+   Le varianti cambiano solo la coppia sfondo/testo: la forma resta identica.
    ============================================================================= */
 
 button { font-family: inherit; }
@@ -103,9 +103,8 @@ button.btn,
 .btn-outline,
 .btn-ghost,
 button:not([class]) {
-  --_btn-bg: var(--c-peach);
-  --_btn-fg: var(--c-deep-blue);
-  --_btn-bd: transparent;
+  --_bg: var(--accent);
+  --_fg: var(--on-accent);
   --hud-angle: 0deg;
 
   position: relative;
@@ -116,19 +115,18 @@ button:not([class]) {
   gap: 10px;
   padding: 13px 26px;
   border: 1.5px solid transparent;
-  border-radius: 0;
+  border-radius: var(--radius);
   clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+  // Doppio sfondo: il colore pieno riempie l'interno, la sfumatura conica
+  // colora il solo bordo. È il modo per avere un bordo animato senza aggiungere
+  // un elemento in più.
   background:
-    linear-gradient(var(--_btn-bg), var(--_btn-bg)) padding-box,
+    linear-gradient(var(--_bg), var(--_bg)) padding-box,
     conic-gradient(
       from var(--hud-angle),
-      var(--c-purple),
-      var(--c-peach),
-      var(--c-purple),
-      var(--c-peach),
-      var(--c-purple)
+      var(--accent-2), var(--accent), var(--accent-2), var(--accent), var(--accent-2)
     ) border-box;
-  color: var(--_btn-fg);
+  color: var(--_fg);
   font: inherit;
   font-weight: 800;
   letter-spacing: .04em;
@@ -138,16 +136,14 @@ button:not([class]) {
   text-decoration: none;
   isolation: isolate;
   animation: hud-border-spin 3.2s linear infinite;
-  transition:
-    transform .22s var(--ease-spatial, cubic-bezier(.25, 1, .5, 1)),
-    filter .18s ease;
+  transition: filter .18s ease;
 }
 
 @keyframes hud-border-spin {
   to { --hud-angle: 360deg; }
 }
 
-/* Sweep + flash peach */
+// Lampo luminoso che attraversa il bottone al passaggio del mouse.
 .btn::after,
 button.btn::after,
 .btn-primary::after,
@@ -160,17 +156,12 @@ button:not([class])::after {
   position: absolute;
   inset: 0;
   transform: translateX(-120%) skewX(-18deg);
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 240, 217, .5),
-    transparent
-  );
+  background: linear-gradient(90deg, transparent, var(--accent-soft), transparent);
   pointer-events: none;
   z-index: 1;
 }
 
-/* Mirino agli angoli */
+// Mirino agli angoli: quattro coppie di trattini, uno per ogni vertice.
 .btn::before,
 button.btn::before,
 .btn-primary::before,
@@ -186,14 +177,14 @@ button:not([class])::before {
   z-index: 2;
   opacity: 0;
   background:
-    linear-gradient(var(--c-peach), var(--c-peach)) left top / 12px 2px no-repeat,
-    linear-gradient(var(--c-peach), var(--c-peach)) left top / 2px 12px no-repeat,
-    linear-gradient(var(--c-peach), var(--c-peach)) right top / 12px 2px no-repeat,
-    linear-gradient(var(--c-peach), var(--c-peach)) right top / 2px 12px no-repeat,
-    linear-gradient(var(--c-peach), var(--c-peach)) left bottom / 12px 2px no-repeat,
-    linear-gradient(var(--c-peach), var(--c-peach)) left bottom / 2px 12px no-repeat,
-    linear-gradient(var(--c-peach), var(--c-peach)) right bottom / 12px 2px no-repeat,
-    linear-gradient(var(--c-peach), var(--c-peach)) right bottom / 2px 12px no-repeat;
+    linear-gradient(var(--accent), var(--accent)) left top / 12px 2px no-repeat,
+    linear-gradient(var(--accent), var(--accent)) left top / 2px 12px no-repeat,
+    linear-gradient(var(--accent), var(--accent)) right top / 12px 2px no-repeat,
+    linear-gradient(var(--accent), var(--accent)) right top / 2px 12px no-repeat,
+    linear-gradient(var(--accent), var(--accent)) left bottom / 12px 2px no-repeat,
+    linear-gradient(var(--accent), var(--accent)) left bottom / 2px 12px no-repeat,
+    linear-gradient(var(--accent), var(--accent)) right bottom / 12px 2px no-repeat,
+    linear-gradient(var(--accent), var(--accent)) right bottom / 2px 12px no-repeat;
   transition: opacity .12s linear;
 }
 
@@ -224,7 +215,7 @@ button.btn:hover::after,
 .btn-outline:hover::after,
 .btn-ghost:hover::after,
 button:not([class]):hover::after {
-  animation: btn-sweep .55s var(--ease-spatial, cubic-bezier(.25, 1, .5, 1));
+  animation: btn-sweep .55s var(--ease-spatial);
 }
 
 @keyframes btn-sweep {
@@ -240,29 +231,9 @@ button.btn:hover,
 .btn-outline:hover,
 .btn-ghost:hover,
 button:not([class]):hover {
-  animation: hud-glitch .42s steps(2, end), hud-border-spin 3.2s linear infinite;
   filter: brightness(1.08);
-}
-
-@keyframes hud-glitch {
-  0% {
-    text-shadow: 3px 0 var(--c-peach), -3px 0 var(--c-purple);
-    transform: translateY(-2px) skewX(-5deg);
-    box-shadow: 0 0 28px rgba(255, 207, 149, .85);
-  }
-  25% {
-    text-shadow: -2px 0 var(--c-peach);
-    transform: translateY(-2px) skewX(4deg);
-  }
-  50% {
-    text-shadow: 2px 0 var(--c-purple), -1px 0 var(--c-peach);
-    transform: translateY(-2px) skewX(-2deg);
-    box-shadow: 0 0 18px rgba(114, 62, 195, .7);
-  }
-  100% {
-    text-shadow: none;
-    transform: translateY(-2px) skewX(0);
-  }
+  box-shadow: var(--glow-neon);
+  transform: translateY(-2px);
 }
 
 .btn:active,
@@ -272,7 +243,7 @@ button.btn:active,
 .btn-gradient:active,
 .btn-outline:active,
 .btn-ghost:active,
-button:not([class]):active { transform: translateY(0) skewX(0); }
+button:not([class]):active { transform: translateY(0); }
 
 .btn:focus-visible,
 button.btn:focus-visible,
@@ -293,118 +264,123 @@ button.btn:disabled,
 .btn-gradient:disabled,
 .btn-outline:disabled,
 .btn-ghost:disabled,
-button:not([class]):disabled { opacity: .55; cursor: not-allowed; transform: none; filter: none; animation: none; }
-
-.btn-primary {
-  --_btn-bg: var(--c-peach);
-  --_btn-fg: var(--c-deep-blue);
-  box-shadow: var(--glow-peach);
+button:not([class]):disabled {
+  opacity: .5;
+  cursor: not-allowed;
+  transform: none;
+  filter: none;
+  animation: none;
 }
 
+// Azione principale della pagina: massimo contrasto.
+.btn-primary {
+  --_bg: var(--accent);
+  --_fg: var(--on-accent);
+  box-shadow: var(--glow-accent);
+}
+
+// Azione secondaria, o principale su fondo già chiaro.
 .btn-accent {
-  --_btn-bg: var(--c-purple);
-  --_btn-fg: var(--c-cream);
-  box-shadow: var(--glow-purple);
+  --_bg: var(--accent-2);
+  --_fg: var(--on-accent-2);
+  box-shadow: var(--glow-accent-2);
 }
 
 .btn-gradient {
-  --_btn-bg: var(--c-purple);
-  --_btn-fg: var(--c-cream);
+  --_bg: var(--accent-2);
+  --_fg: var(--on-accent-2);
   background:
-    linear-gradient(120deg, var(--c-purple), var(--c-peach)) padding-box,
-    conic-gradient(from var(--hud-angle), var(--c-peach), var(--c-purple), var(--c-peach)) border-box;
-  box-shadow: var(--glow-purple);
+    linear-gradient(120deg, var(--accent-2), var(--accent)) padding-box,
+    conic-gradient(from var(--hud-angle), var(--accent), var(--accent-2), var(--accent)) border-box;
+  box-shadow: var(--glow-accent-2);
 }
 
+// Azione terziaria: si appoggia alla superficie, non compete con la principale.
 .btn-outline {
-  --_btn-bg: rgba(51, 61, 109, .45);
-  --_btn-fg: var(--c-peach);
+  --_bg: var(--surface-strong);
+  --_fg: var(--accent);
 }
-
-.btn-outline:hover { --_btn-bg: var(--c-peach); --_btn-fg: var(--c-deep-blue); }
+.btn-outline:hover { --_bg: var(--accent); --_fg: var(--on-accent); }
 
 .btn-ghost {
-  --_btn-bg: rgba(51, 61, 109, .35);
-  --_btn-fg: var(--c-cream);
+  --_bg: var(--surface);
+  --_fg: var(--text);
 }
-
-.btn-ghost:hover { --_btn-bg: var(--c-cream); --_btn-fg: var(--c-deep-blue); }
+.btn-ghost:hover { --_bg: var(--text); --_fg: var(--canvas-bg); }
 
 /* =============================================================================
-   FORM GLOBALI — taglio affilato, flash peach, mirino al focus
+   CAMPI DEI MODULI
    ============================================================================= */
 input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']):not([type='hidden']),
 select,
 textarea {
   font-family: inherit;
-  color: var(--c-cream);
-  background: rgba(51, 61, 109, .35);
-  border: 1px solid rgba(114, 62, 195, .45);
-  border-radius: 0;
+  color: var(--text);
+  background: var(--surface-strong);
+  border: 1px solid var(--surface-border);
+  border-radius: var(--radius);
   clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
   outline: none;
   transition:
-    border-color .28s var(--ease-spatial, cubic-bezier(.25, 1, .5, 1)),
-    box-shadow .28s var(--ease-spatial, cubic-bezier(.25, 1, .5, 1)),
+    border-color .28s var(--ease-spatial),
+    box-shadow .28s var(--ease-spatial),
     background .22s ease;
 }
 
 input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']):not([type='hidden'])::placeholder,
 textarea::placeholder {
-  color: rgba(255, 240, 217, .45);
+  color: var(--text-muted);
 }
 
 input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']):not([type='hidden']):hover,
 select:hover,
 textarea:hover {
-  border-color: var(--c-peach);
+  border-color: var(--line-strong);
 }
 
 input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']):not([type='hidden']):focus,
 select:focus,
 textarea:focus {
-  border-color: var(--c-peach);
-  background:
-    linear-gradient(rgba(51, 61, 109, .55), rgba(51, 61, 109, .55)) padding-box,
-    linear-gradient(var(--c-peach), var(--c-peach)) left top / 12px 2px no-repeat,
-    linear-gradient(var(--c-peach), var(--c-peach)) left top / 2px 12px no-repeat,
-    linear-gradient(var(--c-peach), var(--c-peach)) right top / 12px 2px no-repeat,
-    linear-gradient(var(--c-peach), var(--c-peach)) right top / 2px 12px no-repeat,
-    linear-gradient(var(--c-peach), var(--c-peach)) left bottom / 12px 2px no-repeat,
-    linear-gradient(var(--c-peach), var(--c-peach)) left bottom / 2px 12px no-repeat,
-    linear-gradient(var(--c-peach), var(--c-peach)) right bottom / 12px 2px no-repeat,
-    linear-gradient(var(--c-peach), var(--c-peach)) right bottom / 2px 12px no-repeat;
+  border-color: var(--accent);
+  background: var(--surface-strong);
   box-shadow: var(--glow-focus);
   animation: input-flash .38s ease;
 }
 
+// Breve lampo alla presa di fuoco: segnala dove è finito il cursore senza
+// dover guardare la tastiera. Dura poco per non diventare fastidioso.
 @keyframes input-flash {
-  0%   { box-shadow: 0 0 0 0 rgba(255, 207, 149, .9), 0 0 32px rgba(255, 207, 149, .7); }
+  0%   { box-shadow: 0 0 0 0 var(--accent), 0 0 32px var(--accent-soft); }
   100% { box-shadow: var(--glow-focus); }
 }
 
 input[type='checkbox'],
 input[type='radio'] {
-  accent-color: var(--c-purple);
+  accent-color: var(--accent-2);
 }
 
 ::-webkit-scrollbar { width: 12px; }
-::-webkit-scrollbar-track { background: var(--c-deep-blue); }
-::-webkit-scrollbar-thumb {
-  background: var(--c-purple);
-  box-shadow: 0 0 12px rgba(114, 62, 195, .6);
-}
+::-webkit-scrollbar-track { background: var(--canvas-bg); }
+::-webkit-scrollbar-thumb { background: var(--accent-2); }
 
+/* =============================================================================
+   ACCESSIBILITÀ
+   Chi ha chiesto al sistema operativo di ridurre i movimenti, spesso per
+   disturbi vestibolari, non deve subire animazioni. Ogni animazione nuova va
+   aggiunta anche qui.
+   ============================================================================= */
 @media (prefers-reduced-motion: reduce) {
   .btn, button.btn, .btn-primary, .btn-accent, .btn-gradient,
-  .btn-outline, .btn-ghost, button:not([class]) { animation: none !important; }
+  .btn-outline, .btn-ghost, button:not([class]) {
+    animation: none !important;
+    transform: none !important;
+  }
   .btn::after,
   button.btn::after,
   .btn-primary::after,
   .btn-accent::after,
   .btn-gradient::after { animation: none !important; display: none; }
-  .btn, button.btn, .btn-primary, .btn-accent, .glass-card, .hud-panel,
-  input, select, textarea { transition: none; }
+  .glass-card, .hud-panel, input, select, textarea { transition: none; }
   .glass-card:hover, .hud-panel:hover { transform: none; }
   input:focus, select:focus, textarea:focus { animation: none; }
 }

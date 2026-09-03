@@ -1,22 +1,27 @@
 // =============================================================================
 //  frontend/src/app/shared/theme/theme.service.ts
-//  THEME SERVICE — regia unica del "VEIL" (velo/skin) applicato sopra il
-//  contenuto. NON tocca il contenuto: agisce solo su [data-theme] e, per i temi
-//  PERSONALIZZATI, inietta le CSS variable semantiche su :root.
+//  Regia unica del "velo" grafico applicato a tutto il sito.
 //
-//  Fonte di verità: il backend (GET /api/tema/attivo, tabella ImpostazioniTema).
-//  Per evitare il "flash" (FOUC) all'avvio applichiamo subito una cache locale,
-//  poi allineiamo con la configurazione autorevole del server.
+//  Il velo non tocca MAI il contenuto: agisce su due sole cose.
+//   1. L'attributo data-theme sul tag <html>, che attiva uno dei tre veli
+//      predefiniti scritti in _themes.scss.
+//   2. Per il velo personalizzato, l'iniezione diretta dei token semantici
+//      (--accent, --surface, --text...) come stili inline su <html>, che hanno
+//      la precedenza sui veli predefiniti.
 //
-//  VINCOLO PALETTE FERREA: i colori arrivano già ristretti ai 4 istituzionali
-//  (validati dal Theme Builder e ri-validati lato server). Qui li usiamo così
-//  come sono, derivando solo contrasti/opacità (sempre entro la palette).
+//  Fonte di verità: il backend (GET /api/tema/attivo). All'avvio applichiamo
+//  subito l'ultima configurazione nota, salvata nel browser, per evitare che la
+//  pagina appaia per un istante con i colori sbagliati; poi ci allineiamo al
+//  server, che è l'unico ad avere l'ultima parola.
+//
+//  VINCOLO PALETTE: i colori arrivano già ristretti ai 4 istituzionali, validati
+//  sia dal Theme Builder sia dal server. Qui li combiniamo soltanto.
 // =============================================================================
 
 import { Injectable, inject, signal } from '@angular/core';
 import { FidcApiService, TemaConfig } from '../../services/fidc-api.service';
 
-/** Identificativi dei temi base (= veli). */
+/** Identificativi dei veli predefiniti. */
 export type ThemeId = '1' | '2' | '3';
 
 /** Descrittore mostrato nei selettori del backoffice. */
@@ -26,10 +31,10 @@ export interface ThemeMeta {
   claim: string;
 }
 
-/** Chiave di persistenza della configurazione tema (cache anti-FOUC). */
+/** Chiave con cui l'ultima configurazione viene ricordata nel browser. */
 const THEME_KEY = 'fidc.theme.config';
 
-/** I 4 colori della palette FERREA (unica fonte ammessa). */
+/** I 4 colori istituzionali: le uniche combinazioni ammesse. */
 const PALETTE = {
   deepBlue: '#333D6D',
   purple: '#723EC3',
@@ -37,157 +42,216 @@ const PALETTE = {
   cream: '#FFF0D9'
 } as const;
 
-/** Configurazione di default coerente col Tema 1 istituzionale approvato. */
+/** Configurazione iniziale, coerente con il velo istituzionale approvato. */
 const CONFIG_DEFAULT: TemaConfig = {
   temaBase: '1',
   personalizzato: false,
-  colorePrimario: PALETTE.purple,
-  coloreAccento: PALETTE.peach,
-  coloreSfondo: PALETTE.cream,
-  coloreTesto: PALETTE.deepBlue,
-  stileRaggio: 'soft',
+  colorePrimario: PALETTE.peach,
+  coloreAccento: PALETTE.purple,
+  coloreSfondo: PALETTE.deepBlue,
+  coloreTesto: PALETTE.cream,
+  stileRaggio: 'sharp',
   abbinamentoFont: 'cyber'
 };
 
-/** CSS variable pilotate dal velo (le stesse dichiarate in _themes.scss). */
-const VAR_SEMANTICHE = [
-  '--bg', '--bg-elev', '--text', '--text-soft',
-  '--accent', '--accent-2', '--on-accent',
-  '--hero-bg', '--hero-text', '--line',
+/**
+ * Tutti i token che il velo personalizzato può sovrascrivere.
+ *
+ * Questa lista deve restare allineata a ciò che `iniettaOverride` imposta:
+ * serve per rimuovere gli stili inline quando si torna a un velo predefinito.
+ * Se ne dimentichiamo uno, quel colore resta "incastrato" dal velo precedente:
+ * è esattamente il tipo di difetto che rende un Theme Builder inaffidabile.
+ */
+const TOKEN_VELO = [
+  '--page-bg', '--canvas-bg', '--canvas-alpha',
+  '--surface', '--surface-strong', '--surface-border', '--surface-spot',
+  '--text', '--text-soft', '--text-muted',
+  '--accent', '--on-accent', '--accent-2', '--on-accent-2',
+  '--accent-soft', '--accent-2-soft',
+  '--line', '--line-strong',
+  '--glow-accent', '--glow-accent-2', '--glow-neon', '--glow-focus',
+  '--hero-bg', '--hero-text', '--bg-elev',
   '--radius', '--font-display', '--font-body'
 ];
 
 /**
- * Servizio di theming applicativo (singleton root). Governa il velo attivo per
- * tutta l'app: il contenuto resta identico, cambia solo la skin.
+ * Servizio di theming applicativo. Singleton: esiste una sola regia del velo
+ * per tutta l'applicazione.
  */
 @Injectable({ providedIn: 'root' })
 export class ThemeService {
   private readonly api = inject(FidcApiService);
 
-  /** Catalogo dei temi base (Theme 1 = estetica istituzionale approvata). */
+  /** Catalogo dei veli predefiniti mostrato nel Theme Builder. */
   readonly temi: ThemeMeta[] = [
-    { id: '1', nome: 'Institutional Cyber', claim: 'Autorevole · fiducia & sicurezza (approvato)' },
-    { id: '2', nome: 'Tech Command Center', claim: 'Scuro · alta energia, motion-centric' },
-    { id: '3', nome: 'Community Hub', claim: 'Caldo · accogliente, membership-first' }
+    { id: '1', nome: 'Istituzionale', claim: 'Massimo contrasto · autorevole (approvato)' },
+    { id: '2', nome: 'Centro di comando', claim: 'Tecnico · superfici dense, lettura di dati' },
+    { id: '3', nome: 'Comunità', claim: 'Caldo · vetro leggero, soci ed eventi' }
   ];
 
-  /** Configurazione del velo attualmente applicata (signal reattivo). */
+  /** Configurazione attualmente applicata. */
   readonly config = signal<TemaConfig>(this.leggiCache());
 
   constructor() {
-    // 1) Applica subito la cache locale per evitare il flash all'avvio.
+    // Prima la configurazione ricordata, così non si vede il cambio di colori...
     this.applica(this.config(), /* persist */ false);
-    // 2) Allinea con la configurazione autorevole del server.
+    // ...poi quella autorevole del server.
     this.carica();
   }
 
-  /** Scarica dal backend il velo attivo e lo applica (fonte di verità). */
+  /** Scarica dal backend il velo attivo e lo applica. */
   carica(): void {
     this.api.getTemaAttivo().subscribe({
       next: (cfg) => this.applica(cfg, /* persist */ true),
-      // In caso di API irraggiungibile teniamo la cache/last-known-good.
-      error: () => { /* silenzioso: resta il velo già applicato */ }
+      // Se il server non risponde teniamo l'ultimo velo valido già applicato.
+      error: () => { /* nessuna azione: meglio un velo vecchio che nessun velo */ }
     });
   }
 
   /**
-   * Applica un velo: aggiorna il signal, imposta [data-theme] e — se il velo è
-   * personalizzato — inietta le CSS variable su :root. Opzionalmente lo mette
-   * in cache locale (per l'anti-FOUC al prossimo avvio).
+   * Applica un velo: aggiorna lo stato, imposta data-theme e, se il velo è
+   * personalizzato, inietta i token calcolati.
+   * @param cfg Configurazione da applicare.
+   * @param persist Se true la ricorda nel browser per il prossimo avvio.
    */
   applica(cfg: TemaConfig, persist = true): void {
     this.config.set(cfg);
     if (persist) {
-      try { localStorage.setItem(THEME_KEY, JSON.stringify(cfg)); } catch { /* storage off */ }
+      try { localStorage.setItem(THEME_KEY, JSON.stringify(cfg)); } catch { /* storage non disponibile */ }
     }
     if (typeof document === 'undefined') return;
 
     const root = document.documentElement;
     root.setAttribute('data-theme', cfg.temaBase);
 
-    if (cfg.personalizzato) {
-      this.iniettaOverride(cfg, root);
-    } else {
-      this.puliciOverride(root); // torna al velo base puro
-    }
+    // Prima si ripulisce sempre: altrimenti i token del velo personalizzato
+    // precedente sopravviverebbero al passaggio a un velo predefinito.
+    this.rimuoviOverride(root);
+    if (cfg.personalizzato) this.iniettaOverride(cfg, root);
   }
 
   /**
-   * Anteprima in tempo reale (Theme Builder): applica senza persistere né
-   * salvare sul server. Serve al preview live mentre il SuperUser sceglie.
+   * Anteprima immediata nel Theme Builder: applica senza salvare né ricordare.
    */
   anteprima(cfg: TemaConfig): void {
     this.applica(cfg, /* persist */ false);
   }
 
-  // --- iniezione / pulizia CSS variables -----------------------------------
+  // --- costruzione del velo personalizzato ----------------------------------
 
-  /** Inietta le CSS variable derivate dal velo personalizzato su :root. */
+  /**
+   * Traduce le quattro scelte del Theme Builder nell'intero insieme di token.
+   *
+   * Il punto delicato è lo sfondo: su fondo scuro la scena 3D resta protagonista
+   * e le superfici sono vetro scuro; su fondo chiaro la scena viene attenuata,
+   * altrimenti coprirebbe il colore scelto e la selezione sembrerebbe ignorata.
+   */
   private iniettaOverride(c: TemaConfig, root: HTMLElement): void {
-    const set = (k: string, v: string) => root.style.setProperty(k, v);
+    const set = (chiave: string, valore: string) => root.style.setProperty(chiave, valore);
 
-    const scuro = this.isScuro(c.coloreSfondo);
-    set('--bg', c.coloreSfondo);
-    set('--bg-elev', scuro ? this.rgba(PALETTE.cream, 0.06) : '#ffffff');
-    set('--text', c.coloreTesto);
-    set('--text-soft', this.rgba(c.coloreTesto, 0.74));
-    set('--line', this.rgba(c.coloreTesto, scuro ? 0.16 : 0.12));
+    const sfondoScuro = this.isScuro(c.coloreSfondo);
+    const testo = c.coloreTesto;
 
+    // --- sfondo e scena 3D ---
+    if (sfondoScuro) {
+      set('--page-bg', 'transparent');
+      set('--canvas-bg', c.coloreSfondo);
+      set('--canvas-alpha', '1');
+    } else {
+      set('--page-bg', c.coloreSfondo);
+      set('--canvas-bg', c.coloreSfondo);
+      set('--canvas-alpha', '0.14');
+    }
+
+    // --- superfici ---
+    // Su fondo scuro il vetro è una velatura dello sfondo stesso; su fondo
+    // chiaro è una velatura del testo, che è l'unico colore scuro disponibile.
+    const baseVetro = sfondoScuro ? c.coloreSfondo : testo;
+    set('--surface', this.rgba(baseVetro, sfondoScuro ? 0.34 : 0.06));
+    set('--surface-strong', this.rgba(baseVetro, sfondoScuro ? 0.52 : 0.11));
+    set('--surface-border', this.rgba(sfondoScuro ? testo : testo, sfondoScuro ? 0.20 : 0.16));
+    set('--surface-spot', this.rgba(c.coloreAccento, 0.18));
+
+    // --- testo ---
+    set('--text', testo);
+    set('--text-soft', this.rgba(testo, 0.78));
+    set('--text-muted', this.rgba(testo, 0.54));
+
+    // --- accenti ---
     set('--accent', c.colorePrimario);
-    set('--accent-2', c.coloreAccento);
     set('--on-accent', this.contrasto(c.colorePrimario));
+    set('--accent-2', c.coloreAccento);
+    set('--on-accent-2', this.contrasto(c.coloreAccento));
+    set('--accent-soft', this.rgba(c.colorePrimario, 0.18));
+    set('--accent-2-soft', this.rgba(c.coloreAccento, 0.22));
 
-    set('--hero-bg', c.colorePrimario);
-    set('--hero-text', this.contrasto(c.colorePrimario));
+    // --- linee ---
+    set('--line', this.rgba(testo, sfondoScuro ? 0.15 : 0.14));
+    set('--line-strong', this.rgba(c.colorePrimario, 0.5));
 
+    // --- bagliori ---
+    set('--glow-accent', `0 10px 32px ${this.rgba(c.colorePrimario, 0.34)}`);
+    set('--glow-accent-2', `0 12px 38px ${this.rgba(c.coloreAccento, 0.38)}`);
+    set('--glow-neon',
+      `0 0 12px ${this.rgba(c.colorePrimario, 0.45)},` +
+      `0 0 26px ${this.rgba(c.coloreAccento, 0.34)},` +
+      `0 16px 44px ${this.rgba(c.coloreSfondo, 0.45)}`);
+    set('--glow-focus',
+      `0 0 0 2px ${this.rgba(c.colorePrimario, 0.85)},` +
+      `0 0 18px ${this.rgba(c.colorePrimario, 0.40)}`);
+
+    // --- sezioni in evidenza ---
+    set('--hero-bg', 'transparent');
+    set('--hero-text', testo);
+    set('--bg-elev', this.rgba(baseVetro, sfondoScuro ? 0.6 : 0.08));
+
+    // --- forma e tipografia ---
     set('--radius', this.raggio(c.stileRaggio));
-
     const [display, body] = this.font(c.abbinamentoFont);
     set('--font-display', display);
     set('--font-body', body);
   }
 
-  /** Rimuove gli override inline: il velo base (_themes.scss) torna sovrano. */
-  private puliciOverride(root: HTMLElement): void {
-    for (const v of VAR_SEMANTICHE) root.style.removeProperty(v);
+  /** Rimuove gli stili inline: tornano a valere i veli di _themes.scss. */
+  private rimuoviOverride(root: HTMLElement): void {
+    for (const token of TOKEN_VELO) root.style.removeProperty(token);
   }
 
-  // --- helpers di derivazione (sempre entro la palette) --------------------
+  // --- funzioni di supporto --------------------------------------------------
 
-  /** Testo leggibile sopra un colore palette (chiaro→scuro, scuro→cream). */
+  /** Restituisce il colore leggibile sopra il colore indicato. */
   private contrasto(hex: string): string {
     return this.isScuro(hex) ? PALETTE.cream : PALETTE.deepBlue;
   }
 
-  /** true se il colore è uno dei 2 scuri della palette (deep-blue/purple). */
+  /** Vero se il colore è uno dei due scuri della palette. */
   private isScuro(hex: string): boolean {
     const h = hex.toUpperCase();
     return h === PALETTE.deepBlue || h === PALETTE.purple;
   }
 
-  /** Converte "sharp|soft|rounded" nel valore di border-radius. */
+  /** Traduce la scelta sugli angoli nel valore di border-radius. */
   private raggio(stile: TemaConfig['stileRaggio']): string {
     switch (stile) {
-      case 'sharp': return '4px';
-      case 'rounded': return '24px';
-      default: return '14px'; // soft
+      case 'rounded': return '18px';
+      case 'soft': return '8px';
+      default: return '0px'; // sharp: angoli vivi, tagliati in diagonale
     }
   }
 
-  /** Restituisce [font-display, font-body] per l'abbinamento scelto. */
+  /** Restituisce la coppia [titoli, testo] per l'abbinamento scelto. */
   private font(abbinamento: TemaConfig['abbinamentoFont']): [string, string] {
     switch (abbinamento) {
       case 'moderno':
         return [`'Segoe UI', system-ui, Roboto, sans-serif`, `system-ui, 'Segoe UI', Roboto, sans-serif`];
       case 'classico':
         return [`Georgia, 'Times New Roman', serif`, `Georgia, 'Times New Roman', serif`];
-      default: // cyber
+      default:
         return [`'Chakra Petch', 'Segoe UI', system-ui, sans-serif`, `system-ui, 'Segoe UI', Roboto, sans-serif`];
     }
   }
 
-  /** Converte un hex palette in rgba(...) con l'alpha indicata. */
+  /** Converte un colore della palette in rgba() con la trasparenza indicata. */
   private rgba(hex: string, alpha: number): string {
     const n = hex.replace('#', '');
     const r = parseInt(n.substring(0, 2), 16);
@@ -196,7 +260,7 @@ export class ThemeService {
     return `rgba(${r}, ${g}, ${b}, ${alpha})`;
   }
 
-  /** Legge la cache locale del velo (fallback al default approvato). */
+  /** Legge l'ultima configurazione ricordata, con ritorno al default. */
   private leggiCache(): TemaConfig {
     if (typeof localStorage === 'undefined') return { ...CONFIG_DEFAULT };
     try {

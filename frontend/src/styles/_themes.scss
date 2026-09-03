@@ -1,57 +1,120 @@
 // =============================================================================
 //  frontend/src/styles/_themes.scss
-//  VELI come SKIN sopra UN contenuto + la scena WebGL globale.
-//  Tutti i veli restano DENTRO i 4 colori. --bg è trasparente: il canvas 3D
-//  (app.component, z-index: -1) è visibile su TUTTO il sito, backoffice incluso.
+//  I TRE VELI GRAFICI.
+//
+//  Un velo non aggiunge e non toglie contenuti: riassegna i token semantici
+//  definiti in _palette.scss ai quattro colori istituzionali. Cambiare velo
+//  significa cambiare l'attributo data-theme sul tag <html>, niente altro.
+//
+//  Regola di dosaggio: il viola è un colore SCURO. Funziona come superficie o
+//  come bagliore, non come fondo di ogni cosa. Il contrasto lo costruiscono il
+//  blu profondo (fondo) e il crema (testo); pesca e viola sono i richiami.
 // =============================================================================
 
 @use 'palette' as *;
 
-// ---- TEMA 1 — INSTITUTIONAL CYBER SPAZIALE (DEFAULT) -----------------------
+// ---- VELO 1 — ISTITUZIONALE (predefinito) -----------------------------------
+// Fondo blu profondo, testo crema, azione in pesca. Il viola resta di supporto:
+// bordi, bagliori, stati secondari. È la combinazione con più contrasto.
 :root,
 [data-theme='1'] {
-  --bg:        transparent;
-  --bg-elev:   #{rgba($c-deep-blue, .28)};
-  --text:      #{$c-cream};
-  --text-soft: #{rgba($c-cream, .78)};
-  --accent:    #{$c-purple};
-  --accent-2:  #{$c-peach};
-  --on-accent: #{$c-cream};
+  --page-bg:       transparent;
+  --canvas-bg:     #{$c-deep-blue};
+  --canvas-alpha:  1;
+
+  --surface:        #{rgba($c-deep-blue, .34)};
+  --surface-strong: #{rgba($c-deep-blue, .52)};
+  --surface-border: #{rgba($c-cream, .20)};
+  --surface-spot:   #{rgba($c-purple, .18)};
+
+  --text:       #{$c-cream};
+  --text-soft:  #{rgba($c-cream, .78)};
+  --text-muted: #{rgba($c-cream, .54)};
+
+  --accent:        #{$c-peach};
+  --on-accent:     #{$c-deep-blue};
+  --accent-2:      #{$c-purple};
+  --on-accent-2:   #{$c-cream};
+  --accent-soft:   #{rgba($c-peach, .14)};
+  --accent-2-soft: #{rgba($c-purple, .26)};
+
+  --line:        #{rgba($c-cream, .15)};
+  --line-strong: #{rgba($c-peach, .45)};
+
+  --glow-accent:   0 10px 30px #{rgba($c-peach, .30)};
+  --glow-accent-2: 0 12px 38px #{rgba($c-purple, .38)};
+
   --hero-bg:   transparent;
   --hero-text: #{$c-cream};
-  --line:      #{rgba($c-purple, .35)};
-  --glass-bg:  #{rgba($c-deep-blue, .22)};
-  --glass-border: #{rgba($c-purple, .55)};
+  --bg-elev:   #{rgba($c-deep-blue, .58)};
 }
 
-// ---- TEMA 2 — TECH COMMAND CENTER ------------------------------------------
+// ---- VELO 2 — CENTRO DI COMANDO ---------------------------------------------
+// Più tecnico e contrastato: superfici più opache, viola come colore d'azione,
+// pesca sui dettagli. Adatto a chi guarda molti dati.
 [data-theme='2'] {
-  --bg:        transparent;
-  --bg-elev:   #{rgba($c-deep-blue, .42)};
-  --text:      #{$c-cream};
-  --text-soft: #{rgba($c-cream, .8)};
-  --accent:    #{$c-peach};
-  --accent-2:  #{$c-purple};
-  --on-accent: #{$c-deep-blue};
+  --page-bg:       transparent;
+  --canvas-bg:     #{$c-deep-blue};
+  --canvas-alpha:  1;
+
+  --surface:        #{rgba($c-deep-blue, .52)};
+  --surface-strong: #{rgba($c-deep-blue, .68)};
+  --surface-border: #{rgba($c-peach, .30)};
+  --surface-spot:   #{rgba($c-peach, .14)};
+
+  --text:       #{$c-cream};
+  --text-soft:  #{rgba($c-cream, .80)};
+  --text-muted: #{rgba($c-cream, .56)};
+
+  --accent:        #{$c-purple};
+  --on-accent:     #{$c-cream};
+  --accent-2:      #{$c-peach};
+  --on-accent-2:   #{$c-deep-blue};
+  --accent-soft:   #{rgba($c-purple, .28)};
+  --accent-2-soft: #{rgba($c-peach, .16)};
+
+  --line:        #{rgba($c-peach, .22)};
+  --line-strong: #{rgba($c-peach, .55)};
+
+  --glow-accent:   0 12px 38px #{rgba($c-purple, .42)};
+  --glow-accent-2: 0 10px 30px #{rgba($c-peach, .30)};
+
   --hero-bg:   transparent;
   --hero-text: #{$c-cream};
-  --line:      #{rgba($c-peach, .35)};
-  --glass-bg:  #{rgba($c-deep-blue, .32)};
-  --glass-border: #{rgba($c-peach, .45)};
+  --bg-elev:   #{rgba($c-deep-blue, .72)};
 }
 
-// ---- TEMA 3 — COMMUNITY HUB (vetro caldo, 3D visibile) ---------------------
+// ---- VELO 3 — COMUNITÀ -------------------------------------------------------
+// Più caldo e leggero: vetro meno denso, bordi pesca, scena 3D più presente.
+// Pensato per le pagine dedicate a soci, eventi e formazione.
 [data-theme='3'] {
-  --bg:        transparent;
-  --bg-elev:   #{rgba($c-cream, .08)};
-  --text:      #{$c-cream};
-  --text-soft: #{rgba($c-cream, .82)};
-  --accent:    #{$c-purple};
-  --accent-2:  #{$c-peach};
-  --on-accent: #{$c-cream};
+  --page-bg:       transparent;
+  --canvas-bg:     #{$c-deep-blue};
+  --canvas-alpha:  1;
+
+  --surface:        #{rgba($c-cream, .10)};
+  --surface-strong: #{rgba($c-cream, .16)};
+  --surface-border: #{rgba($c-peach, .38)};
+  --surface-spot:   #{rgba($c-peach, .20)};
+
+  --text:       #{$c-cream};
+  --text-soft:  #{rgba($c-cream, .84)};
+  --text-muted: #{rgba($c-cream, .60)};
+
+  --accent:        #{$c-peach};
+  --on-accent:     #{$c-deep-blue};
+  --accent-2:      #{$c-purple};
+  --on-accent-2:   #{$c-cream};
+  --accent-soft:   #{rgba($c-peach, .20)};
+  --accent-2-soft: #{rgba($c-purple, .22)};
+
+  --line:        #{rgba($c-peach, .26)};
+  --line-strong: #{rgba($c-peach, .50)};
+
+  --glow-accent:   0 10px 34px #{rgba($c-peach, .38)};
+  --glow-accent-2: 0 12px 36px #{rgba($c-purple, .32)};
+
   --hero-bg:   transparent;
   --hero-text: #{$c-cream};
-  --line:      #{rgba($c-peach, .28)};
-  --glass-bg:  #{rgba($c-deep-blue, .18)};
-  --glass-border: #{rgba($c-purple, .5)};
+  --bg-elev:   #{rgba($c-deep-blue, .46)};
 }

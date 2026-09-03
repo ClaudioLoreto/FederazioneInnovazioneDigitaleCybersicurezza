@@ -43,23 +43,35 @@ type Stato = 'attesa' | 'ok' | 'errore';
     </main>
   `,
   styles: [`
-    .wrap { min-height:100vh; display:grid; place-items:center; background: var(--c-deep-blue); padding:24px; }
-    .card { background: var(--c-cream); color: var(--c-deep-blue);
-            padding:48px; max-width:520px; text-align:center; box-shadow: var(--glow-purple);
-            clip-path: polygon(0 0, calc(100% - 28px) 0, 100% 28px, 100% 100%, 22px 100%, 0 calc(100% - 22px)); }
-    h1 { margin:18px 0 10px; font-size:1.6rem; }
-    p { color:#{rgba(#333D6D,.8)}; line-height:1.6; }
-    .cta { display:inline-block; margin-top:24px; background: var(--c-purple); color: var(--c-cream);
-           padding:14px 28px; font-weight:800;
-           clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px); }
+    /* Pagina di atterraggio del link ricevuto via email. Usa lo stesso
+       pannello di vetro di accesso e registrazione: chi arriva qui deve
+       riconoscere subito di essere sul sito della Federazione. */
+    .wrap { min-height:100vh; display:grid; place-items:center; padding:24px; }
+    .card {
+      background: var(--surface-strong); color: var(--text);
+      border: 1px solid var(--surface-border);
+      backdrop-filter: blur(var(--surface-blur));
+      padding:48px; max-width:520px; text-align:center; box-shadow: var(--glow-deep);
+      clip-path: polygon(0 0, calc(100% - 28px) 0, 100% 28px, 100% 100%, 22px 100%, 0 calc(100% - 22px));
+    }
+    h1 { margin:18px 0 10px; font-size:1.6rem; font-family: var(--font-display); }
+    p { color: var(--text-soft); line-height:1.6; }
+    .cta {
+      display:inline-block; margin-top:24px;
+      background: var(--accent); color: var(--on-accent);
+      padding:14px 28px; font-weight:800;
+      clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+    }
+    .cta:hover { filter: brightness(1.06); }
     .check, .cross { width:72px; height:72px; margin:0 auto; border-radius:50%; display:grid;
                      place-items:center; font-size:2.4rem; font-weight:900; }
-    .check { background: var(--c-peach); color: var(--c-deep-blue); }
-    .cross { background: var(--c-purple); color: var(--c-cream); }
+    .check { background: var(--accent); color: var(--on-accent); }
+    .cross { background: var(--accent-2); color: var(--on-accent-2); }
     .spinner { width:56px; height:56px; margin:0 auto; border-radius:50%;
-               border:5px solid #{rgba(#723EC3,.25)}; border-top-color: var(--c-purple);
+               border:5px solid var(--accent-soft); border-top-color: var(--accent);
                animation: spin .9s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
+    @media (prefers-reduced-motion: reduce) { .spinner { animation: none; } }
   `]
 })
 export class ConfermaEmailComponent implements OnInit {

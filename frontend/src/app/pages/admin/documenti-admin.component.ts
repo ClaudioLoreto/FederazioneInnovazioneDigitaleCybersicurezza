@@ -9,6 +9,9 @@ import { NgFor, NgIf } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { trigger, transition, style, animate } from '@angular/animations';
 import { FidcApiService, Documento, VisibilitaDocumento } from '../../services/fidc-api.service';
+import { DialogoService } from '../../shared/dialogo/dialogo.service';
+import { SelezioneComponent } from '../../shared/campi/selezione.component';
+import { VISIBILITA_DOCUMENTO } from '../../shared/opzioni';
 import { AuthService } from '../../services/auth.service';
 
 /** Modello del form documento. */
@@ -32,7 +35,7 @@ const VUOTO: DocumentoForm = {
 @Component({
   selector: 'fidc-documenti-admin',
   standalone: true,
-  imports: [NgFor, NgIf, FormsModule],
+  imports: [NgFor, NgIf, FormsModule, SelezioneComponent],
   animations: [
     trigger('panel', [
       transition(':enter', [
@@ -68,10 +71,8 @@ const VUOTO: DocumentoForm = {
             <input name="categoria" [(ngModel)]="f.categoria" placeholder="Report, Linee guida, Atti…" />
           </label>
           <label><span>Visibilità</span>
-            <select name="visibilita" [(ngModel)]="f.visibilita">
-              <option value="Pubblico">Pubblico (visibile a tutti)</option>
-              <option value="Riservato">Riservato (solo backoffice)</option>
-            </select>
+            <fidc-selezione name="visibilita" [(ngModel)]="f.visibilita"
+                            [opzioni]="visibilita" etichetta="Visibilità"></fidc-selezione>
           </label>
         </div>
 
@@ -114,6 +115,10 @@ const VUOTO: DocumentoForm = {
 })
 export class DocumentiAdminComponent implements OnInit {
   private readonly api = inject(FidcApiService);
+  private readonly dialogo = inject(DialogoService);
+
+  /** Voci della tendina "Visibilità". */
+  readonly visibilita = VISIBILITA_DOCUMENTO;
   readonly auth = inject(AuthService);
 
   readonly documenti = signal<Documento[]>([]);
@@ -166,11 +171,22 @@ export class DocumentiAdminComponent implements OnInit {
     });
   }
 
-  elimina(d: Documento): void {
-    if (!confirm(`Eliminare il documento "${d.titolo}"?`)) return;
+  /** Elimina il documento, previa conferma esplicita. */
+  async elimina(d: Documento): Promise<void> {
+    const ok = await this.dialogo.conferma({
+      titolo: 'Eliminare questo documento?',
+      messaggio: `"${d.titolo}" non sarà più scaricabile dall'area documenti. L'operazione non è reversibile.`,
+      azione: 'Elimina',
+      distruttiva: true
+    });
+    if (!ok) return;
+
     this.api.eliminaDocumento(d.id).subscribe({
       next: () => this.documenti.set(this.documenti().filter((x) => x.id !== d.id)),
-      error: () => alert('Eliminazione non riuscita.')
+      error: () => this.dialogo.avvisa(
+        'Eliminazione non riuscita',
+        'Il documento è ancora al suo posto. Riprova tra qualche istante.'
+      )
     });
   }
 }

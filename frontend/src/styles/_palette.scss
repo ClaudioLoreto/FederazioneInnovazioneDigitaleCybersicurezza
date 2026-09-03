@@ -1,62 +1,116 @@
 // =============================================================================
 //  frontend/src/styles/_palette.scss
 //  UNICA fonte dei colori del frontend FIDC.
-//  REGOLA FERREA: solo questi 4 colori (+ loro opacità). Nessun altro colore.
-//  Token HUD / glass / glow volumetrico: il 3D WebGL è lo sfondo globale;
-//  l'interfaccia è un vetro cyber sopra quella scena.
+//
+//  COME LEGGERE QUESTO FILE — ci sono due livelli, e la distinzione è il motivo
+//  per cui il Theme Builder funziona:
+//
+//   1. PALETTE (--c-*): i 4 colori istituzionali. Sono FISSI e non cambiano mai,
+//      qualunque tema sia attivo. Vanno usati solo qui dentro e nelle anteprime
+//      che devono mostrare il colore in quanto tale (es. gli swatch del builder).
+//
+//   2. TOKEN SEMANTICI (--surface, --accent, --text...): dicono a COSA serve un
+//      colore, non quale sia. I componenti usano SOLO questi. Cambiando tema si
+//      riassegnano i token ai 4 colori di sopra, e tutto il sito si adegua.
+//
+//  ⚠️ Se in un componente scrivi var(--c-purple) stai bloccando quel pezzo di
+//  interfaccia su un colore: il tema non potrà più cambiarlo. Usa --accent.
 // =============================================================================
 
 $c-deep-blue: #333D6D;   // sfondo scuro primario / testo su chiaro
-$c-purple:    #723EC3;    // ACCENT centrale e prominente
-$c-peach:     #FFCF95;    // accent secondario / highlight
-$c-cream:     #FFF0D9;    // sfondo chiaro / testo su scuro
+$c-purple:    #723EC3;   // accento profondo
+$c-peach:     #FFCF95;   // accento luminoso / highlight
+$c-cream:     #FFF0D9;   // sfondo chiaro / testo su scuro
 
 :root {
+  // ---- LIVELLO 1: palette istituzionale (immutabile) -----------------------
   --c-deep-blue: #{$c-deep-blue};
   --c-purple:    #{$c-purple};
   --c-peach:     #{$c-peach};
   --c-cream:     #{$c-cream};
 
-  // Gradient ammessi: SOLO tra i 4 colori della palette
-  --grad-accent: linear-gradient(135deg, var(--c-purple), var(--c-peach));
-  --grad-deep:   linear-gradient(160deg, var(--c-deep-blue), #{rgba($c-purple, .85)});
-  --grad-mesh:
-    radial-gradient(1200px 700px at 12% -10%, #{rgba($c-purple, .38)}, transparent 55%),
-    radial-gradient(900px 600px at 110% 120%, #{rgba($c-peach, .18)}, transparent 50%);
+  // ---- LIVELLO 2: token semantici -----------------------------------------
+  // Questi valori sono i predefiniti; ogni velo in _themes.scss li ridefinisce,
+  // e il Theme Builder può sovrascriverli a runtime.
 
-  // Glow volumetrici (ombre a più raggi, solo alpha dei 4 colori)
-  --glow-purple: 0 12px 40px #{rgba($c-purple, .45)};
-  --glow-peach:  0 10px 32px #{rgba($c-peach, .38)};
-  --glow-deep:   0 18px 50px #{rgba($c-deep-blue, .55)};
+  // Sfondo della pagina. Trasparente perché sotto c'è la scena 3D.
+  --page-bg:       transparent;
+  // Colore da cui parte la scena 3D e che si vede dietro a tutto.
+  --canvas-bg:     #{$c-deep-blue};
+  // Quanto è visibile la scena 3D (si abbassa sui veli chiari).
+  --canvas-alpha:  1;
+
+  // Superfici: i pannelli di vetro che contengono i contenuti.
+  --surface:        #{rgba($c-deep-blue, .30)};
+  --surface-strong: #{rgba($c-deep-blue, .46)};
+  --surface-border: #{rgba($c-cream, .22)};
+  --surface-blur:   20px;
+  // Alone che segue il cursore sopra i pannelli.
+  --surface-spot:   #{rgba($c-purple, .20)};
+
+  // Testo.
+  --text:        #{$c-cream};
+  --text-soft:   #{rgba($c-cream, .78)};
+  --text-muted:  #{rgba($c-cream, .55)};
+
+  // Accenti. --accent è il colore d'azione (bottoni, link, dati in evidenza),
+  // --accent-2 il richiamo secondario. --on-* è il testo leggibile sopra.
+  --accent:        #{$c-peach};
+  --on-accent:     #{$c-deep-blue};
+  --accent-2:      #{$c-purple};
+  --on-accent-2:   #{$c-cream};
+  // Versioni tenui, per fondi di etichette e stati passivi.
+  --accent-soft:   #{rgba($c-peach, .16)};
+  --accent-2-soft: #{rgba($c-purple, .24)};
+
+  // Linee di separazione.
+  --line:        #{rgba($c-cream, .16)};
+  --line-strong: #{rgba($c-peach, .45)};
+
+  // Bagliori. Sono ombre a più raggi costruite sugli accenti del tema.
+  --glow-accent:   0 10px 32px #{rgba($c-peach, .34)};
+  --glow-accent-2: 0 12px 40px #{rgba($c-purple, .40)};
+  --glow-deep:     0 18px 50px #{rgba($c-deep-blue, .55)};
   --glow-neon:
-    0 0 12px #{rgba($c-peach, .55)},
-    0 0 28px #{rgba($c-purple, .45)},
-    0 16px 48px #{rgba($c-purple, .35)};
+    0 0 12px #{rgba($c-peach, .45)},
+    0 0 26px #{rgba($c-purple, .34)},
+    0 16px 44px #{rgba($c-deep-blue, .45)};
   --glow-focus:
-    0 0 0 1px #{rgba($c-peach, .85)},
-    0 0 18px #{rgba($c-purple, .65)},
-    0 0 42px #{rgba($c-peach, .28)};
+    0 0 0 2px #{rgba($c-peach, .85)},
+    0 0 18px #{rgba($c-peach, .40)};
 
-  // Superfici HUD (glassmorphism estremo sopra il WebGL)
-  --glass-bg:     #{rgba($c-deep-blue, .22)};
-  --glass-bg-2:   #{rgba($c-deep-blue, .38)};
-  --glass-border: #{rgba($c-purple, .55)};
-  --glass-blur:   20px;
+  // Sezioni chiare: il tema può renderle piene invece che trasparenti.
+  --hero-bg:   transparent;
+  --hero-text: #{$c-cream};
+  --bg-elev:   #{rgba($c-deep-blue, .28)};
+
+  // Forma e tipografia.
+  --radius:       0px;
   --ease-spatial: cubic-bezier(0.25, 1, 0.5, 1);
-
-  // Tipografia
   --font-display: 'Chakra Petch', 'Segoe UI', system-ui, sans-serif;
   --font-body:    system-ui, 'Segoe UI', Roboto, sans-serif;
 
-  --radius: 18px;
+  // ---- ALIAS STORICI -------------------------------------------------------
+  // Nomi usati prima dell'introduzione dei token semantici. Restano validi
+  // perché puntano ai nuovi: il codice non ancora convertito continua a
+  // funzionare E segue il tema, dato che le variabili si risolvono all'uso.
+  // Non usarli in codice nuovo.
+  --bg:           var(--page-bg);
+  --glass-bg:     var(--surface);
+  --glass-bg-2:   var(--surface-strong);
+  --glass-border: var(--surface-border);
+  --glass-blur:   var(--surface-blur);
+  --glow-purple:  var(--glow-accent-2);
+  --glow-peach:   var(--glow-accent);
+  --grad-accent:  linear-gradient(135deg, var(--accent-2), var(--accent));
 }
 
-// Mixin HUD: vetro scuro, blur alto, bordo neon 1px
+// Mixin per una superficie di vetro standard.
 @mixin glass-hud {
-  background: var(--glass-bg);
-  border: 1px solid var(--glass-border);
-  backdrop-filter: blur(var(--glass-blur));
-  -webkit-backdrop-filter: blur(var(--glass-blur));
+  background: var(--surface);
+  border: 1px solid var(--surface-border);
+  backdrop-filter: blur(var(--surface-blur));
+  -webkit-backdrop-filter: blur(var(--surface-blur));
 }
 
 @mixin glass-cream {

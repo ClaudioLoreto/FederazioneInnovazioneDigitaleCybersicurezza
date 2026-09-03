@@ -7,6 +7,8 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { NgFor, NgIf, DatePipe } from '@angular/common';
 import { FidcApiService, UtenteAdmin } from '../../services/fidc-api.service';
+import { DialogoService } from '../../shared/dialogo/dialogo.service';
+import { descriviRuolo } from '../../shared/ruoli';
 import { AuthService } from '../../services/auth.service';
 
 /**
@@ -59,6 +61,7 @@ import { AuthService } from '../../services/auth.service';
 })
 export class UtentiAdminComponent implements OnInit {
   private readonly api = inject(FidcApiService);
+  private readonly dialogo = inject(DialogoService);
   private readonly auth = inject(AuthService);
 
   readonly utenti = signal<UtenteAdmin[]>([]);
@@ -81,18 +84,45 @@ export class UtentiAdminComponent implements OnInit {
   promuovi(u: UtenteAdmin): void { this.cambia(u, 'SuperUser'); }
   declassa(u: UtenteAdmin): void { this.cambia(u, 'Relatore'); }
 
-  private cambia(u: UtenteAdmin, ruolo: string): void {
+  /**
+   * Cambia il livello di accesso di un utente.
+   * Chiede conferma perché sposta permessi: promuovere significa dare accesso a
+   * utenti, newsletter e aspetto del sito.
+   */
+  private async cambia(u: UtenteAdmin, ruolo: string): Promise<void> {
+    const nuovo = descriviRuolo(ruolo);
+    const ok = await this.dialogo.conferma({
+      titolo: `Assegnare il profilo ${nuovo.etichetta}?`,
+      messaggio: `${u.nome} ${u.cognome} passerà al profilo ${nuovo.etichetta}: ${nuovo.ambito.toLowerCase()}.`,
+      azione: 'Assegna'
+    });
+    if (!ok) return;
+
     this.api.cambiaRuoloUtente(u.id, ruolo).subscribe({
       next: (agg) => this.utenti.set(this.utenti().map((x) => (x.id === u.id ? agg : x))),
-      error: (err) => alert(err?.error?.messaggio ?? 'Cambio ruolo non riuscito.')
+      error: (err) => this.dialogo.avvisa(
+        'Cambio di profilo non riuscito',
+        err?.error?.messaggio ?? 'Il profilo è rimasto invariato. Riprova tra qualche istante.'
+      )
     });
   }
 
-  elimina(u: UtenteAdmin): void {
-    if (!confirm(`Eliminare l'account di ${u.nome} ${u.cognome}?`)) return;
+  /** Elimina un account, previa conferma esplicita. */
+  async elimina(u: UtenteAdmin): Promise<void> {
+    const ok = await this.dialogo.conferma({
+      titolo: 'Eliminare questo account?',
+      messaggio: `${u.nome} ${u.cognome} (${u.email}) non potrà più accedere alla piattaforma.`,
+      azione: 'Elimina',
+      distruttiva: true
+    });
+    if (!ok) return;
+
     this.api.eliminaUtente(u.id).subscribe({
       next: () => this.utenti.set(this.utenti().filter((x) => x.id !== u.id)),
-      error: (err) => alert(err?.error?.messaggio ?? 'Eliminazione non riuscita.')
+      error: (err) => this.dialogo.avvisa(
+        'Eliminazione non riuscita',
+        err?.error?.messaggio ?? "L'account è ancora attivo. Riprova tra qualche istante."
+      )
     });
   }
 }

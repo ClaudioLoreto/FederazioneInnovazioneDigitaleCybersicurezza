@@ -1,89 +1,105 @@
 // =============================================================================
-//  area-documenti.component.scss — Biblioteca documentale: HUD vetro + WebGL.
-//  Palette FERREA. prefers-reduced-motion.
+//  frontend/src/app/pages/area-documenti/area-documenti.component.scss
+//  Area documenti pubblica: barra fissa in alto, ricerca e schede scaricabili.
+//  Nessun colore fisso: solo token del tema (vedi styles/_palette.scss).
 // =============================================================================
 
-:host { display: block; min-height: 100vh; background: transparent; color: var(--c-cream); }
+:host { display: block; min-height: 100vh; background: transparent; color: var(--text); }
 
 .area { max-width: 1160px; margin: 0 auto; padding: 0 6vw 80px; }
 
+// Barra che resta in alto durante lo scorrimento: dà sempre la via d'uscita.
 .area-bar {
   display: flex; align-items: center; justify-content: space-between; gap: 16px;
   padding: 18px 20px; position: sticky; top: 12px; z-index: 10;
-  background: var(--glass-bg);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid var(--glass-border);
-  border-radius: 16px;
+  background: var(--surface-strong);
+  backdrop-filter: blur(var(--surface-blur));
+  -webkit-backdrop-filter: blur(var(--surface-blur));
+  border: 1px solid var(--surface-border);
+  border-radius: var(--radius);
+  clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 12px 100%, 0 calc(100% - 12px));
   margin-top: 12px;
 }
-.brand { display: flex; align-items: center; gap: 12px; color: var(--c-cream); text-decoration: none; font-weight: 800; }
+.brand { display: flex; align-items: center; gap: 12px; color: var(--text); text-decoration: none; font-weight: 800; }
 .brand fidc-safe-logo { width: 44px; display: block; }
 .brand span { font-size: 1.05rem; letter-spacing: .02em; }
 
 .who { display: flex; align-items: center; gap: 16px; }
-.hello { font-weight: 700; color: rgba(255, 240, 217, .8); font-size: .92rem; }
+.hello { font-weight: 700; color: var(--text-soft); font-size: .92rem; }
 .btn-min {
   text-decoration: none; font-weight: 800; font-size: .88rem;
-  color: var(--c-peach); border: 1px solid rgba(255, 207, 149, .5);
-  padding: 9px 16px; border-radius: 999px; transition: background .18s, color .18s, box-shadow .22s;
+  color: var(--accent); border: 1px solid var(--line-strong);
+  padding: 9px 16px;
+  clip-path: polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px);
+  transition: background .18s, color .18s;
 }
-.btn-min:hover { background: var(--c-purple); color: var(--c-cream); box-shadow: var(--glow-neon); }
+.btn-min:hover { background: var(--accent); color: var(--on-accent); }
+.btn-min:focus-visible { outline: none; box-shadow: var(--glow-focus); }
 
 .intro { padding: 40px 0 24px; }
-.intro h1 { margin: 0 0 10px; font-size: clamp(1.8rem, 4vw, 2.6rem); color: var(--c-cream); font-family: var(--font-display); }
-.intro p { margin: 0 0 22px; max-width: 720px; line-height: 1.6; color: rgba(255, 240, 217, .78); }
+.intro h1 { margin: 0 0 10px; font-size: clamp(1.8rem, 4vw, 2.6rem); color: var(--text); font-family: var(--font-display); }
+.intro p { margin: 0 0 22px; max-width: 720px; line-height: 1.6; color: var(--text-soft); }
 
 .search input {
-  width: min(520px, 100%); border: 1px solid rgba(114, 62, 195, .5); border-radius: 999px;
-  padding: 13px 20px; font-size: .96rem; color: var(--c-cream); background: rgba(51, 61, 109, .4);
+  width: min(520px, 100%); border: 1px solid var(--surface-border);
+  padding: 13px 20px; font-size: .96rem; color: var(--text); background: var(--surface-strong);
+  clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
   outline: none; font-family: inherit; transition: border-color .2s, box-shadow .28s;
 }
-.search input:focus { border-color: var(--c-peach); box-shadow: var(--glow-focus); }
+.search input:focus { border-color: var(--accent); box-shadow: var(--glow-focus); }
 
-.state-msg { padding: 26px 0; color: rgba(255, 240, 217, .65); font-style: italic; }
-.state-msg.err { color: var(--c-peach); font-style: normal; font-weight: 700; }
+.state-msg { padding: 26px 0; color: var(--text-muted); font-style: italic; }
+.state-msg.err { color: var(--accent); font-style: normal; font-weight: 700; }
 
 .group { margin-top: 34px; }
 .group-title {
   display: flex; align-items: center; gap: 12px; margin: 0 0 18px;
-  font-size: 1.25rem; color: var(--c-cream);
-  padding-bottom: 10px; border-bottom: 1px solid rgba(114, 62, 195, .35);
+  font-size: 1.25rem; color: var(--text);
+  padding-bottom: 10px; border-bottom: 1px solid var(--line);
 }
 .group-title .count {
-  font-size: .74rem; font-weight: 800; color: var(--c-peach);
-  background: rgba(114, 62, 195, .28); padding: 3px 10px; border-radius: 999px;
+  font-size: .74rem; font-weight: 800; color: var(--accent);
+  background: var(--accent-soft); padding: 3px 10px;
+  clip-path: polygon(5px 0, 100% 0, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0 100%, 0 5px);
 }
 
 .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 18px; }
 
 .doc {
   position: relative; display: flex; flex-direction: column; gap: 10px;
-  background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 18px;
+  background: var(--surface); border: 1px solid var(--surface-border);
+  border-radius: var(--radius);
+  clip-path: polygon(0 0, calc(100% - 18px) 0, 100% 18px, 100% 100%, 14px 100%, 0 calc(100% - 14px));
   padding: 22px 20px;
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(var(--surface-blur));
+  -webkit-backdrop-filter: blur(var(--surface-blur));
   box-shadow: var(--glow-deep);
-  transition: transform .28s var(--ease-spatial, cubic-bezier(.25, 1, .5, 1)), box-shadow .28s, border-color .28s;
+  transition: transform .28s var(--ease-spatial), box-shadow .28s, border-color .28s;
 }
-.doc:hover { transform: translateY(-4px); border-color: var(--c-peach); box-shadow: var(--glow-neon); }
+.doc:hover { transform: translateY(-4px); border-color: var(--line-strong); box-shadow: var(--glow-neon); }
 
+// Distingue a colpo d'occhio ciò che è aperto a tutti da ciò che richiede
+// un accesso: è la prima cosa che un visitatore deve capire.
 .badge {
   align-self: flex-start; font-size: .68rem; font-weight: 800; text-transform: uppercase; letter-spacing: .05em;
-  color: var(--c-deep-blue); background: var(--c-peach); padding: 4px 11px; border-radius: 999px;
+  color: var(--on-accent); background: var(--accent); padding: 4px 11px;
+  clip-path: polygon(5px 0, 100% 0, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0 100%, 0 5px);
 }
-.badge.riservato { color: var(--c-cream); background: var(--c-purple); }
+.badge.riservato { color: var(--on-accent-2); background: var(--accent-2); }
 
-.doc h3 { margin: 0; font-size: 1.06rem; line-height: 1.3; color: var(--c-cream); }
-.desc { margin: 0; font-size: .9rem; line-height: 1.5; color: rgba(255, 240, 217, .72); flex: 1; }
+.doc h3 { margin: 0; font-size: 1.06rem; line-height: 1.3; color: var(--text); }
+.desc { margin: 0; font-size: .9rem; line-height: 1.5; color: var(--text-soft); flex: 1; }
 
 .dl {
   margin-top: 4px; align-self: flex-start; text-decoration: none; font-weight: 800; font-size: .9rem;
-  color: var(--c-cream); background: linear-gradient(120deg, var(--c-deep-blue), var(--c-purple));
-  padding: 10px 18px; border-radius: 999px; box-shadow: var(--glow-purple);
-  transition: transform .18s, filter .2s, box-shadow .22s;
+  color: var(--on-accent); background: var(--accent);
+  padding: 10px 18px;
+  clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+  box-shadow: var(--glow-accent);
+  transition: transform .18s, filter .2s;
 }
-.dl:hover { transform: translateY(-2px); filter: brightness(1.06); box-shadow: var(--glow-neon); }
+.dl:hover { transform: translateY(-2px); filter: brightness(1.06); }
+.dl:focus-visible { outline: none; box-shadow: var(--glow-focus); }
 .dl span { margin-left: 4px; }
 
 @media (max-width: 560px) {
@@ -93,4 +109,5 @@
 
 @media (prefers-reduced-motion: reduce) {
   .doc, .dl, .btn-min { transition: none; }
+  .doc:hover, .dl:hover { transform: none; }
 }

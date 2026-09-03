@@ -8,6 +8,7 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { NgFor, NgIf, DatePipe } from '@angular/common';
 import { FidcApiService, IscrittoNewsletter } from '../../services/fidc-api.service';
+import { DialogoService } from '../../shared/dialogo/dialogo.service';
 
 /**
  * Tabella iscritti alla newsletter. Mostra email, nome e data d'iscrizione,
@@ -61,16 +62,21 @@ import { FidcApiService, IscrittoNewsletter } from '../../services/fidc-api.serv
   styleUrls: ['./admin-tables.scss'],
   styles: [`
     .stats-row { display:flex; gap:16px; margin-bottom:22px; flex-wrap:wrap; }
+    /* Riquadri con i numeri sintetici della newsletter. */
     .stat {
-      background:#fff; border:1px solid rgba(114,62,195,.18); border-radius:16px;
-      padding:16px 26px; min-width:150px; box-shadow:0 12px 30px rgba(51,61,109,.08);
+      background: var(--surface); border:1px solid var(--surface-border);
+      border-radius: var(--radius);
+      clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));
+      padding:16px 26px; min-width:150px;
+      backdrop-filter: blur(var(--surface-blur));
     }
-    .stat b { display:block; font-size:2rem; color:var(--c-purple); line-height:1; }
-    .stat span { font-size:.82rem; font-weight:600; color:rgba(51,61,109,.65); }
+    .stat b { display:block; font-size:2rem; color: var(--accent); line-height:1; }
+    .stat span { font-size:.82rem; font-weight:600; color: var(--text-soft); }
   `]
 })
 export class NewsletterAdminComponent implements OnInit {
   private readonly api = inject(FidcApiService);
+  private readonly dialogo = inject(DialogoService);
 
   readonly iscritti = signal<IscrittoNewsletter[]>([]);
   readonly caricamento = signal(true);
@@ -90,12 +96,22 @@ export class NewsletterAdminComponent implements OnInit {
     });
   }
 
-  /** Rimuove (soft-delete) un iscritto con conferma. */
-  elimina(i: IscrittoNewsletter): void {
-    if (!confirm(`Rimuovere "${i.email}" dalla newsletter?`)) return;
+  /** Rimuove un iscritto dalla newsletter, previa conferma esplicita. */
+  async elimina(i: IscrittoNewsletter): Promise<void> {
+    const ok = await this.dialogo.conferma({
+      titolo: 'Rimuovere questo iscritto?',
+      messaggio: `${i.email} non riceverà più le comunicazioni della Federazione.`,
+      azione: 'Rimuovi',
+      distruttiva: true
+    });
+    if (!ok) return;
+
     this.api.eliminaIscrittoNewsletter(i.id).subscribe({
       next: () => this.iscritti.set(this.iscritti().filter((x) => x.id !== i.id)),
-      error: () => alert('Rimozione non riuscita.')
+      error: () => this.dialogo.avvisa(
+        'Rimozione non riuscita',
+        "L'iscritto è ancora in elenco. Riprova tra qualche istante."
+      )
     });
   }
 

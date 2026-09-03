@@ -9,6 +9,10 @@ import { NgFor, NgIf, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { trigger, transition, style, animate } from '@angular/animations';
 import { FidcApiService, Evento, Pilastro } from '../../services/fidc-api.service';
+import { DialogoService } from '../../shared/dialogo/dialogo.service';
+import { SelezioneComponent } from '../../shared/campi/selezione.component';
+import { EditorTestoComponent } from '../../shared/campi/editor-testo.component';
+import { PILASTRI } from '../../shared/opzioni';
 import { AuthService } from '../../services/auth.service';
 
 /** Modello del form (date come stringhe per gli <input datetime-local>). */
@@ -38,7 +42,7 @@ const VUOTO: EventoForm = {
 @Component({
   selector: 'fidc-eventi-admin',
   standalone: true,
-  imports: [NgFor, NgIf, DatePipe, FormsModule],
+  imports: [NgFor, NgIf, DatePipe, FormsModule, SelezioneComponent, EditorTestoComponent],
   animations: [
     trigger('panel', [
       transition(':enter', [
@@ -69,15 +73,13 @@ const VUOTO: EventoForm = {
             <input name="sottotitolo" [(ngModel)]="f.sottotitolo" maxlength="200" />
           </label>
           <label class="full"><span>Descrizione</span>
-            <textarea name="descrizione" [(ngModel)]="f.descrizione" rows="3" required></textarea>
+            <fidc-editor-testo name="descrizione" [(ngModel)]="f.descrizione"
+                               etichetta="Descrizione dell'evento"
+                               segnaposto="Programma, destinatari, modalità di partecipazione."></fidc-editor-testo>
           </label>
           <label><span>Pilastro</span>
-            <select name="pilastro" [(ngModel)]="f.pilastro">
-              <option value="Attivita">Attività</option>
-              <option value="Eventi">Eventi</option>
-              <option value="Formazione">Formazione</option>
-              <option value="Ricerca">Ricerca</option>
-            </select>
+            <fidc-selezione name="pilastro" [(ngModel)]="f.pilastro"
+                            [opzioni]="pilastri" etichetta="Pilastro"></fidc-selezione>
           </label>
           <label><span>Luogo</span>
             <input name="luogo" [(ngModel)]="f.luogo" required />
@@ -142,6 +144,10 @@ const VUOTO: EventoForm = {
 })
 export class EventiAdminComponent implements OnInit {
   private readonly api = inject(FidcApiService);
+  private readonly dialogo = inject(DialogoService);
+
+  /** Voci della tendina "Pilastro" (condivise con la gestione news). */
+  readonly pilastri = PILASTRI;
   readonly auth = inject(AuthService);
 
   readonly eventi = signal<Evento[]>([]);
@@ -215,12 +221,22 @@ export class EventiAdminComponent implements OnInit {
     });
   }
 
-  /** Elimina con conferma. */
-  elimina(e: Evento): void {
-    if (!confirm(`Eliminare l'evento "${e.titolo}"?`)) return;
+  /** Elimina l'evento, previa conferma esplicita. */
+  async elimina(e: Evento): Promise<void> {
+    const ok = await this.dialogo.conferma({
+      titolo: 'Eliminare questo evento?',
+      messaggio: `"${e.titolo}" sarà rimosso dal sito insieme alle iscrizioni raccolte. L'operazione non è reversibile.`,
+      azione: 'Elimina',
+      distruttiva: true
+    });
+    if (!ok) return;
+
     this.api.eliminaEvento(e.id).subscribe({
       next: () => this.eventi.set(this.eventi().filter((x) => x.id !== e.id)),
-      error: () => alert('Eliminazione non riuscita.')
+      error: () => this.dialogo.avvisa(
+        'Eliminazione non riuscita',
+        "L'evento è ancora al suo posto. Riprova tra qualche istante."
+      )
     });
   }
 
