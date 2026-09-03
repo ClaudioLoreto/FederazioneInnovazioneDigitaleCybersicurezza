@@ -1,0 +1,410 @@
+// =============================================================================
+//  frontend/src/styles.scss
+//  Design system globale FIDC — HUD cyber decostruito sopra scena WebGL.
+//  Palette FERREA: solo i 4 colori + opacità. Bottoni affilati, input a mirino.
+// =============================================================================
+
+@use 'styles/palette' as *;
+@use 'styles/themes';
+
+@property --hud-angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  min-height: 100%;
+  background: var(--c-deep-blue);
+  color: var(--text, var(--c-cream));
+  font-family: var(--font-body, system-ui, 'Segoe UI', Roboto, sans-serif);
+  -webkit-font-smoothing: antialiased;
+}
+
+fidc-root {
+  display: block;
+  isolation: isolate;
+  min-height: 100%;
+  position: relative;
+  background: transparent;
+}
+
+a { text-decoration: none; color: inherit; }
+
+::selection { background: var(--c-purple); color: var(--c-cream); }
+
+/* =============================================================================
+   HUD GLASS — taglio cyber, niente pillole Material
+   ============================================================================= */
+.glass-card {
+  position: relative;
+  isolation: isolate;
+  background:
+    radial-gradient(
+      420px circle at var(--spot-x, 50%) var(--spot-y, 30%),
+      rgba(114, 62, 195, .22),
+      transparent 46%
+    ),
+    var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 0;
+  clip-path: polygon(0 0, calc(100% - 18px) 0, 100% 18px, 100% 100%, 14px 100%, 0 calc(100% - 14px));
+  backdrop-filter: blur(var(--glass-blur, 20px));
+  -webkit-backdrop-filter: blur(var(--glass-blur, 20px));
+  box-shadow: var(--glow-deep), 0 0 0 1px rgba(255, 207, 149, .08) inset;
+  color: var(--text, var(--c-cream));
+  transition:
+    transform .35s var(--ease-spatial, cubic-bezier(.25, 1, .5, 1)),
+    border-color .35s var(--ease-spatial, cubic-bezier(.25, 1, .5, 1)),
+    box-shadow .35s var(--ease-spatial, cubic-bezier(.25, 1, .5, 1));
+}
+
+.hud-panel {
+  position: relative;
+  isolation: isolate;
+  background:
+    radial-gradient(
+      420px circle at var(--spot-x, 50%) var(--spot-y, 30%),
+      rgba(114, 62, 195, .22),
+      transparent 46%
+    ),
+    var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 0;
+  backdrop-filter: blur(var(--glass-blur, 20px));
+  -webkit-backdrop-filter: blur(var(--glass-blur, 20px));
+  box-shadow: var(--glow-deep), 0 0 0 1px rgba(255, 207, 149, .08) inset;
+  color: var(--text, var(--c-cream));
+  transition:
+    transform .35s var(--ease-spatial, cubic-bezier(.25, 1, .5, 1)),
+    border-color .35s var(--ease-spatial, cubic-bezier(.25, 1, .5, 1)),
+    box-shadow .35s var(--ease-spatial, cubic-bezier(.25, 1, .5, 1));
+}
+
+.glass-card:hover,
+.hud-panel:hover {
+  border-color: var(--c-peach);
+  box-shadow: var(--glow-neon);
+}
+
+/* =============================================================================
+   BOTTONI AFFILATI — clip diagonale, bordo conico animato, mirino, glitch
+   ============================================================================= */
+
+button { font-family: inherit; }
+
+.btn,
+button.btn,
+.btn-primary,
+.btn-accent,
+.btn-gradient,
+.btn-outline,
+.btn-ghost,
+button:not([class]) {
+  --_btn-bg: var(--c-peach);
+  --_btn-fg: var(--c-deep-blue);
+  --_btn-bd: transparent;
+  --hud-angle: 0deg;
+
+  position: relative;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 13px 26px;
+  border: 1.5px solid transparent;
+  border-radius: 0;
+  clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+  background:
+    linear-gradient(var(--_btn-bg), var(--_btn-bg)) padding-box,
+    conic-gradient(
+      from var(--hud-angle),
+      var(--c-purple),
+      var(--c-peach),
+      var(--c-purple),
+      var(--c-peach),
+      var(--c-purple)
+    ) border-box;
+  color: var(--_btn-fg);
+  font: inherit;
+  font-weight: 800;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  font-size: .82rem;
+  cursor: pointer;
+  text-decoration: none;
+  isolation: isolate;
+  animation: hud-border-spin 3.2s linear infinite;
+  transition:
+    transform .22s var(--ease-spatial, cubic-bezier(.25, 1, .5, 1)),
+    filter .18s ease;
+}
+
+@keyframes hud-border-spin {
+  to { --hud-angle: 360deg; }
+}
+
+/* Sweep + flash peach */
+.btn::after,
+button.btn::after,
+.btn-primary::after,
+.btn-accent::after,
+.btn-gradient::after,
+.btn-outline::after,
+.btn-ghost::after,
+button:not([class])::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-120%) skewX(-18deg);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 240, 217, .5),
+    transparent
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Mirino agli angoli */
+.btn::before,
+button.btn::before,
+.btn-primary::before,
+.btn-accent::before,
+.btn-gradient::before,
+.btn-outline::before,
+.btn-ghost::before,
+button:not([class])::before {
+  content: '';
+  position: absolute;
+  inset: 5px;
+  pointer-events: none;
+  z-index: 2;
+  opacity: 0;
+  background:
+    linear-gradient(var(--c-peach), var(--c-peach)) left top / 12px 2px no-repeat,
+    linear-gradient(var(--c-peach), var(--c-peach)) left top / 2px 12px no-repeat,
+    linear-gradient(var(--c-peach), var(--c-peach)) right top / 12px 2px no-repeat,
+    linear-gradient(var(--c-peach), var(--c-peach)) right top / 2px 12px no-repeat,
+    linear-gradient(var(--c-peach), var(--c-peach)) left bottom / 12px 2px no-repeat,
+    linear-gradient(var(--c-peach), var(--c-peach)) left bottom / 2px 12px no-repeat,
+    linear-gradient(var(--c-peach), var(--c-peach)) right bottom / 12px 2px no-repeat,
+    linear-gradient(var(--c-peach), var(--c-peach)) right bottom / 2px 12px no-repeat;
+  transition: opacity .12s linear;
+}
+
+.btn:hover::before,
+button.btn:hover::before,
+.btn-primary:hover::before,
+.btn-accent:hover::before,
+.btn-gradient:hover::before,
+.btn-outline:hover::before,
+.btn-ghost:hover::before,
+button:not([class]):hover::before,
+.btn:focus-visible::before,
+button.btn:focus-visible::before,
+.btn-primary:focus-visible::before,
+.btn-accent:focus-visible::before,
+.btn-gradient:focus-visible::before,
+.btn-outline:focus-visible::before,
+.btn-ghost:focus-visible::before,
+button:not([class]):focus-visible::before {
+  opacity: 1;
+}
+
+.btn:hover::after,
+button.btn:hover::after,
+.btn-primary:hover::after,
+.btn-accent:hover::after,
+.btn-gradient:hover::after,
+.btn-outline:hover::after,
+.btn-ghost:hover::after,
+button:not([class]):hover::after {
+  animation: btn-sweep .55s var(--ease-spatial, cubic-bezier(.25, 1, .5, 1));
+}
+
+@keyframes btn-sweep {
+  from { transform: translateX(-120%) skewX(-18deg); }
+  to   { transform: translateX(180%) skewX(-18deg); }
+}
+
+.btn:hover,
+button.btn:hover,
+.btn-primary:hover,
+.btn-accent:hover,
+.btn-gradient:hover,
+.btn-outline:hover,
+.btn-ghost:hover,
+button:not([class]):hover {
+  animation: hud-glitch .42s steps(2, end), hud-border-spin 3.2s linear infinite;
+  filter: brightness(1.08);
+}
+
+@keyframes hud-glitch {
+  0% {
+    text-shadow: 3px 0 var(--c-peach), -3px 0 var(--c-purple);
+    transform: translateY(-2px) skewX(-5deg);
+    box-shadow: 0 0 28px rgba(255, 207, 149, .85);
+  }
+  25% {
+    text-shadow: -2px 0 var(--c-peach);
+    transform: translateY(-2px) skewX(4deg);
+  }
+  50% {
+    text-shadow: 2px 0 var(--c-purple), -1px 0 var(--c-peach);
+    transform: translateY(-2px) skewX(-2deg);
+    box-shadow: 0 0 18px rgba(114, 62, 195, .7);
+  }
+  100% {
+    text-shadow: none;
+    transform: translateY(-2px) skewX(0);
+  }
+}
+
+.btn:active,
+button.btn:active,
+.btn-primary:active,
+.btn-accent:active,
+.btn-gradient:active,
+.btn-outline:active,
+.btn-ghost:active,
+button:not([class]):active { transform: translateY(0) skewX(0); }
+
+.btn:focus-visible,
+button.btn:focus-visible,
+.btn-primary:focus-visible,
+.btn-accent:focus-visible,
+.btn-gradient:focus-visible,
+.btn-outline:focus-visible,
+.btn-ghost:focus-visible,
+button:not([class]):focus-visible {
+  outline: none;
+  box-shadow: var(--glow-focus);
+}
+
+.btn:disabled,
+button.btn:disabled,
+.btn-primary:disabled,
+.btn-accent:disabled,
+.btn-gradient:disabled,
+.btn-outline:disabled,
+.btn-ghost:disabled,
+button:not([class]):disabled { opacity: .55; cursor: not-allowed; transform: none; filter: none; animation: none; }
+
+.btn-primary {
+  --_btn-bg: var(--c-peach);
+  --_btn-fg: var(--c-deep-blue);
+  box-shadow: var(--glow-peach);
+}
+
+.btn-accent {
+  --_btn-bg: var(--c-purple);
+  --_btn-fg: var(--c-cream);
+  box-shadow: var(--glow-purple);
+}
+
+.btn-gradient {
+  --_btn-bg: var(--c-purple);
+  --_btn-fg: var(--c-cream);
+  background:
+    linear-gradient(120deg, var(--c-purple), var(--c-peach)) padding-box,
+    conic-gradient(from var(--hud-angle), var(--c-peach), var(--c-purple), var(--c-peach)) border-box;
+  box-shadow: var(--glow-purple);
+}
+
+.btn-outline {
+  --_btn-bg: rgba(51, 61, 109, .45);
+  --_btn-fg: var(--c-peach);
+}
+
+.btn-outline:hover { --_btn-bg: var(--c-peach); --_btn-fg: var(--c-deep-blue); }
+
+.btn-ghost {
+  --_btn-bg: rgba(51, 61, 109, .35);
+  --_btn-fg: var(--c-cream);
+}
+
+.btn-ghost:hover { --_btn-bg: var(--c-cream); --_btn-fg: var(--c-deep-blue); }
+
+/* =============================================================================
+   FORM GLOBALI — taglio affilato, flash peach, mirino al focus
+   ============================================================================= */
+input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']):not([type='hidden']),
+select,
+textarea {
+  font-family: inherit;
+  color: var(--c-cream);
+  background: rgba(51, 61, 109, .35);
+  border: 1px solid rgba(114, 62, 195, .45);
+  border-radius: 0;
+  clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+  outline: none;
+  transition:
+    border-color .28s var(--ease-spatial, cubic-bezier(.25, 1, .5, 1)),
+    box-shadow .28s var(--ease-spatial, cubic-bezier(.25, 1, .5, 1)),
+    background .22s ease;
+}
+
+input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']):not([type='hidden'])::placeholder,
+textarea::placeholder {
+  color: rgba(255, 240, 217, .45);
+}
+
+input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']):not([type='hidden']):hover,
+select:hover,
+textarea:hover {
+  border-color: var(--c-peach);
+}
+
+input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']):not([type='hidden']):focus,
+select:focus,
+textarea:focus {
+  border-color: var(--c-peach);
+  background:
+    linear-gradient(rgba(51, 61, 109, .55), rgba(51, 61, 109, .55)) padding-box,
+    linear-gradient(var(--c-peach), var(--c-peach)) left top / 12px 2px no-repeat,
+    linear-gradient(var(--c-peach), var(--c-peach)) left top / 2px 12px no-repeat,
+    linear-gradient(var(--c-peach), var(--c-peach)) right top / 12px 2px no-repeat,
+    linear-gradient(var(--c-peach), var(--c-peach)) right top / 2px 12px no-repeat,
+    linear-gradient(var(--c-peach), var(--c-peach)) left bottom / 12px 2px no-repeat,
+    linear-gradient(var(--c-peach), var(--c-peach)) left bottom / 2px 12px no-repeat,
+    linear-gradient(var(--c-peach), var(--c-peach)) right bottom / 12px 2px no-repeat,
+    linear-gradient(var(--c-peach), var(--c-peach)) right bottom / 2px 12px no-repeat;
+  box-shadow: var(--glow-focus);
+  animation: input-flash .38s ease;
+}
+
+@keyframes input-flash {
+  0%   { box-shadow: 0 0 0 0 rgba(255, 207, 149, .9), 0 0 32px rgba(255, 207, 149, .7); }
+  100% { box-shadow: var(--glow-focus); }
+}
+
+input[type='checkbox'],
+input[type='radio'] {
+  accent-color: var(--c-purple);
+}
+
+::-webkit-scrollbar { width: 12px; }
+::-webkit-scrollbar-track { background: var(--c-deep-blue); }
+::-webkit-scrollbar-thumb {
+  background: var(--c-purple);
+  box-shadow: 0 0 12px rgba(114, 62, 195, .6);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn, button.btn, .btn-primary, .btn-accent, .btn-gradient,
+  .btn-outline, .btn-ghost, button:not([class]) { animation: none !important; }
+  .btn::after,
+  button.btn::after,
+  .btn-primary::after,
+  .btn-accent::after,
+  .btn-gradient::after { animation: none !important; display: none; }
+  .btn, button.btn, .btn-primary, .btn-accent, .glass-card, .hud-panel,
+  input, select, textarea { transition: none; }
+  .glass-card:hover, .hud-panel:hover { transform: none; }
+  input:focus, select:focus, textarea:focus { animation: none; }
+}

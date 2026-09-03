@@ -1,0 +1,55 @@
+<!-- =============================================================================
+  AREA RISERVATA — Biblioteca documenti dei soci (sola lettura).
+  Struttura: header istituzionale + barra ricerca + gruppi per categoria.
+============================================================================= -->
+<main class="area">
+  <!-- Header -->
+  <header class="area-bar">
+    <a routerLink="/" class="brand" aria-label="FIDC — Home">
+      <fidc-safe-logo [interactive]="false"></fidc-safe-logo>
+      <span>Area Riservata</span>
+    </a>
+    <div class="who">
+      <span class="hello" *ngIf="auth.utente() as u">Ciao, {{ u.nomeCompleto }}</span>
+      <a routerLink="/" class="btn-min">← Torna al sito</a>
+    </div>
+  </header>
+
+  <!-- Intestazione sezione -->
+  <section class="intro">
+    <h1>Biblioteca documentale</h1>
+    <p>Consulta e scarica i documenti riservati ai soci della Federazione: report, linee guida,
+       modelli e materiali degli eventi. L'accesso è consentito ai soli utenti registrati.</p>
+    <div class="search" *ngIf="documenti().length > 0">
+      <input type="search" [value]="filtro()" (input)="onFiltro($any($event.target).value)"
+             placeholder="Cerca per titolo, categoria o descrizione…" aria-label="Cerca documenti" />
+    </div>
+  </section>
+
+  <!-- Stati -->
+  <p class="state-msg" *ngIf="caricamento()">Caricamento documenti…</p>
+  <p class="state-msg err" *ngIf="errore()">{{ errore() }}</p>
+  <p class="state-msg" *ngIf="!caricamento() && !errore() && documenti().length === 0">
+    Nessun documento disponibile al momento.
+  </p>
+  <p class="state-msg" *ngIf="!caricamento() && !errore() && documenti().length > 0 && filtrati().length === 0">
+    Nessun documento corrisponde alla ricerca.
+  </p>
+
+  <!-- Gruppi per categoria -->
+  <section class="group" *ngFor="let g of gruppi()">
+    <h2 class="group-title">{{ g.categoria }}<span class="count">{{ g.documenti.length }}</span></h2>
+    <div class="cards">
+      <article class="doc glass-card" *ngFor="let d of g.documenti">
+        <span class="badge" [class.riservato]="d.visibilita === 'Riservato'">
+          {{ d.visibilita === 'Riservato' ? 'Riservato' : 'Pubblico' }}
+        </span>
+        <h3>{{ d.titolo }}</h3>
+        <p class="desc" *ngIf="d.descrizione">{{ d.descrizione }}</p>
+        <a class="dl" [href]="d.url" target="_blank" rel="noopener">
+          Apri / Scarica <span aria-hidden="true">↓</span>
+        </a>
+      </article>
+    </div>
+  </section>
+</main>

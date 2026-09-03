@@ -1,0 +1,33 @@
+{
+  "name": "fidc-frontend",
+  "version": "1.0.0",
+  "description": "FIDC — Frontend Angular con 3 layout intercambiabili (stesso backend).",
+  "scripts": {
+    "start": "ng serve",
+    "build": "ng build",
+    "watch": "ng build --watch --configuration development",
+    "test": "ng test"
+  },
+  "private": true,
+  "dependencies": {
+    "@angular/animations": "^17.3.0",
+    "@angular/common": "^17.3.0",
+    "@angular/compiler": "^17.3.0",
+    "@angular/core": "^17.3.0",
+    "@angular/forms": "^17.3.0",
+    "@angular/platform-browser": "^17.3.0",
+    "@angular/platform-browser-dynamic": "^17.3.0",
+    "@angular/router": "^17.3.0",
+    "@types/three": "^0.185.4",
+    "rxjs": "~7.8.0",
+    "three": "^0.185.1",
+    "tslib": "^2.6.2",
+    "zone.js": "~0.14.4"
+  },
+  "devDependencies": {
+    "@angular-devkit/build-angular": "^17.3.0",
+    "@angular/cli": "^17.3.0",
+    "@angular/compiler-cli": "^17.3.0",
+    "typescript": "~5.4.2"
+  }
+}

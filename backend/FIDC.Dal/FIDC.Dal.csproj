@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    FIDC.Dal (Data Access Layer)
+    Contiene DbContext, configurazioni Fluent API, Repository e Migrations.
+    Dipende SOLO da FIDC.Models. Espone EF Core ai layer superiori.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- EF Core core + i provider supportati:
+         - SQLite  → DEV locale "a prova di Docker" (file fidc_dev.db)
+         - SqlServer → PRODUZIONE (Windows Server 2019)
+         - Postgres  → DEMO/Railway (opzionale) -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.6" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.6" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.6" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.4" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.6">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <!-- Hashing password per il seeder (account iniziali) -->
+    <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\FIDC.Models\FIDC.Models.csproj" />
+  </ItemGroup>
+
+</Project>

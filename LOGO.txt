@@ -1,0 +1,37 @@
+<!--
+  FIDC — Logo wordmark ufficiale (sorgente SVG).
+  FIX aspect-ratio: viewBox 850x260 + preserveAspectRatio="xMidYMid meet" e
+  width/height intrinseci coerenti (850x260) → scala senza distorsione.
+  Per usarlo responsive: imposta via CSS width:100%;height:auto (NON forzare
+  width/height a 100%/100% insieme, causa lo "schiacciamento").
+  Palette FERREA a 4 colori: #333D6D #723EC3 #FFCF95 #FFF0D9.
+  NOTA: rimosso il "pallino viola" centrale (v2-center-core) che, animato con
+  transform-origin errato, derivava verso l'alto a sinistra.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 850 260" width="850" height="260" preserveAspectRatio="xMidYMid meet">
+  <g id="v2-icon" transform="translate(40, 30)">
+
+    <path id="v2-shield-left"
+          d="M 100 0 L 15 25 L 15 115 C 15 170 55 200 100 210 L 100 0 Z"
+          fill="#333d6d"
+          stroke="#fff0d9"
+          stroke-width="3"/>
+
+    <path id="v2-shield-right"
+          d="M 100 0 L 185 25 L 185 115 C 185 170 145 200 100 210 L 100 0 Z"
+          fill="#723ec3"
+          stroke="#fff0d9"
+          stroke-width="3"/>
+
+    <g id="v2-core" transform="translate(100, 105)">
+      <path d="M -40 -40 L 0 0 L 40 -40 M -40 40 L 0 0 L 40 40" stroke="#fff0d9" stroke-width="3" fill="none"/>
+      <!-- Nodo peach statico. (Rimosso il cerchio viola "v2-center-core".) -->
+      <circle id="v2-center-node" cx="0" cy="0" r="16" fill="#ffcf95" stroke="#333d6d" stroke-width="3"/>
+    </g>
+  </g>
+
+  <g id="v2-text" transform="translate(270, 135)">
+    <text id="v2-title" font-family="system-ui, sans-serif" font-weight="900" font-size="90" fill="#723ec3" letter-spacing="4">FIDC</text>
+    <text id="v2-subtitle" x="5" y="45" font-family="system-ui, sans-serif" font-weight="700" font-size="14" fill="#333d6d" letter-spacing="1">FEDERAZIONE INNOVAZIONE, DIGITALE E CYBERSICUREZZA</text>
+  </g>
+</svg>

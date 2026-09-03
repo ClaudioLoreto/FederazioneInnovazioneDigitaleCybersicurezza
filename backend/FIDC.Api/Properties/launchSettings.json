@@ -1,0 +1,21 @@
+{
+  // ===========================================================================
+  //  launchSettings.json — profili di avvio locale dell'API FIDC.
+  //  SVILUPPO LOCALE: SOLO HTTP su http://localhost:5000 (niente certificati,
+  //  niente blocchi del browser). Il frontend punta qui (environment.ts).
+  //  Bind implicito su 0.0.0.0 così l'API è raggiungibile anche da LAN.
+  // ===========================================================================
+  "$schema": "https://json.schemastore.org/launchsettings.json",
+  "profiles": {
+    "FIDC.Api": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": true,
+      "launchUrl": "swagger",
+      "applicationUrl": "http://localhost:5000",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}

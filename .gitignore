@@ -1,0 +1,45 @@
+# =============================================================================
+#  .gitignore — FIDC
+#  Regola generale: nel repository va SOLO il codice sorgente.
+#  Tutto ciò che una macchina può rigenerare da sola (dipendenze, build,
+#  database locale) resta fuori: si ricrea con `npm install` e `dotnet run`.
+# =============================================================================
+
+# --- Angular / Node ----------------------------------------------------------
+# node_modules pesa centinaia di MB e si riscarica con `npm install`.
+node_modules/
+frontend/dist/
+frontend/.angular/
+npm-debug.log*
+yarn-error.log*
+
+# --- .NET --------------------------------------------------------------------
+# bin/ e obj/ sono il risultato della compilazione: si rigenerano con `dotnet build`.
+bin/
+obj/
+*.user
+*.suo
+
+# --- Database locale di sviluppo --------------------------------------------
+# Il file SQLite di dev viene ricreato e ripopolato automaticamente al primo
+# avvio dell'API (EnsureCreated + DataSeeder). Non va versionato: ogni
+# sviluppatore ha i propri dati di prova.
+*.db
+*.db-shm
+*.db-wal
+
+# --- Segreti -----------------------------------------------------------------
+# Le chiavi vere (Jwt:Key, Resend:ApiKey) NON stanno nei file di configurazione
+# committati: si passano da variabili d'ambiente o User Secrets.
+# Questo file è il posto giusto per sovrascriverle in locale senza rischi.
+appsettings.Local.json
+*.env
+.env.*
+
+# --- Editor / Sistema operativo ----------------------------------------------
+.vs/
+.vscode/
+.idea/
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/

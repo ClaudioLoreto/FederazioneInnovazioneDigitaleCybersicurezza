@@ -1,0 +1,26 @@
+# =============================================================================
+#  docker-compose.yml — Postgres locale per DEV/TEST FIDC
+#  Porta host 5433 → evita conflitti con eventuali Postgres nativi su 5432.
+#  Le credenziali sono SOLO per sviluppo: in Railway si usano le env del progetto.
+# =============================================================================
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: fidc-pg-dev
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: fidc
+      POSTGRES_PASSWORD: dev_only_password
+      POSTGRES_DB: fidc_dev
+    ports:
+      - "5433:5432"          # host:container
+    volumes:
+      - fidc_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fidc -d fidc_dev"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  fidc_pg_data:
