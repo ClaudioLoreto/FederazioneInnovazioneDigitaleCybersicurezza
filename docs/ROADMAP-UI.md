@@ -23,10 +23,14 @@ di cosa si occupa. La cassaforte resta, ma con un peso minore; lo scudo ancora m
 Motivi: nessuna licenza da verificare, colori presi dai token del tema (quindi cambiano
 insieme al velo), peso di pochi kilobyte, stile identico su tutta la famiglia.
 
-**Vincoli da rispettare quando si disegnano:** figure senza tratti somatici marcati,
-postura di lavoro riconoscibile, nessuna animazione che distolga dal testo accanto,
-`aria-hidden="true"` perché sono decorative.
-📁 nuova cartella `app/shared/illustrazioni/`
+**Stato:** iniziato. Esiste `shared/illustrazioni/illustrazione.component.ts` con
+cinque scene (`gruppo-di-lavoro`, `conferenza`, `formazione`, `analisi`, `consulenza`)
+collegate ai pilastri della home. Restano da usare anche nelle sezioni successive
+e da tenere visibili, della stessa altezza, su schermo stretto.
+
+**Vincoli da rispettare quando se ne aggiunge una:** figure senza tratti somatici
+marcati, postura di lavoro riconoscibile, nessuna animazione che distolga dal testo
+accanto, `aria-hidden="true"` perché sono decorative, colori solo dai token del tema.
 
 ---
 

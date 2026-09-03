@@ -20,6 +20,7 @@ Se è la prima volta che apri questo progetto, leggi in quest'ordine:
 | Documento | A cosa serve |
 |---|---|
 | **[docs/AVVIO-RAPIDO.md](docs/AVVIO-RAPIDO.md)** | Far partire tutto su un PC nuovo, passo per passo. Parti da qui. |
+| **[docs/PER-AGENTI.md](docs/PER-AGENTI.md)** | Stesso avvio, più la mappa del codice, per chi arriva dopo (persone e assistenti AI). |
 | **[docs/UTENTI-E-RUOLI.md](docs/UTENTI-E-RUOLI.md)** | Credenziali di prova e cosa può fare ciascun ruolo. |
 | **[docs/ARCHITETTURA-FRONTEND.md](docs/ARCHITETTURA-FRONTEND.md)** | Com'è organizzata l'interfaccia: pagine, temi, design system. |
 | **[DATABASE_ARCHITECTURE.md](DATABASE_ARCHITECTURE.md)** | Tabelle, relazioni, storico delle migrazioni. |

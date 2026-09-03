@@ -4,12 +4,20 @@
 //  Condiviso dai 3 layout: il contenuto è identico, cambia solo la presentazione.
 // =============================================================================
 
+import type { ScenaIllustrazione } from '../shared/illustrazioni/illustrazione.component';
+
 /** Modello di un pilastro istituzionale. */
 export interface Pilastro {
   chiave: 'attivita' | 'eventi' | 'formazione' | 'ricerca';
   titolo: string;
   claim: string;
   descrizione: string;
+  /**
+   * L'illustrazione che accompagna il pilastro. Sta qui e non nel componente
+   * perché "cosa si vede accanto a questo testo" è una scelta editoriale:
+   * chi rivede i contenuti la trova insieme al testo che deve descrivere.
+   */
+  scena: ScenaIllustrazione;
 }
 
 /** Hero della homepage. */
@@ -37,6 +45,7 @@ export const NEWSLETTER = {
 export const PILASTRI: Pilastro[] = [
   {
     chiave: 'attivita',
+    scena: 'gruppo-di-lavoro',
     titolo: 'Attività',
     claim: 'Tavoli di lavoro e progetti che generano impatto concreto.',
     descrizione:
@@ -46,6 +55,7 @@ export const PILASTRI: Pilastro[] = [
   },
   {
     chiave: 'eventi',
+    scena: 'conferenza',
     titolo: 'Eventi',
     claim: 'Dove l’ecosistema dell’innovazione si incontra e si confronta.',
     descrizione:
@@ -54,6 +64,7 @@ export const PILASTRI: Pilastro[] = [
   },
   {
     chiave: 'formazione',
+    scena: 'formazione',
     titolo: 'Formazione',
     claim: 'Competenze digitali e di sicurezza per persone e organizzazioni.',
     descrizione:
@@ -62,6 +73,7 @@ export const PILASTRI: Pilastro[] = [
   },
   {
     chiave: 'ricerca',
+    scena: 'analisi',
     titolo: 'Ricerca',
     claim: 'Studi e osservatori indipendenti per decidere con consapevolezza.',
     descrizione:

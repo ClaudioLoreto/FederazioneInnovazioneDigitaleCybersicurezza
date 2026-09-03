@@ -16,6 +16,7 @@ import { trigger, transition, style, animate, query, stagger } from '@angular/an
 import { AnimatedLogoComponent } from '../../shared/animated-logo/animated-logo.component';
 import { SafeLogoComponent } from '../../shared/safe-logo/safe-logo.component';
 import { CyberShieldComponent, CyberBackgroundComponent } from '../../shared/svg-motifs/svg-motifs.component';
+import { IllustrazioneComponent } from '../../shared/illustrazioni/illustrazione.component';
 import { HERO, PILASTRI, CHI_SIAMO, NEWSLETTER, PROGETTI, GOVERNANCE } from '../../content/home-content';
 import { FidcApiService, Evento, News } from '../../services/fidc-api.service';
 
@@ -29,7 +30,8 @@ import { FidcApiService, Evento, News } from '../../services/fidc-api.service';
   imports: [
     NgFor, NgIf, DatePipe, FormsModule, RouterLink,
     AnimatedLogoComponent, SafeLogoComponent,
-    CyberShieldComponent, CyberBackgroundComponent
+    CyberShieldComponent, CyberBackgroundComponent,
+    IllustrazioneComponent
   ],
   animations: [
     trigger('stagger', [
@@ -106,6 +108,9 @@ import { FidcApiService, Evento, News } from '../../services/fidc-api.service';
     <!-- ===================== PILASTRI ===================== -->
     <section class="pillars" id="pilastri" @stagger>
       <article class="pillar reveal glass-card" *ngFor="let p of pilastri" [id]="'pilastro-' + p.chiave">
+        <!-- L'illustrazione mostra le persone all'opera in questo ambito:
+             si capisce di cosa parla il riquadro prima ancora di leggerlo. -->
+        <div class="pillar-ill"><fidc-illustrazione [scena]="p.scena"></fidc-illustrazione></div>
         <span class="kicker">{{ p.titolo }}</span>
         <h3>{{ p.claim }}</h3>
         <p>{{ p.descrizione }}</p>
@@ -344,6 +349,12 @@ import { FidcApiService, Evento, News } from '../../services/fidc-api.service';
     .pillar:hover, .card:hover { transform: translateY(-6px); border-color: var(--line-strong); box-shadow: var(--glow-neon); }
     .pillar:nth-child(3):hover { transform: translateY(-18px); }
     .pillar:nth-child(4):hover { transform: translate(28px, -48px); }
+    /* Illustrazione del pilastro: allineata a destra, sopra il testo.
+       Larghezza contenuta perché deve accompagnare il titolo, non sostituirlo.
+       Il riquadro alto (il secondo) la ospita più grande, avendone lo spazio. */
+    .pillar-ill { width: 150px; max-width: 45%; margin: -6px 0 10px auto; opacity: .95; }
+    .pillar:nth-child(2) .pillar-ill { width: 190px; max-width: 70%; }
+
     .kicker, .tag { color: var(--accent); font-weight:800; text-transform:uppercase; font-size:.78rem; }
     .pillar h3, .card h3 { font-size:1.2rem; margin:.5em 0; max-width: 28ch; }
     .pillar p, .card p { color: var(--text-soft); line-height:1.55; }

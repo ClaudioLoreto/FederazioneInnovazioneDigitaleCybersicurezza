@@ -13,6 +13,7 @@ Leggi, in quest'ordine:
 |---|---|
 | `CLAUDE_PROJECT_STANDARDS.md` | Regole immutabili. **Hanno la precedenza su tutto.** Non modificarlo se non richiesto esplicitamente. |
 | `CLAUDE.md` | Piano di lavoro e stato delle otto funzionalità richieste dal committente. |
+| `docs/PER-AGENTI.md` | Avvio su PC nuovo, credenziali, mappa del codice, errori già pagati. Per te e per chi viene dopo. |
 | `docs/ROADMAP-UI.md` | Cosa è ancora aperto e perché. Parti da qui per capire su cosa lavorare. |
 | `docs/ARCHITETTURA-FRONTEND.md` | Dove va messa ogni cosa nel frontend. |
 | `DATABASE_ARCHITECTURE.md` | Schema del database. **Da aggiornare a ogni modifica strutturale.** |

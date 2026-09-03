@@ -134,6 +134,7 @@ frontend/src/app/
 │
 └─ shared/                       componenti riusabili
    ├─ animated-logo/             marchio: simbolo + nome per esteso
+   ├─ illustrazioni/             persone stilizzate (una scena per pilastro)
    ├─ safe-logo/                 cassaforte digitale animata
    ├─ svg-motifs/                sfondi decorativi
    ├─ background-canvas/         scena 3D di sfondo (Three.js)

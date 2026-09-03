@@ -5,7 +5,9 @@
 > Per lo schema DB vedi `DATABASE_ARCHITECTURE.md`. Per gli agenti vedi `AGENTS.md`.
 >
 > **Guide operative** (avvio, credenziali, struttura, lavori aperti): cartella `docs/`,
-> indice in `README.md`. I lavori ancora da fare stanno in `docs/ROADMAP-UI.md`.
+> indice in `README.md`. Chi arriva dopo (persona o agente) parte da `docs/PER-AGENTI.md`.
+> I lavori ancora da fare stanno in `docs/ROADMAP-UI.md`.
+> In interfaccia i ruoli si chiamano **Direzione** e **Redazione**, non Super User.
 
 ---
 
@@ -55,7 +57,7 @@ Il progetto implementa **esattamente** le feature descritte in
 - **`styles/_themes.scss`**: per ogni `[data-theme="n"]` ridefinisce SOLO le CSS variables
   (sfondi/accenti) **dentro i 4 colori della palette**. La struttura HTML non cambia.
 - **Theme 1 = estetica istituzionale Cyber APPROVATA** (default).
-- Il **SuperUser** cambia il velo attivo da `Backoffice → Impostazioni → Tema`
+- La **Direzione** (ruolo tecnico `SuperUser`) cambia il velo attivo da `Backoffice → Impostazioni → Tema`
   (dal "Theme Builder": scelta di un velo base **oppure** composizione di un velo
   personalizzato entro i 4 colori palette, persistito su DB). Cambio **in tempo
   reale**, senza reload. Lo switcher pubblico flottante è stato RIMOSSO.
