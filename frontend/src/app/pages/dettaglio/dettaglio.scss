@@ -48,8 +48,10 @@
   color: var(--text);
 }
 .testo ::ng-deep {
-  :where(p, ul, ol, blockquote) + :where(p, ul, ol, blockquote, h2, h3) { margin-top: 1.1em; }
-  :where(h2, h3) { margin-top: 1.6em; margin-bottom: .2em; line-height: 1.2; }
+  // Niente :where() qui: dopo ::ng-deep il compilatore di Angular lo gestisce male.
+  > * + * { margin-top: 1.1em; }
+  > * + h2, > * + h3 { margin-top: 1.6em; }
+  h2, h3 { margin-bottom: .2em; line-height: 1.2; }
   h2 { font-size: 1.5rem; } h3 { font-size: 1.25rem; }
   ul, ol { padding-left: 1.3em; }
   li + li { margin-top: .35em; }
