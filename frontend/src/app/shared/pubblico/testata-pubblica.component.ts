@@ -54,6 +54,15 @@ export class TestataPubblicaComponent implements OnInit, OnDestroy {
     else this.router.navigate(['/'], id === 'inizio' ? {} : { fragment: id });
   }
 
+  /** Porta il fuoco all'inizio del contenuto (l'ancora da sola non lo sposta). */
+  vaiAlContenuto(ev: Event): void {
+    ev.preventDefault();
+    const main = document.getElementById('contenuto');
+    if (!main) return;
+    main.setAttribute('tabindex', '-1');
+    main.focus();
+  }
+
   /** Apre o chiude il menu su schermo stretto; il fuoco segue il pannello. */
   apriMenu(aperto: boolean): void {
     const prima = this.menuAperto();

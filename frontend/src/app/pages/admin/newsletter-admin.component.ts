@@ -9,6 +9,7 @@ import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { NgFor, NgIf, DatePipe } from '@angular/common';
 import { FidcApiService, IscrittoNewsletter } from '../../services/fidc-api.service';
 import { DialogoService } from '../../shared/dialogo/dialogo.service';
+import { AvvisiService } from '../../shared/avvisi/avvisi.service';
 
 /**
  * Tabella iscritti alla newsletter. Mostra email, nome e data d'iscrizione,
@@ -77,6 +78,7 @@ import { DialogoService } from '../../shared/dialogo/dialogo.service';
 export class NewsletterAdminComponent implements OnInit {
   private readonly api = inject(FidcApiService);
   private readonly dialogo = inject(DialogoService);
+  private readonly avvisi = inject(AvvisiService);
 
   readonly iscritti = signal<IscrittoNewsletter[]>([]);
   readonly caricamento = signal(true);
@@ -107,7 +109,7 @@ export class NewsletterAdminComponent implements OnInit {
     if (!ok) return;
 
     this.api.eliminaIscrittoNewsletter(i.id).subscribe({
-      next: () => this.iscritti.set(this.iscritti().filter((x) => x.id !== i.id)),
+      next: () => { this.iscritti.set(this.iscritti().filter((x) => x.id !== i.id)); this.avvisi.conferma('Iscritto rimosso', i.email); },
       error: () => this.dialogo.avvisa(
         'Rimozione non riuscita',
         "L'iscritto è ancora in elenco. Riprova tra qualche istante."

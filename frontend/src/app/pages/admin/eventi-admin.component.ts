@@ -4,13 +4,14 @@
 //  SuperUser vede tutto, il Relatore solo i propri. Solo palette FIDC.
 // =============================================================================
 
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { NgFor, NgIf, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { trigger, transition, style, animate } from '@angular/animations';
 import { FidcApiService, Evento, Pilastro, Partecipante } from '../../services/fidc-api.service';
 import { DialogoService } from '../../shared/dialogo/dialogo.service';
+import { AvvisiService } from '../../shared/avvisi/avvisi.service';
 import { SelezioneComponent } from '../../shared/campi/selezione.component';
 import { EditorTestoComponent } from '../../shared/campi/editor-testo.component';
 import { PILASTRI, etichettaPilastro } from '../../shared/opzioni';
@@ -149,7 +150,22 @@ const VUOTO: EventoForm = {
     </section>
 
     <!-- TABELLA -->
+    <!-- Ricerca e filtro per stato: con molti contenuti si trova subito quello giusto. -->
+    <div class="filtri-tabella" *ngIf="eventi().length > 0" role="search">
+      <label class="cerca">
+        <span class="sr-only">Cerca eventi</span>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+        <input type="search" [value]="cerca()" (input)="cerca.set($any($event.target).value)" placeholder="Cerca per titolo o luogo" />
+      </label>
+      <div class="segmenti" role="group" aria-label="Stato">
+        <button type="button" [class.on]="stato() === 'tutti'" [attr.aria-pressed]="stato() === 'tutti'" (click)="stato.set('tutti')">Tutti <span>{{ eventi().length }}</span></button>
+        <button type="button" [class.on]="stato() === 'pubblicati'" [attr.aria-pressed]="stato() === 'pubblicati'" (click)="stato.set('pubblicati')">Pubblicati <span>{{ conteggio(true) }}</span></button>
+        <button type="button" [class.on]="stato() === 'bozze'" [attr.aria-pressed]="stato() === 'bozze'" (click)="stato.set('bozze')">Bozze <span>{{ conteggio(false) }}</span></button>
+      </div>
+    </div>
+
     <section class="table-wrap hud-panel">
+      <p class="empty" *ngIf="eventi().length > 0 && visibili().length === 0">Nessun risultato con questi filtri.</p>
       <p class="empty" *ngIf="!caricamento() && eventi().length === 0">Nessun evento. Creane uno con “Nuovo evento”.</p>
 
       <table *ngIf="eventi().length > 0">
@@ -160,7 +176,7 @@ const VUOTO: EventoForm = {
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let e of eventi()">
+          <tr *ngFor="let e of visibili()">
             <td class="t">{{ e.titolo }}</td>
             <td><span class="tag">{{ etichetta(e.pilastro) }}</span></td>
             <td>{{ e.dataInizio | date:'dd/MM/yyyy HH:mm' }}</td>
@@ -185,6 +201,7 @@ const VUOTO: EventoForm = {
 export class EventiAdminComponent implements OnInit {
   private readonly api = inject(FidcApiService);
   private readonly dialogo = inject(DialogoService);
+  private readonly avvisi = inject(AvvisiService);
 
   /** Voci della tendina "Pilastro" (condivise con la gestione news). */
   readonly pilastri = PILASTRI;
@@ -204,6 +221,24 @@ export class EventiAdminComponent implements OnInit {
     // Arrivando dalle azioni rapide del pannello (?nuovo=1) il modulo è già aperto.
     if (this.route.snapshot.queryParamMap.get('nuovo') === '1') this.nuovo();
   }
+
+  // --- ricerca e filtro della tabella ------------------------------------------
+
+  readonly cerca = signal('');
+  readonly stato = signal<'tutti' | 'pubblicati' | 'bozze'>('tutti');
+
+  conteggio(pubblicato: boolean): number {
+    return this.eventi().filter((x) => x.pubblicato === pubblicato).length;
+  }
+
+  /** Righe mostrate: filtro per stato + ricerca su x.titolo, x.luogo, x.pilastro, senza maiuscole. */
+  readonly visibili = computed(() => {
+    const q = this.cerca().trim().toLowerCase();
+    const st = this.stato();
+    return this.eventi().filter((x) =>
+      (st === 'tutti' || x.pubblicato === (st === 'pubblicati')) &&
+      (!q || [x.titolo, x.luogo, x.pilastro].join(' ').toLowerCase().includes(q)));
+  });
 
   /** (Ri)carica la lista gestibile. */
   private carica(): void {
@@ -306,7 +341,11 @@ export class EventiAdminComponent implements OnInit {
       : this.api.creaEvento(body);
 
     op.subscribe({
-      next: () => { this.salvataggio.set(false); this.form.set(null); this.carica(); },
+      next: () => {
+        this.salvataggio.set(false); this.form.set(null); this.carica();
+        this.avvisi.conferma(body.pubblicato ? 'Evento pubblicato' : 'Bozza salvata',
+          body.pubblicato ? 'È visibile sul sito e aperto alle iscrizioni.' : 'Non è visibile sul sito finché non lo pubblichi.');
+      },
       error: () => { this.salvataggio.set(false); this.errore.set('Salvataggio non riuscito. Verifica i dati e riprova.'); }
     });
   }
@@ -322,7 +361,7 @@ export class EventiAdminComponent implements OnInit {
     if (!ok) return;
 
     this.api.eliminaEvento(e.id).subscribe({
-      next: () => this.eventi.set(this.eventi().filter((x) => x.id !== e.id)),
+      next: () => { this.eventi.set(this.eventi().filter((x) => x.id !== e.id)); this.avvisi.conferma('Evento eliminato', e.titolo); },
       error: () => this.dialogo.avvisa(
         'Eliminazione non riuscita',
         "L'evento è ancora al suo posto. Riprova tra qualche istante."

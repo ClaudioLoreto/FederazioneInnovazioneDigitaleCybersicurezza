@@ -141,6 +141,13 @@ Fonte unica: `frontend/src/styles/_palette.scss`. I temi rimescolano SOLO questi
 (`figura.ts`) con proporzioni umane, arti rastremati, mani, capelli e abiti; le scene
 (`scene.ts`) le mettono in posa su fondale viola. Mai più figure fatte di cerchi e
 rettangoli accostati. Nessun tratto del viso, un solo tono di pelle per tutti.
+Verosimiglianza prima di tutto: gli oggetti in mano si disegnano con `tiene`
+(mai in un punto fisso), i portatili hanno la cerniera lontano da chi scrive,
+i piani di lavoro sono all'altezza dei gomiti, chi siede ha una sedia.
+
+**Riscontro delle azioni**: ogni salvataggio o eliminazione nel backoffice mostra un
+avviso (`AvvisiService`) con lo stesso verbo del bottone. Gli errori restano nel
+modulo o in un dialogo, non negli avvisi.
 
 **Pagine pubbliche**: ogni card di news ed eventi porta al dettaglio (`/news/:id`,
 `/eventi/:id`); testata e piè di pagina sono componenti condivisi (`shared/pubblico/`);

@@ -70,6 +70,10 @@ p  { text-wrap: pretty; }
   outline-offset: 3px;
 }
 
+// Fuoco portato dal codice (titolo dopo un cambio pagina, inizio contenuto):
+// serve ai lettori di schermo, non va mostrato come un bordo.
+[tabindex='-1']:focus:not(:focus-visible) { outline: none; }
+
 // Salto al contenuto per chi naviga da tastiera.
 .skip-link {
   position: absolute; left: 12px; top: -60px; z-index: 100;
@@ -327,10 +331,12 @@ select:-webkit-autofill {
    La scena di rete ha un nome proprio e resta ferma: cambia solo il contenuto,
    che esce sfumando e entra salendo di poco.
    ============================================================================= */
-fidc-background-canvas { view-transition-name: scena-rete; }
-::view-transition-group(scena-rete) { animation: none; }
-::view-transition-old(root) { animation: vt-esce .22s ease-in both; }
-::view-transition-new(root) { animation: vt-entra .42s var(--ease-spatial) .06s both; }
+@supports (view-transition-name: none) {
+  fidc-background-canvas { view-transition-name: scena-rete; }
+  ::view-transition-group(scena-rete) { animation: none; }
+  ::view-transition-old(root) { animation: vt-esce .22s ease-in both; }
+  ::view-transition-new(root) { animation: vt-entra .42s var(--ease-spatial) .06s both; }
+}
 @keyframes vt-esce { to { opacity: 0; transform: translateY(-6px); } }
 @keyframes vt-entra { from { opacity: 0; transform: translateY(14px); } }
 
@@ -345,6 +351,8 @@ fidc-background-canvas { view-transition-name: scena-rete; }
     transition-duration: .01ms !important;
   }
   .reveal-armed { opacity: 1; transform: none; }
-  ::view-transition-old(root), ::view-transition-new(root) { animation: none; }
+  @supports (view-transition-name: none) {
+    ::view-transition-old(root), ::view-transition-new(root) { animation: none; }
+  }
   .btn, .btn-primary, .btn-accent, .btn-outline, .btn-ghost { transform: none !important; }
 }

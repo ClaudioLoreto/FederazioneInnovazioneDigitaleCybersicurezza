@@ -11,7 +11,7 @@
 //  gli stessi del seeder: la pagina non resta mai vuota durante una demo.
 // =============================================================================
 
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, ViewChild, computed, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { ActivatedRoute, ParamMap, Router, RouterLink } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -74,7 +74,7 @@ type StatoIscrizione = 'libero' | 'invio' | 'iscritto' | 'annullamento' | 'error
             </div>
 
             <!-- Il biglietto: tutto ciò che serve per partecipare, in un posto solo. -->
-            <aside class="biglietto" aria-label="Partecipa all'evento">
+            <aside class="biglietto" aria-label="Partecipa all'evento" #biglietto>
               <div class="biglietto-data">
                 <span class="giorno">{{ e.dataInizio | date:'dd' }}</span>
                 <span class="mese">{{ e.dataInizio | date:'MMMM y' }}</span>
@@ -136,6 +136,26 @@ type StatoIscrizione = 'libero' | 'invio' | 'iscritto' | 'annullamento' | 'error
         </div>
       </section>
 
+      <!-- Telefono: l'azione resta a portata di pollice quando il biglietto è
+           fuori schermo. Su schermo largo il biglietto è già fisso a lato. -->
+      @if (!concluso()) {
+        <div class="barra-mobile" [class.visibile]="barraVisibile()" [attr.aria-hidden]="!barraVisibile()">
+          <div class="bm-testo">
+            <strong>{{ e.dataInizio | date:'d MMM, HH:mm' }}</strong>
+            <span>{{ e.luogo }}</span>
+          </div>
+          @if (!auth.autenticato()) {
+            <a class="btn-primary btn-sm" routerLink="/login" [queryParams]="{ redirect: '/eventi/' + e.id }" [tabindex]="barraVisibile() ? 0 : -1">Accedi e iscriviti</a>
+          } @else if (stato() === 'iscritto' || stato() === 'annullamento') {
+            <span class="bm-iscritto">Sei iscritto</span>
+          } @else {
+            <button type="button" class="btn-primary btn-sm" (click)="iscriviti(e)" [disabled]="stato() === 'invio'" [tabindex]="barraVisibile() ? 0 : -1">
+              {{ stato() === 'invio' ? 'Iscrizione…' : 'Iscriviti' }}
+            </button>
+          }
+        </div>
+      }
+
       @if (altri().length) {
         <section class="tone-dark correlati">
           <div class="container">
@@ -159,7 +179,7 @@ type StatoIscrizione = 'libero' | 'invio' | 'iscritto' | 'annullamento' | 'error
   <fidc-piede-pubblico></fidc-piede-pubblico>
   `
 })
-export class EventoDettaglioComponent implements OnInit {
+export class EventoDettaglioComponent implements OnInit, OnDestroy {
   private readonly api = inject(FidcApiService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
@@ -173,6 +193,21 @@ export class EventoDettaglioComponent implements OnInit {
   readonly stato = signal<StatoIscrizione>('libero');
   readonly messaggio = signal('');
   readonly copiato = signal(false);
+
+  /** La barra mobile compare quando il biglietto non è più visibile. */
+  readonly barraVisibile = signal(false);
+  private osservatore?: IntersectionObserver;
+
+  /** Il biglietto esiste solo a evento caricato: lo osserviamo quando compare. */
+  @ViewChild('biglietto') set biglietto(ref: ElementRef<HTMLElement> | undefined) {
+    this.osservatore?.disconnect();
+    if (!ref || typeof IntersectionObserver === 'undefined') return;
+    this.osservatore = new IntersectionObserver(([v]) => {
+      // Solo quando il biglietto è sopra la finestra (già superato scorrendo).
+      this.barraVisibile.set(!v.isIntersecting && v.boundingClientRect.top < 0);
+    });
+    this.osservatore.observe(ref.nativeElement);
+  }
 
   readonly concluso = computed(() => {
     const e = this.evento();
@@ -197,6 +232,8 @@ export class EventoDettaglioComponent implements OnInit {
       error: () => this.tutti.set(eventiDiRiserva())
     });
   }
+
+  ngOnDestroy(): void { this.osservatore?.disconnect(); }
 
   private carica(id: number): void {
     this.caricamento.set(true);

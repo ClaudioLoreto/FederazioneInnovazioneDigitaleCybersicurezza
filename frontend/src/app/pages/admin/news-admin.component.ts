@@ -4,13 +4,14 @@
 //  SuperUser vede tutto, il Relatore solo le proprie. Solo palette FIDC.
 // =============================================================================
 
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { NgFor, NgIf, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { trigger, transition, style, animate } from '@angular/animations';
 import { FidcApiService, News, Pilastro } from '../../services/fidc-api.service';
 import { DialogoService } from '../../shared/dialogo/dialogo.service';
+import { AvvisiService } from '../../shared/avvisi/avvisi.service';
 import { SelezioneComponent } from '../../shared/campi/selezione.component';
 import { EditorTestoComponent } from '../../shared/campi/editor-testo.component';
 import { PILASTRI, etichettaPilastro } from '../../shared/opzioni';
@@ -105,7 +106,22 @@ const VUOTO: NewsForm = {
     </section>
 
     <!-- TABELLA -->
+    <!-- Ricerca e filtro per stato: con molti contenuti si trova subito quello giusto. -->
+    <div class="filtri-tabella" *ngIf="news().length > 0" role="search">
+      <label class="cerca">
+        <span class="sr-only">Cerca news</span>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+        <input type="search" [value]="cerca()" (input)="cerca.set($any($event.target).value)" placeholder="Cerca per titolo o sommario" />
+      </label>
+      <div class="segmenti" role="group" aria-label="Stato">
+        <button type="button" [class.on]="stato() === 'tutti'" [attr.aria-pressed]="stato() === 'tutti'" (click)="stato.set('tutti')">Tutti <span>{{ news().length }}</span></button>
+        <button type="button" [class.on]="stato() === 'pubblicati'" [attr.aria-pressed]="stato() === 'pubblicati'" (click)="stato.set('pubblicati')">Pubblicati <span>{{ conteggio(true) }}</span></button>
+        <button type="button" [class.on]="stato() === 'bozze'" [attr.aria-pressed]="stato() === 'bozze'" (click)="stato.set('bozze')">Bozze <span>{{ conteggio(false) }}</span></button>
+      </div>
+    </div>
+
     <section class="table-wrap hud-panel">
+      <p class="empty" *ngIf="news().length > 0 && visibili().length === 0">Nessun risultato con questi filtri.</p>
       <p class="empty" *ngIf="!caricamento() && news().length === 0">Nessuna news. Creane una con “Nuova news”.</p>
 
       <table *ngIf="news().length > 0">
@@ -116,7 +132,7 @@ const VUOTO: NewsForm = {
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let n of news()">
+          <tr *ngFor="let n of visibili()">
             <td class="t">{{ n.titolo }}</td>
             <td><span class="tag">{{ etichetta(n.pilastro) }}</span></td>
             <td>{{ n.dataPubblicazione ? (n.dataPubblicazione | date:'dd/MM/yyyy') : '—' }}</td>
@@ -138,6 +154,7 @@ const VUOTO: NewsForm = {
 export class NewsAdminComponent implements OnInit {
   private readonly api = inject(FidcApiService);
   private readonly dialogo = inject(DialogoService);
+  private readonly avvisi = inject(AvvisiService);
 
   /** Voci della tendina "Pilastro" (condivise con la gestione eventi). */
   readonly pilastri = PILASTRI;
@@ -156,6 +173,24 @@ export class NewsAdminComponent implements OnInit {
     // Arrivando dalle azioni rapide del pannello (?nuovo=1) il modulo è già aperto.
     if (this.route.snapshot.queryParamMap.get('nuovo') === '1') this.nuovo();
   }
+
+  // --- ricerca e filtro della tabella ------------------------------------------
+
+  readonly cerca = signal('');
+  readonly stato = signal<'tutti' | 'pubblicati' | 'bozze'>('tutti');
+
+  conteggio(pubblicato: boolean): number {
+    return this.news().filter((x) => x.pubblicato === pubblicato).length;
+  }
+
+  /** Righe mostrate: filtro per stato + ricerca su x.titolo, x.sommario, x.pilastro, senza maiuscole. */
+  readonly visibili = computed(() => {
+    const q = this.cerca().trim().toLowerCase();
+    const st = this.stato();
+    return this.news().filter((x) =>
+      (st === 'tutti' || x.pubblicato === (st === 'pubblicati')) &&
+      (!q || [x.titolo, x.sommario, x.pilastro].join(' ').toLowerCase().includes(q)));
+  });
 
   /** (Ri)carica la lista gestibile. */
   private carica(): void {
@@ -220,7 +255,11 @@ export class NewsAdminComponent implements OnInit {
       : this.api.creaNews(body);
 
     op.subscribe({
-      next: () => { this.salvataggio.set(false); this.form.set(null); this.carica(); },
+      next: () => {
+        this.salvataggio.set(false); this.form.set(null); this.carica();
+        this.avvisi.conferma(f.pubblicato ? 'News pubblicata' : 'Bozza salvata',
+          f.pubblicato ? 'È in evidenza sul sito.' : 'Non è visibile sul sito finché non la pubblichi.');
+      },
       error: () => { this.salvataggio.set(false); this.errore.set('Salvataggio non riuscito. Verifica i dati e riprova.'); }
     });
   }
@@ -236,7 +275,7 @@ export class NewsAdminComponent implements OnInit {
     if (!ok) return;
 
     this.api.eliminaNews(n.id).subscribe({
-      next: () => this.news.set(this.news().filter((x) => x.id !== n.id)),
+      next: () => { this.news.set(this.news().filter((x) => x.id !== n.id)); this.avvisi.conferma('News eliminata', n.titolo); },
       error: () => this.dialogo.avvisa(
         'Eliminazione non riuscita',
         'La news è ancora al suo posto. Riprova; se il problema persiste, verifica che il server sia raggiungibile.'

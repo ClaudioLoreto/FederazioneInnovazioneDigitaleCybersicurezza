@@ -50,6 +50,11 @@ export interface OpzioniPersona {
   /** [gomito, mano] relativi alla spalla, per il braccio lontano (0) e vicino (1). */
   bracci?: [[Punto, Punto], [Punto, Punto]];
   testaInclinata?: number;
+  /**
+   * Oggetto stretto nella mano del braccio vicino. Si disegna nella posizione
+   * esatta della mano e la mano gli passa sopra: niente oggetti che galleggiano.
+   */
+  tiene?: 'tazza' | 'tablet';
 }
 
 const f = (n: number) => n.toFixed(1);
@@ -101,6 +106,24 @@ const CAPELLI: Record<StileCapelli, { dietro?: string; davanti?: string }> = {
   }
 };
 
+/**
+ * Oggetto tenuto in mano, in coordinate locali. La mano (disegnata dopo) ne
+ * copre il lato vicino, così sembra stretto davvero.
+ *  - tazza: dritta, appena davanti al pugno, con un filo di vapore;
+ *  - tablet: inclinato verso chi lo guarda, la mano lo regge dal bordo basso.
+ */
+function oggetto(tipo: 'tazza' | 'tablet', m: Punto): string {
+  const [x, y] = m;
+  if (tipo === 'tazza') {
+    return `<rect class="tazza-corpo" x="${f(x - 2)}" y="${f(y - 6.5)}" width="9.4" height="11" rx="1.8"/>` +
+      `<rect class="tazza-fascia" x="${f(x - 2)}" y="${f(y - 3.2)}" width="9.4" height="2.2"/>` +
+      `<path class="vapore" d="M${f(x + 1)},${f(y - 9.5)} q-1.8,-2.6 0,-5.2 q1.8,-2.6 0,-5.2 M${f(x + 4.8)},${f(y - 9.5)} q-1.8,-2.6 0,-5.2"/>`;
+  }
+  return `<g transform="rotate(-24 ${f(x)} ${f(y)})">` +
+    `<rect class="tablet-corpo" x="${f(x - 3)}" y="${f(y - 17)}" width="22" height="16" rx="2.2"/>` +
+    `<rect class="tablet-schermo" x="${f(x - 0.6)}" y="${f(y - 14.6)}" width="17.2" height="11.2" rx="1"/></g>`;
+}
+
 /** Disegna una persona e restituisce il markup SVG. */
 export function persona(o: OpzioniPersona): string {
   const dir = o.dir ?? 1, s = o.s ?? 1, vista = o.vista ?? 'tre-quarti';
@@ -116,7 +139,8 @@ export function persona(o: OpzioniPersona): string {
   const braccio = (i: 0 | 1) => {
     const sp = attacchi[i], [g, m] = bracci[i];
     const gomito: Punto = [sp[0] + g[0], sp[1] + g[1]], mano: Punto = [sp[0] + m[0], sp[1] + m[1]];
-    return arto([sp, gomito, mano], [9.4, 7.6, 6.4], 'manica ' + abito) +
+    const presa = i === 1 && o.tiene ? oggetto(o.tiene, mano) : '';
+    return arto([sp, gomito, mano], [9.4, 7.6, 6.4], 'manica ' + abito) + presa +
       `<ellipse class="pelle" cx="${f(mano[0])}" cy="${f(mano[1])}" rx="3.9" ry="4.4"/>`;
   };
 

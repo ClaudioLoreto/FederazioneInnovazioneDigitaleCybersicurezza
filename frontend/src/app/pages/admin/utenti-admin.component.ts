@@ -8,6 +8,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { NgFor, NgIf, DatePipe } from '@angular/common';
 import { FidcApiService, UtenteAdmin } from '../../services/fidc-api.service';
 import { DialogoService } from '../../shared/dialogo/dialogo.service';
+import { AvvisiService } from '../../shared/avvisi/avvisi.service';
 import { descriviRuolo } from '../../shared/ruoli';
 import { AuthService } from '../../services/auth.service';
 
@@ -62,6 +63,7 @@ import { AuthService } from '../../services/auth.service';
 export class UtentiAdminComponent implements OnInit {
   private readonly api = inject(FidcApiService);
   private readonly dialogo = inject(DialogoService);
+  private readonly avvisi = inject(AvvisiService);
   private readonly auth = inject(AuthService);
 
   readonly utenti = signal<UtenteAdmin[]>([]);
@@ -99,7 +101,7 @@ export class UtentiAdminComponent implements OnInit {
     if (!ok) return;
 
     this.api.cambiaRuoloUtente(u.id, ruolo).subscribe({
-      next: (agg) => this.utenti.set(this.utenti().map((x) => (x.id === u.id ? agg : x))),
+      next: (agg) => { this.utenti.set(this.utenti().map((x) => (x.id === u.id ? agg : x))); this.avvisi.conferma('Utente aggiornato', agg.email); },
       error: (err) => this.dialogo.avvisa(
         'Cambio di profilo non riuscito',
         err?.error?.messaggio ?? 'Il profilo è rimasto invariato. Riprova tra qualche istante.'
@@ -118,7 +120,7 @@ export class UtentiAdminComponent implements OnInit {
     if (!ok) return;
 
     this.api.eliminaUtente(u.id).subscribe({
-      next: () => this.utenti.set(this.utenti().filter((x) => x.id !== u.id)),
+      next: () => { this.utenti.set(this.utenti().filter((x) => x.id !== u.id)); this.avvisi.conferma('Utente eliminato', u.email); },
       error: (err) => this.dialogo.avvisa(
         'Eliminazione non riuscita',
         err?.error?.messaggio ?? "L'account è ancora attivo. Riprova tra qualche istante."

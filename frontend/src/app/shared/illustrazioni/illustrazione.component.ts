@@ -62,6 +62,8 @@ const cache = new Map<ScenaIllustrazione, string>();
     .fidc-ill .pavimento { fill: rgba(51, 61, 109, .35); }
     .fidc-ill .ombra { fill: rgba(51, 61, 109, .4); }
     .fidc-ill .pannello, .fidc-ill .arredo { fill: var(--c-deep-blue); }
+    .fidc-ill .banco { fill: var(--c-deep-blue); }
+    .fidc-ill .bordo-banco { fill: rgba(255, 240, 217, .14); }
     .fidc-ill .arredo-linea { fill: none; stroke: var(--c-deep-blue); stroke-width: 4; stroke-linecap: round; }
     .fidc-ill .sedia path, .fidc-ill .sedia rect { fill: var(--c-deep-blue); }
     .fidc-ill .sedia .sedia-gambe { fill: none; stroke: var(--c-deep-blue); stroke-width: 3; stroke-linecap: round; }
@@ -69,6 +71,11 @@ const cache = new Map<ScenaIllustrazione, string>();
     .fidc-ill .nota.chiara { fill: var(--c-cream); }
     .fidc-ill .filo { fill: none; stroke: var(--c-peach); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; opacity: .8; }
     .fidc-ill .laptop { fill: var(--c-cream); }
+    .fidc-ill .laptop-luce { fill: none; stroke: var(--c-peach); stroke-width: 1.6; stroke-linecap: round; }
+    .fidc-ill .laptop-display { fill: var(--c-deep-blue); }
+    .fidc-ill .tazza-fascia { fill: var(--c-purple); }
+    .fidc-ill .vapore { fill: none; stroke: var(--c-cream); stroke-width: 1.2; stroke-linecap: round; opacity: .55; }
+    .fidc-ill .tablet-schermo { fill: var(--c-peach); }
     .fidc-ill .logo { fill: var(--c-purple); }
     .fidc-ill .foglia { fill: var(--c-deep-blue); }
     .fidc-ill .foglia.chiara { fill: var(--c-peach); }

@@ -11,6 +11,7 @@ import { ActivatedRoute } from '@angular/router';
 import { trigger, transition, style, animate } from '@angular/animations';
 import { FidcApiService, Documento, VisibilitaDocumento } from '../../services/fidc-api.service';
 import { DialogoService } from '../../shared/dialogo/dialogo.service';
+import { AvvisiService } from '../../shared/avvisi/avvisi.service';
 import { SelezioneComponent } from '../../shared/campi/selezione.component';
 import { VISIBILITA_DOCUMENTO } from '../../shared/opzioni';
 import { AuthService } from '../../services/auth.service';
@@ -117,6 +118,7 @@ const VUOTO: DocumentoForm = {
 export class DocumentiAdminComponent implements OnInit {
   private readonly api = inject(FidcApiService);
   private readonly dialogo = inject(DialogoService);
+  private readonly avvisi = inject(AvvisiService);
 
   /** Voci della tendina "Visibilità". */
   readonly visibilita = VISIBILITA_DOCUMENTO;
@@ -173,7 +175,7 @@ export class DocumentiAdminComponent implements OnInit {
 
     const op = f.id ? this.api.aggiornaDocumento(f.id, body) : this.api.creaDocumento(body);
     op.subscribe({
-      next: () => { this.salvataggio.set(false); this.form.set(null); this.carica(); },
+      next: () => { this.salvataggio.set(false); this.form.set(null); this.carica(); this.avvisi.conferma('Documento salvato', 'Lo trovi nell\'area documenti.'); },
       error: () => { this.salvataggio.set(false); this.errore.set('Salvataggio non riuscito. Verifica i dati e riprova.'); }
     });
   }
@@ -189,7 +191,7 @@ export class DocumentiAdminComponent implements OnInit {
     if (!ok) return;
 
     this.api.eliminaDocumento(d.id).subscribe({
-      next: () => this.documenti.set(this.documenti().filter((x) => x.id !== d.id)),
+      next: () => { this.documenti.set(this.documenti().filter((x) => x.id !== d.id)); this.avvisi.conferma('Documento eliminato', d.titolo); },
       error: () => this.dialogo.avvisa(
         'Eliminazione non riuscita',
         'Il documento è ancora al suo posto. Riprova tra qualche istante.'

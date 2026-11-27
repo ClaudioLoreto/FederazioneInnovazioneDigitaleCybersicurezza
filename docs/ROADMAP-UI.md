@@ -119,3 +119,8 @@ subito, senza passaggi intermedi inutili.
 | 2026-11-27 | Pannello Iscritti nel backoffice eventi, riempimento posti ed esportazione CSV | `eventi-admin`, `IscrizioniController` |
 | 2026-11-27 | Pagina 404, transizioni fra pagine con sfondo fermo, favicon e anteprima social | `non-trovata`, `app.config.ts`, `assets/` |
 | 2026-11-27 | "Ultima notizia" nell'hero, collegata al dettaglio | `landing` |
+| 2026-11-27 | Illustrazioni a prova di critica: oggetti tenuti davvero in mano, portatili con la cerniera dal lato giusto, scrivanie ad altezza gomito, aula ricomposta | `figura.ts`, `scene.ts` |
+| 2026-11-27 | Avvisi di conferma nel backoffice con il verbo dell'azione ("Evento pubblicato", "News eliminata") | `shared/avvisi/` |
+| 2026-11-27 | Ricerca e filtro per stato nelle tabelle di eventi e news | `eventi-admin`, `news-admin` |
+| 2026-11-27 | Barra "Iscriviti" fissa su telefono nel dettaglio evento | `evento-dettaglio` |
+| 2026-11-27 | "Vai al contenuto" su ogni pagina pubblica; fuoco sul titolo a ogni cambio pagina | `testata-pubblica`, `app.component.ts` |

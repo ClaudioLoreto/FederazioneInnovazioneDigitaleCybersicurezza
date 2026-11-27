@@ -263,3 +263,13 @@ Il committente è un ente istituzionale, quindi questi punti non sono facoltativ
 - Etichette vere sui campi dei moduli, non solo testo segnaposto.
 - Immagini decorative marcate con `aria-hidden="true"`, così i lettori di schermo
   non le annunciano.
+
+## Nota sulla build: CSS critico non incorporato
+
+In `angular.json` (configurazione `production`) `inlineCritical` è spento. L'app è
+disegnata nel browser: all'avvio il body contiene solo `<fidc-root>`, quindi
+l'estrazione del CSS critico incorporava solo le regole di `html` e `body`, senza
+benefici misurabili, e produceva avvisi sui selettori delle View Transitions
+(`::view-transition-*`) che non sa leggere. Se un giorno si aggiunge il rendering
+lato server, riaccenderlo.
+
