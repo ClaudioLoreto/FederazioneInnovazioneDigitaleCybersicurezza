@@ -1,37 +1,38 @@
 <!--
-  FIDC — Logo wordmark ufficiale (sorgente SVG).
-  FIX aspect-ratio: viewBox 850x260 + preserveAspectRatio="xMidYMid meet" e
-  width/height intrinseci coerenti (850x260) → scala senza distorsione.
-  Per usarlo responsive: imposta via CSS width:100%;height:auto (NON forzare
-  width/height a 100%/100% insieme, causa lo "schiacciamento").
-  Palette FERREA a 4 colori: #333D6D #723EC3 #FFCF95 #FFF0D9.
-  NOTA: rimosso il "pallino viola" centrale (v2-center-core) che, animato con
-  transform-origin errato, derivava verso l'alto a sinistra.
+  FIDC — Marchio ufficiale (sorgente SVG), versione novembre 2026.
+
+  SIGNIFICATO (si deve poter spiegare in una frase):
+    - lo SCUDO è la sicurezza;
+    - dentro, la F di Federazione tracciata come una pista di circuito:
+      il digitale e l'innovazione;
+    - le piste finiscono in TRE NODI, uno per parola del nome:
+      Innovazione, Digitale, Cybersicurezza. Sono anche i soggetti che la
+      Federazione mette in connessione.
+
+  REGOLE D'USO
+    - Colori fissi, solo la palette: scudo #723EC3, contorno #FFCF95,
+      F #FFF0D9, nodi #FFCF95. Funziona su fondo #333D6D e su fondo #FFF0D9.
+    - Misura minima del simbolo: 16 px (favicon). Sotto i 32 px si usa la
+      versione senza "via" interne ai nodi (frontend/src/assets/favicon.svg).
+    - Proporzioni: viewBox + preserveAspectRatio="xMidYMid meet"; in CSS solo
+      width:100%;height:auto, mai larghezza e altezza forzate insieme.
+    - Nome per esteso in Chakra Petch (700 per "Federazione", 600 per il resto).
+
+  Versione nel sito: frontend/src/app/shared/animated-logo/animated-logo.component.ts
+  (stesso disegno, con il segnale che accende i tre nodi in sequenza).
+  Versione precedente (scudo bicolore con nodo centrale): nella storia di git.
 -->
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 850 260" width="850" height="260" preserveAspectRatio="xMidYMid meet">
-  <g id="v2-icon" transform="translate(40, 30)">
-
-    <path id="v2-shield-left"
-          d="M 100 0 L 15 25 L 15 115 C 15 170 55 200 100 210 L 100 0 Z"
-          fill="#333d6d"
-          stroke="#fff0d9"
-          stroke-width="3"/>
-
-    <path id="v2-shield-right"
-          d="M 100 0 L 185 25 L 185 115 C 185 170 145 200 100 210 L 100 0 Z"
-          fill="#723ec3"
-          stroke="#fff0d9"
-          stroke-width="3"/>
-
-    <g id="v2-core" transform="translate(100, 105)">
-      <path d="M -40 -40 L 0 0 L 40 -40 M -40 40 L 0 0 L 40 40" stroke="#fff0d9" stroke-width="3" fill="none"/>
-      <!-- Nodo peach statico. (Rimosso il cerchio viola "v2-center-core".) -->
-      <circle id="v2-center-node" cx="0" cy="0" r="16" fill="#ffcf95" stroke="#333d6d" stroke-width="3"/>
-    </g>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 620 200" width="620" height="200" preserveAspectRatio="xMidYMid meet">
+  <g transform="translate(18 12) scale(1.57)">
+    <path d="M50 4 L92 16 V52 C92 78 74 96 50 108 C26 96 8 78 8 52 V16 Z" fill="#723EC3" stroke="#FFCF95" stroke-width="4" stroke-linejoin="round"/>
+    <path d="M36 88 V30 H60 L68 22 M36 56 H54 L62 64" fill="none" stroke="#FFF0D9" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="36" cy="90" r="7" fill="#FFCF95"/><circle cx="36" cy="90" r="2.6" fill="#723EC3"/>
+    <circle cx="63" cy="65" r="7" fill="#FFCF95"/><circle cx="63" cy="65" r="2.6" fill="#723EC3"/>
+    <circle cx="69" cy="21" r="7" fill="#FFCF95"/><circle cx="69" cy="21" r="2.6" fill="#723EC3"/>
   </g>
-
-  <g id="v2-text" transform="translate(270, 135)">
-    <text id="v2-title" font-family="system-ui, sans-serif" font-weight="900" font-size="90" fill="#723ec3" letter-spacing="4">FIDC</text>
-    <text id="v2-subtitle" x="5" y="45" font-family="system-ui, sans-serif" font-weight="700" font-size="14" fill="#333d6d" letter-spacing="1">FEDERAZIONE INNOVAZIONE, DIGITALE E CYBERSICUREZZA</text>
+  <g transform="translate(212 0)" fill="#333D6D" font-family="'Chakra Petch', system-ui, sans-serif">
+    <text x="0" y="72" font-weight="700" font-size="46">Federazione</text>
+    <text x="0" y="112" font-weight="600" font-size="31">Innovazione, Digitale</text>
+    <text x="0" y="148" font-weight="600" font-size="31">e Cybersicurezza</text>
   </g>
 </svg>

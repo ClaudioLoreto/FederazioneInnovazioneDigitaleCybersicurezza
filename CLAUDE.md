@@ -145,6 +145,11 @@ Verosimiglianza prima di tutto: gli oggetti in mano si disegnano con `tiene`
 (mai in un punto fisso), i portatili hanno la cerniera lontano da chi scrive,
 i piani di lavoro sono all'altezza dei gomiti, chi siede ha una sedia.
 
+**Marchio** (`animated-logo`, sorgente in `LOGO.txt`): scudo viola (sicurezza) con la
+F di Federazione tracciata come un circuito (digitale) che termina in tre nodi
+(Innovazione, Digitale, Cybersicurezza). Colori fissi, nome per esteso in `--text`.
+Un simbolo nuovo deve potersi spiegare in una frase e leggersi a 16 px.
+
 **Riscontro delle azioni**: ogni salvataggio o eliminazione nel backoffice mostra un
 avviso (`AvvisiService`) con lo stesso verbo del bottone. Gli errori restano nel
 modulo o in un dialogo, non negli avvisi.

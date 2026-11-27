@@ -11,18 +11,25 @@
 //     dimensionato per restare leggibile anche nel menu laterale, dove il
 //     marchio è largo circa 200 pixel.
 //
-//  2. IL SIMBOLO È UNA PORTA BLINDATA, NON UNO SCUDO GENERICO. Racconta
-//     custodia e accesso controllato: chiuso a chi non ha titolo, apribile da
-//     chi ce l'ha. Lo scudo diceva soltanto "difesa" ed è un simbolo abusato.
+//  2. IL SIMBOLO SI LEGGE IN UNA FRASE (novembre 2026). La "porta blindata"
+//     precedente, alla misura reale del marchio, era un ottagono con un cerchio:
+//     non raccontava niente. Ora:
+//       - lo SCUDO è la sicurezza;
+//       - dentro c'è la F di Federazione, tracciata come una pista di circuito:
+//         il digitale e l'innovazione;
+//       - le piste finiscono in TRE NODI, uno per parola del nome: Innovazione,
+//         Digitale, Cybersicurezza. Sono anche i soggetti che la Federazione
+//         mette in connessione.
+//     Resta riconoscibile a 16 pixel (favicon): sagoma dello scudo + F.
 //
-//  3. SI MUOVE SOLO CIÒ CHE HA UN SIGNIFICATO. Le orbite e i trattini che
-//     scorrevano attorno al marchio erano decorazione senza contenuto. Restano
-//     due movimenti, entrambi motivati: la ghiera che ruota lentamente, come
-//     una combinazione, e il nucleo che pulsa, come un sistema in funzione.
+//  3. SI MUOVE SOLO CIÒ CHE HA UN SIGNIFICATO. I tre nodi si accendono uno dopo
+//     l'altro, ogni qualche secondo, come un segnale che percorre la rete. Le
+//     posizioni restano ferme: nessun elemento vaga per il marchio.
 //
-//  4. I COLORI VENGONO DAL TEMA. Il marchio usa i token --accent e --accent-2,
-//     quindi cambia insieme al velo scelto nel backoffice invece di restare
-//     l'unico elemento fuori tono.
+//  4. IL SIMBOLO HA COLORI FISSI, il nome segue il tema. Un marchio non cambia
+//     colore col velo: scudo viola, F crema, nodi pesca funzionano su fondo
+//     blu e su fondo crema (il contorno pesca lo stacca dal blu, il viola dal
+//     crema). Il nome invece usa --text, quindi resta leggibile su ogni velo.
 // =============================================================================
 
 import { Component, HostListener, Input, signal } from '@angular/core';
@@ -34,7 +41,7 @@ import { BRAND } from '../../content/home-content';
   standalone: true,
   imports: [NgIf],
   template: `
-    <svg [attr.viewBox]="soloSimbolo ? '0 0 200 200' : '0 0 620 200'"
+    <svg [attr.viewBox]="soloSimbolo ? '0 0 100 112' : '0 0 620 200'"
          preserveAspectRatio="xMidYMid meet"
          class="fidc-logo"
          [class.interactive]="interactive"
@@ -43,42 +50,16 @@ import { BRAND } from '../../content/home-content';
          role="img"
          [attr.aria-label]="nome">
 
-      <!-- ============ SIMBOLO: porta blindata ============ -->
-      <g class="mark" transform="translate(14, 14)">
-
-        <!-- Telaio esterno, con gli angoli tagliati come nel resto della grafica -->
-        <path class="telaio"
-              d="M28 4 H144 L168 28 V144 L144 168 H28 L4 144 V28 Z"
-              fill="none" stroke-width="3"/>
-
-        <!-- Anta interna -->
-        <path class="anta"
-              d="M36 20 H136 L152 36 V136 L136 152 H36 L20 136 V36 Z"
-              fill-opacity=".22" stroke-width="1.4"/>
-
-        <!-- Ghiera della combinazione: ruota lentamente, come una serratura -->
-        <!-- La traslazione sta su un gruppo esterno: se stesse sul gruppo animato,
-             la rotazione CSS la cancellerebbe e la ghiera finirebbe nell'angolo
-             in alto a sinistra (il vecchio "pallino ribelle"). -->
-        <g transform="translate(86,86)"><g class="ghiera">
-          <circle r="42" fill="none" stroke-width="1.6" class="ghiera-cerchio"/>
-          <line x1="0" y1="-42" x2="0" y2="-32" stroke-width="3" class="tacca"/>
-          <line x1="42" y1="0" x2="32" y2="0" stroke-width="2" class="tacca"/>
-          <line x1="0" y1="42" x2="0" y2="32" stroke-width="2" class="tacca"/>
-          <line x1="-42" y1="0" x2="-32" y2="0" stroke-width="2" class="tacca"/>
-          <line x1="-29.7" y1="-29.7" x2="-22.6" y2="-22.6" stroke-width="1.4" class="tacca"/>
-          <line x1="29.7" y1="29.7" x2="22.6" y2="22.6" stroke-width="1.4" class="tacca"/>
-        </g></g>
-
-        <!-- Chiavistelli: i quattro punti in cui l'anta si aggancia al telaio -->
-        <rect class="chiavistello" x="78" y="12" width="16" height="10"/>
-        <rect class="chiavistello" x="78" y="150" width="16" height="10"/>
-        <rect class="chiavistello" x="12" y="78" width="10" height="16"/>
-        <rect class="chiavistello" x="150" y="78" width="10" height="16"/>
-
-        <!-- Nucleo: il sistema è attivo -->
-        <circle class="nucleo" cx="86" cy="86" r="13"/>
-        <circle class="nucleo-onda" cx="86" cy="86" r="20" fill="none" stroke-width="1.4"/>
+      <!-- ============ SIMBOLO: scudo con la F a circuito ============ -->
+      <g class="mark" [attr.transform]="soloSimbolo ? null : 'translate(18 12) scale(1.57)'">
+        <!-- Scudo: la sicurezza -->
+        <path class="scudo" d="M50 4 L92 16 V52 C92 78 74 96 50 108 C26 96 8 78 8 52 V16 Z"/>
+        <!-- F di Federazione, tracciata come una pista di circuito -->
+        <path class="pista" d="M36 88 V30 H60 L68 22 M36 56 H54 L62 64"/>
+        <!-- Tre nodi: Innovazione, Digitale, Cybersicurezza -->
+        <g class="nodo n1"><circle cx="36" cy="90" r="7"/><circle class="via" cx="36" cy="90" r="2.6"/></g>
+        <g class="nodo n2"><circle cx="63" cy="65" r="7"/><circle class="via" cx="63" cy="65" r="2.6"/></g>
+        <g class="nodo n3"><circle cx="69" cy="21" r="7"/><circle class="via" cx="69" cy="21" r="2.6"/></g>
       </g>
 
       <!-- ============ NOME PER ESTESO ============ -->
@@ -99,14 +80,11 @@ import { BRAND } from '../../content/home-content';
       transition: transform .25s ease;
     }
 
-    /* I colori arrivano dal tema: il marchio cambia insieme al resto del sito. */
-    .telaio { stroke: var(--signal, var(--accent)); }
-    .anta { fill: var(--accent-2); stroke: var(--accent-2); }
-    .ghiera-cerchio { stroke: var(--signal, var(--accent)); opacity: .8; }
-    .tacca { stroke: var(--signal, var(--accent)); }
-    .chiavistello { fill: var(--signal, var(--accent)); }
-    .nucleo { fill: var(--signal, var(--accent)); }
-    .nucleo-onda { stroke: var(--signal, var(--accent)); }
+    /* Simbolo a colori fissi (vedi punto 4 in testa al file). */
+    .scudo { fill: var(--c-purple); stroke: var(--c-peach); stroke-width: 4; stroke-linejoin: round; }
+    .pista { fill: none; stroke: var(--c-cream); stroke-width: 8; stroke-linecap: round; stroke-linejoin: round; }
+    .nodo circle { fill: var(--c-peach); }
+    .nodo .via { fill: var(--c-purple); }
     .filo { stroke: var(--signal, var(--accent)); opacity: .55; }
 
     .riga-1 {
@@ -120,42 +98,22 @@ import { BRAND } from '../../content/home-content';
       fill: var(--text); opacity: .92;
     }
 
-    /* --- I due soli movimenti, entrambi con un significato --- */
-
-    /* La combinazione gira: il contenuto è sotto chiave. Lenta di proposito,
-       un giro ogni 24 secondi: si nota se la si guarda, non distrae mai. */
-    .ghiera {
-      transform-box: fill-box;
-      transform-origin: center;
-      animation: ghiera-gira 24s linear infinite;
+    /* --- Un solo movimento: il segnale che percorre la rete ---
+       Ogni 7 secondi i tre nodi si accendono in sequenza, dal basso verso
+       l'alto, poi tutto resta fermo. Si nota se lo si guarda, non distrae. */
+    .nodo { transform-box: fill-box; transform-origin: center; animation: segnale 7s ease-in-out infinite; }
+    .n2 { animation-delay: .25s; }
+    .n3 { animation-delay: .5s; }
+    @keyframes segnale {
+      0%, 14%, 100% { transform: scale(1); }
+      7% { transform: scale(1.22); }
     }
-
-    /* Il nucleo respira: il sistema è acceso e sta sorvegliando. */
-    .nucleo {
-      transform-box: fill-box;
-      transform-origin: center;
-      animation: nucleo-respira 4s ease-in-out infinite;
-    }
-    .nucleo-onda {
-      transform-box: fill-box;
-      transform-origin: center;
-      animation: nucleo-onda 4s ease-out infinite;
-    }
-
-    @keyframes ghiera-gira { to { transform: rotate(360deg); } }
-    @keyframes nucleo-respira {
-      0%, 100% { opacity: .85; transform: scale(1); }
-      50%      { opacity: 1; transform: scale(1.08); }
-    }
-    @keyframes nucleo-onda {
-      0%   { opacity: .5; transform: scale(.8); }
-      100% { opacity: 0; transform: scale(1.6); }
-    }
+    .nodo circle:first-child { animation: luce 7s ease-in-out infinite; animation-delay: inherit; }
+    @keyframes luce { 0%, 14%, 100% { fill: var(--c-peach); } 7% { fill: var(--c-cream); } }
 
     @media (prefers-reduced-motion: reduce) {
       .fidc-logo { transition: none; }
-      .ghiera, .nucleo, .nucleo-onda { animation: none !important; }
-      .nucleo-onda { opacity: .35; }
+      .nodo, .nodo circle { animation: none !important; }
     }
   `]
 })
