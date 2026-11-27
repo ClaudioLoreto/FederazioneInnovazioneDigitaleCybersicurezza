@@ -209,9 +209,9 @@ export class ImpostazioniTemaComponent implements OnDestroy {
   ];
 
   readonly fonts: { val: TemaConfig['abbinamentoFont']; label: string; famiglia: string }[] = [
-    { val: 'cyber', label: 'Tecnico', famiglia: `'Chakra Petch', sans-serif` },
-    { val: 'moderno', label: 'Contemporaneo', famiglia: `'Sora Variable', sans-serif` },
-    { val: 'classico', label: 'Editoriale', famiglia: `'Source Serif 4 Variable', serif` }
+    { val: 'classico', label: 'Istituzionale', famiglia: `'IBM Plex Serif', serif` },
+    { val: 'moderno', label: 'Contemporaneo', famiglia: `'IBM Plex Sans', sans-serif` },
+    { val: 'cyber', label: 'Tecnico', famiglia: `'Chakra Petch', sans-serif` }
   ];
 
   readonly emblemi: { val: EmblemaHero; label: string; desc: string }[] = [

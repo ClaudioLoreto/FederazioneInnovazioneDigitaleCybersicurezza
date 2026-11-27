@@ -124,3 +124,8 @@ subito, senza passaggi intermedi inutili.
 | 2026-11-27 | Ricerca e filtro per stato nelle tabelle di eventi e news | `eventi-admin`, `news-admin` |
 | 2026-11-27 | Barra "Iscriviti" fissa su telefono nel dettaglio evento | `evento-dettaglio` |
 | 2026-11-27 | "Vai al contenuto" su ogni pagina pubblica; fuoco sul titolo a ogni cambio pagina | `testata-pubblica`, `app.component.ts` |
+| 2026-11-27 | Marchio senza lettere: scudo sfaccettato fermo; favicon e immagine di condivisione rifatte | `animated-logo`, `LOGO.txt`, `assets/` |
+| 2026-11-27 | Titoli in IBM Plex Serif (tono istituzionale); Chakra Petch resta come opzione "Tecnico" | `_palette.scss`, `theme.service.ts` |
+| 2026-11-27 | Famiglia di 15 emblemi a scudo: pilastri, governance, progetti, newsletter, accesso, registrazione | `shared/emblemi` |
+| 2026-11-27 | Persone con abiti curati: colletti, cravatte, polsini, orologi, tasche, pieghe, ciocche, volumi | `illustrazioni/figura.ts` |
+| 2026-11-27 | Velo 2: date e link in pesca (il viola su blu era illeggibile); vetrina di accesso piena nel velo 3 | `landing`, `auth-shell` |

@@ -71,7 +71,7 @@ import { AvvisiService } from '../../shared/avvisi/avvisi.service';
       padding:16px 26px; min-width:150px;
       backdrop-filter: blur(var(--surface-blur));
     }
-    .stat b { display:block; font-size:2rem; color: var(--accent); line-height:1; }
+    .stat b { display:block; font-size:2rem; color: var(--signal); line-height:1; }
     .stat span { font-size:.82rem; font-weight:600; color: var(--text-soft); }
   `]
 })

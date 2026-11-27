@@ -66,7 +66,7 @@ const CONFIG_DEFAULT: TemaConfig = {
   coloreSfondo: PALETTE.deepBlue,
   coloreTesto: PALETTE.cream,
   stileRaggio: 'sharp',
-  abbinamentoFont: 'cyber',
+  abbinamentoFont: 'classico',
   emblemaHero: 'cassaforte'
 };
 
@@ -261,9 +261,9 @@ export class ThemeService {
   private font(abbinamento: TemaConfig['abbinamentoFont']): [string, string] {
     const plex = `'IBM Plex Sans', system-ui, 'Segoe UI', sans-serif`;
     switch (abbinamento) {
-      case 'moderno':  return [`'Sora Variable', 'Segoe UI', system-ui, sans-serif`, plex];
-      case 'classico': return [`'Source Serif 4 Variable', Georgia, serif`, plex];
-      default:         return [`'Chakra Petch', 'Segoe UI', system-ui, sans-serif`, plex];
+      case 'moderno': return [plex, plex];
+      case 'cyber':   return [`'Chakra Petch', 'Segoe UI', system-ui, sans-serif`, plex];
+      default:        return [`'IBM Plex Serif', Georgia, serif`, plex]; // 'classico' = istituzionale
     }
   }
 

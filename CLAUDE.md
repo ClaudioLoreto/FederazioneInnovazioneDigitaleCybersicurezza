@@ -123,8 +123,8 @@ Fonte unica: `frontend/src/styles/_palette.scss`. I temi rimescolano SOLO questi
 **Hero**
 - Cassaforte digitale (`fidc-safe-logo`) a destra dell'hero su desktop, sopra il
   testo su mobile. Il suo SVG e le sue animazioni non si toccano.
-- Slogan: max 50 caratteri, Chakra Petch 700, una riga dal contenitore ≥ 880px
-  (dimensione in `cqi`, misurata: lo slogan è 24,6em), a capo bilanciato sotto.
+- Slogan: max 50 caratteri, IBM Plex Serif 600, una riga dal contenitore ≥ 900px
+  (dimensione in `cqi`, misurata: lo slogan è 24,5em), a capo bilanciato sotto.
   Zero overflow orizzontale da 360px a 1920px+.
 - Rivelazione "decrittazione" dello slogan: è l'UNICO momento animato al caricamento.
 
@@ -145,10 +145,19 @@ Verosimiglianza prima di tutto: gli oggetti in mano si disegnano con `tiene`
 (mai in un punto fisso), i portatili hanno la cerniera lontano da chi scrive,
 i piani di lavoro sono all'altezza dei gomiti, chi siede ha una sedia.
 
-**Marchio** (`animated-logo`, sorgente in `LOGO.txt`): scudo viola (sicurezza) con la
-F di Federazione tracciata come un circuito (digitale) che termina in tre nodi
-(Innovazione, Digitale, Cybersicurezza). Colori fissi, nome per esteso in `--text`.
-Un simbolo nuovo deve potersi spiegare in una frase e leggersi a 16 px.
+**Marchio** (`animated-logo`, sorgente in `LOGO.txt`): scudo sfaccettato, tre facce
+(innovazione, digitale, sicurezza) che si incontrano in un punto (la Federazione).
+**Nessuna lettera nei simboli**: il nome dell'ente può cambiare. Colori fissi, nome per
+esteso in `--text`. Il marchio è fermo (niente animazioni, niente inclinazione al
+passaggio del mouse). Un simbolo nuovo deve potersi spiegare in una frase e leggersi a 16 px.
+Tono: autorevole, istituzionale, sobrio. Il pubblico è colto e esigente: niente che
+sembri un videogioco, niente immagini di cui ci si chieda "e quello cos'è?".
+
+**Emblemi tematici** (`shared/emblemi/emblema-tema.component.ts`): una sola famiglia,
+piastra a scudo scura con bordo sfumato viola→pesca e un simbolo al tratto pesca
+(verifica, lucchetto, chiave, impronta, rete, documento, bilancia, libro, grafico,
+chip, calendario, persona, busta). Ogni emblema sta dove il suo simbolo ha senso
+(pilastri, newsletter, accesso, registrazione…). Niente icone di altri stili accanto.
 
 **Riscontro delle azioni**: ogni salvataggio o eliminazione nel backoffice mostra un
 avviso (`AvvisiService`) con lo stesso verbo del bottone. Gli errori restano nel
@@ -159,7 +168,11 @@ modulo o in un dialogo, non negli avvisi.
 gli indirizzi sconosciuti mostrano la pagina 404, non un redirect muto.
 
 **Font**: self-hosted da `@fontsource` (niente Google Fonts: GDPR e build offline).
-Chakra Petch (titoli) + IBM Plex Sans (testo). Alternative del builder: Sora, Source Serif 4.
+IBM Plex Serif 600 (titoli, autorevole) + IBM Plex Sans (testo): una sola famiglia.
+Alternative del builder: tutto IBM Plex Sans ("Contemporaneo"), Chakra Petch ("Tecnico").
+
+**Persone nelle illustrazioni**: abiti formali e curati (giacca, cravatta, colletto,
+polsini, orologio, orecchini, pieghe stirate). Il dettaglio sta negli abiti, mai nel viso.
 
 ---
 

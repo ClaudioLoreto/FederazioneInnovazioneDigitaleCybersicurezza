@@ -28,6 +28,7 @@
   width: min(300px, 60%);
   margin: auto auto 0;
   filter: drop-shadow(0 24px 40px color-mix(in srgb, var(--X-bg) 90%, transparent));
+  &.scudo { width: min(200px, 44%); }
 }
 .vetrina-testo {
   max-width: 460px; margin-inline: auto; margin-bottom: auto;
@@ -79,3 +80,7 @@
   .vetrina-testo, .home-link { display: none; }
   .modulo { place-items: start center; padding-top: 32px; }
 }
+
+// Velo 3: la scena di fondo è chiara, quindi la vetrina trasparente diventerebbe
+// grigia. Qui la vetrina è blu pieno.
+:host-context([data-theme='3']) .vetrina { background: var(--X-bg); }

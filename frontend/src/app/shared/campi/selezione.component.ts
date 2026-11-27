@@ -127,7 +127,7 @@ export interface OpzioneSelezione {
       color: var(--text-soft);
       border: 1px solid transparent;
     }
-    .lista li .segno { width: 10px; color: var(--accent); }
+    .lista li .segno { width: 10px; color: var(--signal); }
     .lista li.scelta { color: var(--text); font-weight: 700; }
     /* Una sola voce alla volta è evidenziata, che ci si arrivi con il mouse o
        con le frecce: così non ci sono mai due "punti attivi" contemporanei. */

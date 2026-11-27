@@ -50,9 +50,9 @@ export const SCENE: Record<ScenaIllustrazione, () => string> = {
     `${r(18,148,96,7,'arredo',2)}<path class="arredo-linea" d="M30,155 L30,200 M102,155 L102,200"/>` +
     ombra(160, 26) + ombra(58, 34) +
     sedia(50, 176) +
-    persona({x:54,y:118,s:1,posa:'seduto',capelli:'lunghi',abito:'a-pesca',camicia:'c-crema',colCapelli:'h-blu',spalle:13.6,bracci:[[[10,14],[26,20]],[[12,14],[28,18]]]}) +
+    persona({x:54,y:118,s:1,posa:'seduto',capelli:'lunghi',abito:'a-pesca',camicia:'c-crema',colCapelli:'h-blu',spalle:13.6,orecchini:true,bracci:[[[10,14],[26,20]],[[12,14],[28,18]]]}) +
     laptop(84,147,1) +
-    persona({x:160,y:96,s:1.04,posa:'in-piedi',capelli:'corti',abito:'a-crema',giacca:true,camicia:'c-blu',bracci:[[[-4,18],[-2,36]],[[14,4],[30,-12]]]}) +
+    persona({x:160,y:96,s:1.04,posa:'in-piedi',capelli:'corti',abito:'a-crema',giacca:true,camicia:'c-blu',cravatta:'c-viola',orologio:true,bracci:[[[-4,18],[-2,36]],[[14,4],[30,-12]]]}) +
     pianta(14),
 
   'conferenza': () => fondale + pavimento +
@@ -62,7 +62,7 @@ export const SCENE: Record<ScenaIllustrazione, () => string> = {
       <path class="filo traccia vivo" d="M246,96 L262,80 L276,86 L292,62"/>${r(246,48,40,4,'riga-chiara',2)}${r(246,58,28,4,'riga-chiara',2)}
     </g>` +
     ombra(84, 30) +
-    persona({x:84,y:96,s:1.04,vista:'fronte',capelli:'raccolti',abito:'a-blu',camicia:'c-crema',gonna:'g-blu',colCapelli:'h-blu',spalle:13.6,badge:true,bracci:[[[-6,18],[-4,34]],[[14,2],[30,-8]]]}) +
+    persona({x:84,y:96,s:1.04,vista:'fronte',capelli:'raccolti',abito:'a-blu',camicia:'c-crema',gonna:'g-blu',colCapelli:'h-blu',spalle:13.6,badge:true,orecchini:true,bracci:[[[-6,18],[-4,34]],[[14,2],[30,-8]]]}) +
     // leggio davanti alla relatrice
     `<path class="arredo" d="M60,150 L108,150 L102,200 L66,200 Z"/>${r(56,146,56,8,'arredo',2)}${r(72,164,24,4,'logo-leggio',2)}` +
     // pubblico di spalle in primo piano
@@ -78,7 +78,7 @@ export const SCENE: Record<ScenaIllustrazione, () => string> = {
       <rect class="cursore-codice vivo" x="112" y="84" width="5" height="5"/>
       <g class="lucchetto"><path d="M130,44 v-6 a8,8 0 0,1 16,0 v6" class="lucchetto-arco"/>${r(124,44,28,22,'lucchetto-corpo',3)}<circle class="lucchetto-foro" cx="138" cy="54" r="3"/></g>
     </g>` +
-    persona({x:200,y:90,s:.96,dir:-1,vista:'fronte',capelli:'rasati',barba:true,abito:'a-blu',camicia:'c-crema',giacca:true,colCapelli:'h-blu',bracci:[[[-4,18],[-2,34]],[[14,0],[30,-12]]]}) +
+    persona({x:200,y:90,s:.96,dir:-1,vista:'fronte',capelli:'rasati',barba:true,abito:'a-blu',camicia:'c-crema',giacca:true,cravatta:'c-viola',colCapelli:'h-blu',bracci:[[[-4,18],[-2,34]],[[14,0],[30,-12]]]}) +
     // banco lungo in primo piano, con i portatili accesi verso gli allievi
     // Il banco è pieno (piano + pannello frontale): copre le gambe del docente,
     // che sta dietro, come succederebbe davvero.
@@ -98,9 +98,9 @@ export const SCENE: Record<ScenaIllustrazione, () => string> = {
     `${r(120,142,170,7,'arredo',2)}<path class="arredo-linea" d="M134,149 L134,200 M276,149 L276,200"/>` +
     `${r(126,138.4,28,3.4,'laptop',1)}` +
     ombra(90, 30) + sedia(92, 176) +
-    persona({x:96,y:118,s:1,posa:'seduto',capelli:'lunghi',colCapelli:'h-crema',abito:'a-blu',camicia:'c-crema',occhiali:true,spalle:13.6,bracci:[[[12,22],[30,13]],[[14,20],[32,11]]]}) +
+    persona({x:96,y:118,s:1,posa:'seduto',capelli:'lunghi',colCapelli:'h-crema',abito:'a-blu',camicia:'c-crema',occhiali:true,spalle:13.6,orecchini:true,bracci:[[[12,22],[30,13]],[[14,20],[32,11]]]}) +
     ombra(44, 22) +
-    persona({x:44,y:96,s:1.02,capelli:'corti',abito:'a-crema',camicia:'c-viola',colCapelli:'h-blu',tiene:'tazza',bracci:[[[-4,18],[-2,36]],[[8,17],[15,5]]]}) +
+    persona({x:44,y:96,s:1.02,capelli:'corti',abito:'a-crema',camicia:'c-viola',colCapelli:'h-blu',orologio:true,tiene:'tazza',bracci:[[[-4,18],[-2,36]],[[8,17],[15,5]]]}) +
     pianta(306),
 
   'consulenza': () => fondale + pavimento +
@@ -108,7 +108,7 @@ export const SCENE: Record<ScenaIllustrazione, () => string> = {
     `<ellipse class="arredo" cx="160" cy="150" rx="58" ry="8"/><path class="arredo-linea" d="M160,158 L160,200 M140,200 L180,200"/>` +
     ombra(72, 30) + ombra(248, 30) +
     sedia(66, 176) + sedia(254, 176, -1) +
-    persona({x:70,y:118,s:1,posa:'seduto',capelli:'corti',abito:'a-crema',giacca:true,camicia:'c-blu',colCapelli:'h-blu',tiene:'tablet',bracci:[[[10,14],[28,16]],[[12,12],[30,6]]]}) +
-    persona({x:250,y:118,s:1,dir:-1,posa:'seduto',capelli:'raccolti',colCapelli:'h-blu',abito:'a-pesca',camicia:'c-crema',spalle:13.6,bracci:[[[10,14],[26,18]],[[12,10],[24,2]]]}) +
+    persona({x:70,y:118,s:1,posa:'seduto',capelli:'corti',abito:'a-crema',giacca:true,camicia:'c-blu',cravatta:'c-viola',colCapelli:'h-blu',orologio:true,tiene:'tablet',bracci:[[[10,14],[28,16]],[[12,12],[30,6]]]}) +
+    persona({x:250,y:118,s:1,dir:-1,posa:'seduto',capelli:'raccolti',colCapelli:'h-blu',abito:'a-pesca',camicia:'c-crema',spalle:13.6,orecchini:true,bracci:[[[10,14],[26,18]],[[12,10],[24,2]]]}) +
     `<rect class="tazza-corpo" x="176" y="136" width="9" height="11" rx="2"/>` + pianta(300)
 };

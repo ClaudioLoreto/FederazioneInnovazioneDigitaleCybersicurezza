@@ -38,7 +38,8 @@ $c-cream:     #FFF0D9;   // crema: fondi chiari, testo su scuro
   --motion:        1;       // intensità della scena di sfondo (0..1.5)
   --bracket:       0;       // 1 = mirini agli angoli dei pannelli (velo 2)
   --ease-spatial:  cubic-bezier(.22, 1, .36, 1);
-  --font-display:  'Chakra Petch', 'Segoe UI', system-ui, sans-serif;
+  // Titoli in graziato: autorevole e colto, della stessa famiglia del testo.
+  --font-display:  'IBM Plex Serif', Georgia, 'Times New Roman', serif;
   --font-body:     'IBM Plex Sans', system-ui, 'Segoe UI', Roboto, sans-serif;
   --surface-blur:  14px;
   --header-h:      76px;

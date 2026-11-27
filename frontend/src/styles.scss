@@ -8,6 +8,7 @@
 //
 //  ⚠️ Nessun colore fisso: solo token (vedi styles/_palette.scss e _themes.scss).
 //  I font sono self-hosted (angular.json → styles), niente Google Fonts.
+//  Titoli IBM Plex Serif (autorevole), testo IBM Plex Sans: stessa famiglia.
 // =============================================================================
 
 @use 'styles/palette' as *;
@@ -54,9 +55,9 @@ button, input, select, textarea { font: inherit; color: inherit; }
 // Scala modulare 1.25 su base 16px; i titoli di sezione sono fluidi.
 h1, h2, h3, h4 {
   font-family: var(--font-display);
-  font-weight: 700;
-  line-height: 1.08;
-  letter-spacing: -.01em;
+  font-weight: 600;
+  line-height: 1.12;
+  letter-spacing: -.012em;
   text-wrap: balance;
 }
 h2 { font-size: clamp(1.9rem, 1.2rem + 2.4vw, 3rem); }

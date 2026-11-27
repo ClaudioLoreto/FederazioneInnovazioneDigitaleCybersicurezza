@@ -1,38 +1,46 @@
 <!--
-  FIDC — Marchio ufficiale (sorgente SVG), versione novembre 2026.
+  Marchio ufficiale della Federazione (sorgente SVG), versione novembre 2026.
 
-  SIGNIFICATO (si deve poter spiegare in una frase):
-    - lo SCUDO è la sicurezza;
-    - dentro, la F di Federazione tracciata come una pista di circuito:
-      il digitale e l'innovazione;
-    - le piste finiscono in TRE NODI, uno per parola del nome:
-      Innovazione, Digitale, Cybersicurezza. Sono anche i soggetti che la
-      Federazione mette in connessione.
+  SIGNIFICATO (si spiega in una frase):
+    uno SCUDO SFACCETTATO, tagliato come una gemma: tre facce (innovazione,
+    digitale, sicurezza) che si incontrano in un unico punto, la Federazione.
+    Protezione, valore, solidità. Nessuna lettera: il nome dell'ente potrebbe
+    cambiare e il simbolo deve restare valido.
 
   REGOLE D'USO
-    - Colori fissi, solo la palette: scudo #723EC3, contorno #FFCF95,
-      F #FFF0D9, nodi #FFCF95. Funziona su fondo #333D6D e su fondo #FFF0D9.
-    - Misura minima del simbolo: 16 px (favicon). Sotto i 32 px si usa la
-      versione senza "via" interne ai nodi (frontend/src/assets/favicon.svg).
+    - Colori fissi, solo la palette: scudo #723EC3; faccia alta #FFF0D9 al 22%;
+      faccia sinistra #333D6D al 40%; spigoli, contorno e punto #FFCF95.
+      Funziona su fondo #333D6D e su fondo #FFF0D9.
+    - Misura minima: 16 px (favicon: frontend/src/assets/favicon.svg, stesso
+      disegno con tratti più spessi).
     - Proporzioni: viewBox + preserveAspectRatio="xMidYMid meet"; in CSS solo
       width:100%;height:auto, mai larghezza e altezza forzate insieme.
-    - Nome per esteso in Chakra Petch (700 per "Federazione", 600 per il resto).
+    - Nome per esteso: "Federazione" in IBM Plex Serif 600, il resto in
+      IBM Plex Sans 500. Nel sito il nome segue il colore del testo del velo.
+    - Il marchio è fermo. Il movimento resta agli emblemi tematici
+      (frontend/src/app/shared/emblemi), che hanno un'altra forma: piastra a
+      scudo scura con un simbolo al tratto.
+
+  SCARTATE (novembre 2026)
+    - Scudo con la F a circuito e tre nodi: conteneva una lettera.
+    - Sigillo con anello di tacche: elegante ma illeggibile sotto i 32 px.
+    - Scudi concentrici: chiaro ma generico, simile a molti antivirus.
+    - Rete di nodi nello scudo: a 16 px diventa una macchia.
 
   Versione nel sito: frontend/src/app/shared/animated-logo/animated-logo.component.ts
-  (stesso disegno, con il segnale che accende i tre nodi in sequenza).
-  Versione precedente (scudo bicolore con nodo centrale): nella storia di git.
 -->
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 620 200" width="620" height="200" preserveAspectRatio="xMidYMid meet">
   <g transform="translate(18 12) scale(1.57)">
-    <path d="M50 4 L92 16 V52 C92 78 74 96 50 108 C26 96 8 78 8 52 V16 Z" fill="#723EC3" stroke="#FFCF95" stroke-width="4" stroke-linejoin="round"/>
-    <path d="M36 88 V30 H60 L68 22 M36 56 H54 L62 64" fill="none" stroke="#FFF0D9" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
-    <circle cx="36" cy="90" r="7" fill="#FFCF95"/><circle cx="36" cy="90" r="2.6" fill="#723EC3"/>
-    <circle cx="63" cy="65" r="7" fill="#FFCF95"/><circle cx="63" cy="65" r="2.6" fill="#723EC3"/>
-    <circle cx="69" cy="21" r="7" fill="#FFCF95"/><circle cx="69" cy="21" r="2.6" fill="#723EC3"/>
+    <path d="M50 4 L92 16 V52 C92 78 74 96 50 108 C26 96 8 78 8 52 V16 Z" fill="#723EC3"/>
+    <path d="M50 4 L92 16 L50 47 L8 16 Z" fill="#FFF0D9" fill-opacity=".22"/>
+    <path d="M8 16 L50 47 L50 108 C26 96 8 78 8 52 Z" fill="#333D6D" fill-opacity=".4"/>
+    <path d="M8 16 L50 47 L92 16 M50 47 V108" fill="none" stroke="#FFCF95" stroke-width="1.4" stroke-opacity=".75" stroke-linejoin="round"/>
+    <path d="M50 4 L92 16 V52 C92 78 74 96 50 108 C26 96 8 78 8 52 V16 Z" fill="none" stroke="#FFCF95" stroke-width="3" stroke-linejoin="round"/>
+    <circle cx="50" cy="47" r="4.6" fill="#FFCF95"/>
   </g>
-  <g transform="translate(212 0)" fill="#333D6D" font-family="'Chakra Petch', system-ui, sans-serif">
-    <text x="0" y="72" font-weight="700" font-size="46">Federazione</text>
-    <text x="0" y="112" font-weight="600" font-size="31">Innovazione, Digitale</text>
-    <text x="0" y="148" font-weight="600" font-size="31">e Cybersicurezza</text>
+  <g transform="translate(212 0)" fill="#333D6D">
+    <text x="0" y="72" font-family="'IBM Plex Serif', Georgia, serif" font-weight="600" font-size="50">Federazione</text>
+    <text x="0" y="112" font-family="'IBM Plex Sans', system-ui, sans-serif" font-weight="500" font-size="31">Innovazione, Digitale</text>
+    <text x="0" y="148" font-family="'IBM Plex Sans', system-ui, sans-serif" font-weight="500" font-size="31">e Cybersicurezza</text>
   </g>
 </svg>

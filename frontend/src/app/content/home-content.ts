@@ -6,6 +6,8 @@
 //  cambia questo file, non i componenti.
 // =============================================================================
 
+import type { TemaEmblema } from '../shared/emblemi/emblema-tema.component';
+
 import type { ScenaIllustrazione } from '../shared/illustrazioni/illustrazione.component';
 import type { Evento, News } from '../services/fidc-api.service';
 
@@ -103,7 +105,10 @@ export const CHI_SIAMO = {
 
 /** Modello di un progetto istituzionale in evidenza. */
 export interface Progetto {
+  /** Identificativo interno (non mostrato). */
   codice: string;
+  /** Emblema del tema del progetto, mostrato in grande sul progetto di apertura. */
+  emblema: TemaEmblema;
   titolo: string;
   categoria: string;
   descrizione: string;
@@ -118,6 +123,7 @@ export interface Progetto {
 export const PROGETTI: Progetto[] = [
   {
     codice: 'CS-01',
+    emblema: 'verifica',
     titolo: 'Scudo PMI',
     categoria: 'Cybersicurezza',
     descrizione:
@@ -128,6 +134,7 @@ export const PROGETTI: Progetto[] = [
   },
   {
     codice: 'ID-02',
+    emblema: 'impronta',
     titolo: 'Identità Digitale Sicura',
     categoria: 'Identità & Fiducia',
     descrizione:
@@ -138,6 +145,7 @@ export const PROGETTI: Progetto[] = [
   },
   {
     codice: 'AI-03',
+    emblema: 'chip',
     titolo: 'IA Responsabile',
     categoria: 'Intelligenza Artificiale',
     descrizione:
@@ -148,6 +156,7 @@ export const PROGETTI: Progetto[] = [
   },
   {
     codice: 'ED-04',
+    emblema: 'libro',
     titolo: 'Academy Nazionale',
     categoria: 'Competenze',
     descrizione:
@@ -163,7 +172,8 @@ export interface MembroGovernance {
   nome: string;
   ruolo: string;
   area: string;
-  iniziali: string;
+  /** Emblema della famiglia a scudo: niente sigle, il nome degli organi può cambiare. */
+  emblema: TemaEmblema;
 }
 
 /**
@@ -171,12 +181,12 @@ export interface MembroGovernance {
  * istituzionali (nomi rappresentativi), coerenti con la missione FIDC.
  */
 export const GOVERNANCE: MembroGovernance[] = [
-  { nome: 'Consiglio Direttivo', ruolo: 'Presidenza', area: 'Indirizzo strategico', iniziali: 'CD' },
-  { nome: 'Comitato Scientifico', ruolo: 'Direzione tecnico-scientifica', area: 'Ricerca & standard', iniziali: 'CS' },
-  { nome: 'Osservatorio Cyber', ruolo: 'Coordinamento', area: 'Analisi delle minacce', iniziali: 'OC' },
-  { nome: 'Segreteria Generale', ruolo: 'Direzione operativa', area: 'Attività & soci', iniziali: 'SG' },
-  { nome: 'Tavolo Formazione', ruolo: 'Coordinamento', area: 'Academy & competenze', iniziali: 'TF' },
-  { nome: 'Collegio dei Garanti', ruolo: 'Vigilanza', area: 'Etica & conformità', iniziali: 'CG' }
+  { nome: 'Consiglio Direttivo', ruolo: 'Presidenza', area: 'Indirizzo strategico', emblema: 'bussola' },
+  { nome: 'Comitato Scientifico', ruolo: 'Direzione tecnico-scientifica', area: 'Ricerca & standard', emblema: 'grafico' },
+  { nome: 'Osservatorio Cyber', ruolo: 'Coordinamento', area: 'Analisi delle minacce', emblema: 'radar' },
+  { nome: 'Segreteria Generale', ruolo: 'Direzione operativa', area: 'Attività & soci', emblema: 'documento' },
+  { nome: 'Tavolo Formazione', ruolo: 'Coordinamento', area: 'Academy & competenze', emblema: 'libro' },
+  { nome: 'Collegio dei Garanti', ruolo: 'Vigilanza', area: 'Etica & conformità', emblema: 'bilancia' }
 ];
 
 // =============================================================================

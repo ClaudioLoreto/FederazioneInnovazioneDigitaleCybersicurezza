@@ -11,28 +11,24 @@
 //     dimensionato per restare leggibile anche nel menu laterale, dove il
 //     marchio è largo circa 200 pixel.
 //
-//  2. IL SIMBOLO SI LEGGE IN UNA FRASE (novembre 2026). La "porta blindata"
-//     precedente, alla misura reale del marchio, era un ottagono con un cerchio:
-//     non raccontava niente. Ora:
-//       - lo SCUDO è la sicurezza;
-//       - dentro c'è la F di Federazione, tracciata come una pista di circuito:
-//         il digitale e l'innovazione;
-//       - le piste finiscono in TRE NODI, uno per parola del nome: Innovazione,
-//         Digitale, Cybersicurezza. Sono anche i soggetti che la Federazione
-//         mette in connessione.
-//     Resta riconoscibile a 16 pixel (favicon): sagoma dello scudo + F.
+//  2. IL SIMBOLO SI LEGGE IN UNA FRASE, SENZA LETTERE. Il nome dell'ente
+//     potrebbe cambiare, quindi niente iniziali. È uno SCUDO SFACCETTATO, come
+//     una gemma tagliata: tre facce (innovazione, digitale, sicurezza) che si
+//     incontrano in un unico punto, la Federazione. Comunica protezione, valore
+//     e solidità; è serio e moderno, e resta riconoscibile a 16 pixel.
+//     Versioni scartate (e perché) nella storia di git e in LOGO.txt.
 //
-//  3. SI MUOVE SOLO CIÒ CHE HA UN SIGNIFICATO. I tre nodi si accendono uno dopo
-//     l'altro, ogni qualche secondo, come un segnale che percorre la rete. Le
-//     posizioni restano ferme: nessun elemento vaga per il marchio.
+//  3. IL MARCHIO È FERMO. Un logo istituzionale non si muove: l'animazione
+//     resta agli emblemi tematici sparsi nel sito (shared/emblemi).
 //
 //  4. IL SIMBOLO HA COLORI FISSI, il nome segue il tema. Un marchio non cambia
-//     colore col velo: scudo viola, F crema, nodi pesca funzionano su fondo
-//     blu e su fondo crema (il contorno pesca lo stacca dal blu, il viola dal
-//     crema). Il nome invece usa --text, quindi resta leggibile su ogni velo.
+//     colore col velo: scudo viola con facce in luce e in ombra, spigoli e
+//     punto pesca, funziona su fondo blu e su fondo crema (il contorno pesca
+//     lo stacca dal blu, il viola dal crema). Il nome usa --text, quindi resta
+//     leggibile su ogni velo.
 // =============================================================================
 
-import { Component, HostListener, Input, signal } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { NgIf } from '@angular/common';
 import { BRAND } from '../../content/home-content';
 
@@ -44,22 +40,22 @@ import { BRAND } from '../../content/home-content';
     <svg [attr.viewBox]="soloSimbolo ? '0 0 100 112' : '0 0 620 200'"
          preserveAspectRatio="xMidYMid meet"
          class="fidc-logo"
-         [class.interactive]="interactive"
-         [style.transform]="tilt()"
          xmlns="http://www.w3.org/2000/svg"
          role="img"
          [attr.aria-label]="nome">
 
-      <!-- ============ SIMBOLO: scudo con la F a circuito ============ -->
+      <!-- ============ SIMBOLO: scudo sfaccettato ============ -->
       <g class="mark" [attr.transform]="soloSimbolo ? null : 'translate(18 12) scale(1.57)'">
-        <!-- Scudo: la sicurezza -->
         <path class="scudo" d="M50 4 L92 16 V52 C92 78 74 96 50 108 C26 96 8 78 8 52 V16 Z"/>
-        <!-- F di Federazione, tracciata come una pista di circuito -->
-        <path class="pista" d="M36 88 V30 H60 L68 22 M36 56 H54 L62 64"/>
-        <!-- Tre nodi: Innovazione, Digitale, Cybersicurezza -->
-        <g class="nodo n1"><circle cx="36" cy="90" r="7"/><circle class="via" cx="36" cy="90" r="2.6"/></g>
-        <g class="nodo n2"><circle cx="63" cy="65" r="7"/><circle class="via" cx="63" cy="65" r="2.6"/></g>
-        <g class="nodo n3"><circle cx="69" cy="21" r="7"/><circle class="via" cx="69" cy="21" r="2.6"/></g>
+        <!-- Faccia alta, più chiara: la luce arriva dall'alto -->
+        <path class="faccia-luce" d="M50 4 L92 16 L50 47 L8 16 Z"/>
+        <!-- Faccia sinistra, in ombra -->
+        <path class="faccia-ombra" d="M8 16 L50 47 L50 108 C26 96 8 78 8 52 Z"/>
+        <!-- Spigoli: le tre facce che convergono -->
+        <path class="spigoli" d="M8 16 L50 47 L92 16 M50 47 V108"/>
+        <path class="bordo" d="M50 4 L92 16 V52 C92 78 74 96 50 108 C26 96 8 78 8 52 V16 Z"/>
+        <!-- Il punto d'incontro: la Federazione -->
+        <circle class="punto" cx="50" cy="47" r="4.6"/>
       </g>
 
       <!-- ============ NOME PER ESTESO ============ -->
@@ -77,49 +73,33 @@ import { BRAND } from '../../content/home-content';
     :host { display: block; }
     .fidc-logo {
       width: 100%; height: auto; display: block; overflow: visible;
-      transition: transform .25s ease;
     }
 
     /* Simbolo a colori fissi (vedi punto 4 in testa al file). */
-    .scudo { fill: var(--c-purple); stroke: var(--c-peach); stroke-width: 4; stroke-linejoin: round; }
-    .pista { fill: none; stroke: var(--c-cream); stroke-width: 8; stroke-linecap: round; stroke-linejoin: round; }
-    .nodo circle { fill: var(--c-peach); }
-    .nodo .via { fill: var(--c-purple); }
+    .scudo { fill: var(--c-purple); }
+    .faccia-luce { fill: var(--c-cream); fill-opacity: .22; }
+    .faccia-ombra { fill: var(--c-deep-blue); fill-opacity: .4; }
+    .spigoli { fill: none; stroke: var(--c-peach); stroke-width: 1.4; stroke-opacity: .75; stroke-linejoin: round; }
+    .bordo { fill: none; stroke: var(--c-peach); stroke-width: 3; stroke-linejoin: round; }
+    .punto { fill: var(--c-peach); }
     .filo { stroke: var(--signal, var(--accent)); opacity: .55; }
 
+    /* Nome: "Federazione" nel carattere dei titoli, il resto in quello del testo. */
     .riga-1 {
       font-family: var(--font-display);
-      font-weight: 700; font-size: 46px; letter-spacing: .01em;
+      font-weight: 600; font-size: 50px; letter-spacing: -.005em;
       fill: var(--text);
     }
     .riga-2 {
-      font-family: var(--font-display);
-      font-weight: 600; font-size: 31px; letter-spacing: .01em;
-      fill: var(--text); opacity: .92;
-    }
-
-    /* --- Un solo movimento: il segnale che percorre la rete ---
-       Ogni 7 secondi i tre nodi si accendono in sequenza, dal basso verso
-       l'alto, poi tutto resta fermo. Si nota se lo si guarda, non distrae. */
-    .nodo { transform-box: fill-box; transform-origin: center; animation: segnale 7s ease-in-out infinite; }
-    .n2 { animation-delay: .25s; }
-    .n3 { animation-delay: .5s; }
-    @keyframes segnale {
-      0%, 14%, 100% { transform: scale(1); }
-      7% { transform: scale(1.22); }
-    }
-    .nodo circle:first-child { animation: luce 7s ease-in-out infinite; animation-delay: inherit; }
-    @keyframes luce { 0%, 14%, 100% { fill: var(--c-peach); } 7% { fill: var(--c-cream); } }
-
-    @media (prefers-reduced-motion: reduce) {
-      .fidc-logo { transition: none; }
-      .nodo, .nodo circle { animation: none !important; }
+      font-family: var(--font-body);
+      font-weight: 500; font-size: 31px; letter-spacing: .005em;
+      fill: var(--text); opacity: .88;
     }
   `]
 })
 export class AnimatedLogoComponent {
-  /** Se true, il marchio si inclina seguendo il puntatore. */
-  @Input() interactive = true;
+  /** Mantenuto per compatibilità: il marchio non reagisce più al puntatore. */
+  @Input() interactive = false;
 
   /**
    * Se true mostra il solo simbolo, senza il nome.
@@ -131,21 +111,4 @@ export class AnimatedLogoComponent {
   /** Nome per esteso, su tre righe: arriva da BRAND per poterlo sostituire. */
   readonly righe = BRAND.righeMarchio;
   readonly nome = BRAND.nome;
-
-  readonly tilt = signal('perspective(800px) rotateX(0deg) rotateY(0deg)');
-
-  @HostListener('mousemove', ['$event'])
-  onMove(e: MouseEvent): void {
-    if (!this.interactive) return;
-    const t = e.currentTarget as HTMLElement;
-    const r = t.getBoundingClientRect();
-    const rx = ((e.clientY - r.top) / r.height - 0.5) * -8;
-    const ry = ((e.clientX - r.left) / r.width - 0.5) * 8;
-    this.tilt.set(`perspective(800px) rotateX(${rx}deg) rotateY(${ry}deg)`);
-  }
-
-  @HostListener('mouseleave')
-  onLeave(): void {
-    this.tilt.set('perspective(800px) rotateX(0deg) rotateY(0deg)');
-  }
 }

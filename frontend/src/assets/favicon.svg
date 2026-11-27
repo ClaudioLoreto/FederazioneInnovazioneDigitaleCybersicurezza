@@ -1,7 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="-6 0 112 112">
-  <!-- Marchio FIDC: scudo (sicurezza), F a circuito (Federazione, digitale),
-       tre nodi (Innovazione, Digitale, Cybersicurezza). Solo i 4 colori. -->
-  <path d="M50 4 L92 16 V52 C92 78 74 96 50 108 C26 96 8 78 8 52 V16 Z" fill="#723EC3" stroke="#FFCF95" stroke-width="5" stroke-linejoin="round"/>
-  <path d="M36 88 V30 H60 L68 22 M36 56 H54 L62 64" fill="none" stroke="#FFF0D9" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
-  <circle cx="36" cy="90" r="8" fill="#FFCF95"/><circle cx="63" cy="65" r="8" fill="#FFCF95"/><circle cx="69" cy="21" r="8" fill="#FFCF95"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 112">
+  <path d="M50 4 L92 16 V52 C92 78 74 96 50 108 C26 96 8 78 8 52 V16 Z" fill="#723EC3"/>
+  <path d="M50 4 L92 16 L50 47 L8 16 Z" fill="#FFF0D9" fill-opacity=".24"/>
+  <path d="M8 16 L50 47 L50 108 C26 96 8 78 8 52 Z" fill="#333D6D" fill-opacity=".42"/>
+  <path d="M8 16 L50 47 L92 16 M50 47 V108" fill="none" stroke="#FFCF95" stroke-width="2.4" stroke-opacity=".8"/>
+  <path d="M50 4 L92 16 V52 C92 78 74 96 50 108 C26 96 8 78 8 52 V16 Z" fill="none" stroke="#FFCF95" stroke-width="5" stroke-linejoin="round"/>
+  <circle cx="50" cy="47" r="7" fill="#FFCF95"/>
 </svg>

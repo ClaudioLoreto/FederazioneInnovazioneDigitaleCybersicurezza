@@ -67,7 +67,7 @@ type Stato = 'attesa' | 'ok' | 'errore';
     .check { background: var(--accent); color: var(--on-accent); }
     .cross { background: var(--accent-2); color: var(--on-accent-2); }
     .spinner { width:56px; height:56px; margin:0 auto; border-radius:50%;
-               border:5px solid var(--accent-soft); border-top-color: var(--accent);
+               border:5px solid var(--accent-soft); border-top-color: var(--signal);
                animation: spin .9s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
     @media (prefers-reduced-motion: reduce) { .spinner { animation: none; } }

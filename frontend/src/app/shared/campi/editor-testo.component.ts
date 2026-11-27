@@ -140,7 +140,7 @@ const TAG_AMMESSI = new Set([
     .area h3 { font-size: 1.05rem; margin: .4em 0 .4em; font-family: var(--font-display); }
     .area ul, .area ol { margin: 0 0 .8em; padding-left: 1.4em; }
     .area li { margin: .2em 0; }
-    .area a { color: var(--accent); text-decoration: underline; }
+    .area a { color: var(--signal); text-decoration: underline; }
     .area blockquote {
       margin: 0 0 .8em; padding: .4em 0 .4em 1em;
       border-left: 3px solid var(--accent); color: var(--text-soft); font-style: italic;

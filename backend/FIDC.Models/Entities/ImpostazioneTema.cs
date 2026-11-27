@@ -55,7 +55,7 @@ public class ImpostazioneTema : BaseEntity
     public string StileRaggio { get; set; } = "soft";
 
     /// <summary>Abbinamento tipografico: "cyber" · "moderno" · "classico".</summary>
-    public string AbbinamentoFont { get; set; } = "cyber";
+    public string AbbinamentoFont { get; set; } = "classico";
 
     /// <summary>
     /// Figura mostrata nell'hero della home: "cassaforte" (predefinita),

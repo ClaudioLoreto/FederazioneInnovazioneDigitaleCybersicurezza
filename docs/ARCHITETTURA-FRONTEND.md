@@ -153,7 +153,7 @@ frontend/src/app/
    ├─ emblema/                   cassaforte · scudo · nucleo per l'hero
    ├─ motion/                    fidcReveal e fidcConteggio
    ├─ safe-logo/                 cassaforte digitale animata
-   ├─ svg-motifs/                sfondi decorativi
+   ├─ emblemi/                   famiglia di emblemi a scudo (lucchetto, rete, bilancia…)
    ├─ background-canvas/         scena di rete 2D di sfondo
    ├─ theme/                     gestione del velo attivo
    ├─ dialogo/                   finestre di conferma e avviso interne

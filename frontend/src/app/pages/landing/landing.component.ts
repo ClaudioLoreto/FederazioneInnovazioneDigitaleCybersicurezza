@@ -21,7 +21,7 @@ import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
-import { CyberShieldComponent } from '../../shared/svg-motifs/svg-motifs.component';
+import { EmblemaTemaComponent, TemaEmblema } from '../../shared/emblemi/emblema-tema.component';
 import { IllustrazioneComponent, ScenaIllustrazione } from '../../shared/illustrazioni/illustrazione.component';
 import { EmblemaComponent } from '../../shared/emblema/emblema.component';
 import { TestataPubblicaComponent } from '../../shared/pubblico/testata-pubblica.component';
@@ -49,7 +49,7 @@ const SEZIONI = ['associazione', 'progetti', 'eventi', 'news', 'contatti'];
   standalone: true,
   imports: [
     DatePipe, FormsModule, RouterLink,
-    CyberShieldComponent, IllustrazioneComponent, EmblemaComponent,
+    EmblemaTemaComponent, IllustrazioneComponent, EmblemaComponent,
     TestataPubblicaComponent, PiedePubblicoComponent,
     RevealDirective, ConteggioDirective
   ],
@@ -74,6 +74,11 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
   readonly nl = NEWSLETTER;
 
   /** Dove porta il collegamento in fondo a ogni pilastro aperto. */
+  /** Emblema di ogni pilastro: stessa famiglia dello scudo, un simbolo per tema. */
+  readonly sigilli: Record<PilastroHome['chiave'], TemaEmblema> = {
+    attivita: 'rete', eventi: 'calendario', formazione: 'libro', ricerca: 'grafico'
+  };
+
   readonly collegamenti: Record<PilastroHome['chiave'], { ancora: string; label: string }> = {
     attivita: { ancora: 'progetti', label: 'Guarda i progetti in corso' },
     eventi: { ancora: 'eventi', label: 'Vedi il calendario degli eventi' },

@@ -22,7 +22,7 @@ import { AuthShellComponent } from '../../shared/auth/auth-shell.component';
   styleUrl: '../../shared/auth/auth-form.scss',
   template: `
   <fidc-auth-shell
-    emblema="scudo"
+    tema="impronta"
     titolo="Unisciti alla Federazione"
     testo="Una rete di imprese, enti e professionisti che rende l'innovazione più sicura."
     [punti]="['Accesso a eventi, tavoli di lavoro e academy', 'Documenti e ricerche riservati ai soci', 'Aggiornamenti dall\\'osservatorio cyber']">

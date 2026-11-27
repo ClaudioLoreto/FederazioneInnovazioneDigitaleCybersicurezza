@@ -8,6 +8,7 @@
 //  leggibile sempre. Su telefono la vetrina si riduce a una fascia in alto.
 // =============================================================================
 
+import { EmblemaTemaComponent, TemaEmblema } from '../emblemi/emblema-tema.component';
 import { Component, Input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { AnimatedLogoComponent } from '../animated-logo/animated-logo.component';
@@ -16,7 +17,7 @@ import { EmblemaComponent, EmblemaHero } from '../emblema/emblema.component';
 @Component({
   selector: 'fidc-auth-shell',
   standalone: true,
-  imports: [RouterLink, AnimatedLogoComponent, EmblemaComponent],
+  imports: [RouterLink, AnimatedLogoComponent, EmblemaComponent, EmblemaTemaComponent],
   template: `
   <div class="auth">
     <aside class="vetrina tone-fixed-dark">
@@ -24,8 +25,9 @@ import { EmblemaComponent, EmblemaHero } from '../emblema/emblema.component';
         <fidc-animated-logo [interactive]="false"></fidc-animated-logo>
       </a>
 
-      <div class="vetrina-emblema" aria-hidden="true">
-        <fidc-emblema [forza]="emblema"></fidc-emblema>
+      <div class="vetrina-emblema" [class.scudo]="!!tema" aria-hidden="true">
+        @if (tema) { <fidc-emblema-tema [tipo]="tema" [vivo]="true"></fidc-emblema-tema> }
+        @else { <fidc-emblema [forza]="emblema"></fidc-emblema> }
       </div>
 
       <div class="vetrina-testo">
@@ -53,4 +55,6 @@ export class AuthShellComponent {
   @Input() testo = '';
   @Input() punti: string[] = [];
   @Input() emblema: EmblemaHero = 'cassaforte';
+  /** Emblema tematico della pagina (lucchetto per l'accesso, impronta per la registrazione…). */
+  @Input() tema: TemaEmblema | null = null;
 }

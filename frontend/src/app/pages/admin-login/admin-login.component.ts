@@ -29,6 +29,7 @@ type ErroreAccesso = ReturnType<AuthService['classificaErrore']>;
   template: `
   <fidc-auth-shell
     titolo="Area riservata della Federazione"
+    tema="lucchetto"
     testo="Lo spazio di lavoro di soci, redazione e direzione."
     [punti]="['Pubblica eventi e news della Federazione', 'Scarica i documenti riservati ai soci', 'Segui iscrizioni e newsletter']">
 

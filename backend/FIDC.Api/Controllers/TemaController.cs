@@ -127,5 +127,5 @@ public class TemaController : ControllerBase
 
     /// <summary>Default coerente col Tema 1 istituzionale approvato.</summary>
     private static TemaConfigDto Default() => new(
-        "1", false, "#723EC3", "#FFCF95", "#FFF0D9", "#333D6D", "soft", "cyber", "cassaforte");
+        "1", false, "#723EC3", "#FFCF95", "#FFF0D9", "#333D6D", "soft", "classico", "cassaforte");
 }

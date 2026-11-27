@@ -35,7 +35,7 @@
 }
 .link-freccia {
   display: inline-flex; align-items: center; gap: 8px;
-  font-weight: 600; color: var(--accent);
+  font-weight: 600; color: var(--signal);
   text-decoration: underline; text-decoration-thickness: 1.5px; text-underline-offset: 4px;
   text-decoration-color: color-mix(in srgb, currentColor 40%, transparent);
   &:hover { text-decoration-color: currentColor; }
@@ -88,14 +88,15 @@
 @keyframes led { 50% { opacity: .35; } }
 
 // ---- Slogan --------------------------------------------------------------------
-// Misurato su Chakra Petch 700: lo slogan intero è largo 24,6em. A 3,9cqi
-// occupa il 94% del contenitore, quindi su una riga non può mai uscire.
+// Misurato su IBM Plex Serif 600: lo slogan è largo 25,25em, 24,5em con la
+// spaziatura stretta. A 3,8cqi occupa il 93% del contenitore: su una riga non
+// può mai uscire. Su due righe la più lunga è 14,4em → 6,5cqi.
 .slogan {
   grid-area: slogan;
   margin: 0 0 clamp(8px, 1.5vw, 20px);
   font-family: var(--font-display);
-  font-weight: 700;
-  line-height: 1.02;
+  font-weight: 600;
+  line-height: 1.06;
   letter-spacing: -.015em;
   color: var(--text);
   font-size: clamp(2rem, 10cqi, 3.1rem);  // telefono: va a capo fra le parole
@@ -120,12 +121,12 @@
 @keyframes cursore { 0% { opacity: 1; } 50% { opacity: 0; } }
 
 @container (min-width: 560px) {
-  .slogan { font-size: 6.6cqi; white-space: nowrap; }
+  .slogan { font-size: 6.5cqi; white-space: nowrap; }
   .slogan .riga { display: block; }
   .slogan .spazio { display: none; }
 }
 @container (min-width: 900px) {
-  .slogan { font-size: min(3.9cqi, 4.6rem); white-space: nowrap; }
+  .slogan { font-size: min(3.8cqi, 4.6rem); white-space: nowrap; }
   .slogan .riga { display: inline; }
   .slogan .spazio { display: inline; }
 }
@@ -232,6 +233,12 @@
 // Illustrazione a tutta larghezza in testa alla card, come una foto.
 .pilastro-ill { margin: -26px -24px 20px; }
 .pilastro-ill fidc-illustrazione { width: 100%; }
+// Emblema del pilastro: appoggiato sul bordo dell'illustrazione, come un sigillo.
+.pilastro-sigillo {
+  position: relative; z-index: 1;
+  width: 52px; margin: -54px 0 6px;
+  filter: drop-shadow(0 6px 10px color-mix(in srgb, var(--c-deep-blue) 35%, transparent));
+}
 .pilastro-claim { font-weight: 500; line-height: 1.5; color: var(--card-text); }
 
 // Apertura con altezza animata (0fr → 1fr): risponde al clic e mostra cosa cambia.
@@ -329,14 +336,7 @@
   p { margin-top: 2px; font-size: .92rem; font-weight: 500; color: var(--card-soft); line-height: 1.45; }
   p span { font-weight: 400; }
 }
-.gov-sigla {
-  flex: 0 0 auto; width: 52px; height: 52px;
-  display: grid; place-items: center;
-  font-family: var(--font-display); font-weight: 700; font-size: 1.05rem;
-  background: var(--B-bg); color: var(--B-text);
-  border-radius: calc(var(--radius) * .6);
-  @include cut-corners(calc(var(--cut) * .6));
-}
+.gov-emblema { flex: 0 0 auto; width: 44px; }
 
 // Collegamento esteso: tutta la card è cliccabile, ma il link vero è solo il
 // titolo (un solo elemento per la tastiera e per i lettori di schermo).
@@ -383,15 +383,11 @@
   .progetto-desc { font-size: 1.08rem; max-width: 52ch; }
   .progetto-impatto { font-size: 1.25rem; }
 }
-// Codice del progetto in filigrana, in alto: dà peso alla card principale.
-.progetto-codice {
+// Emblema del tema in alto: dà peso alla card principale e dice di cosa si occupa.
+.progetto-emblema {
+  width: clamp(84px, 5rem + 3vw, 128px);
   margin-bottom: auto;        // spinge il contenuto verso il fondo della card
   padding-bottom: 24px;
-  font-family: var(--font-display); font-weight: 700;
-  font-size: clamp(4rem, 2rem + 6vw, 8.5rem); line-height: .9; letter-spacing: -.04em;
-  color: transparent;
-  -webkit-text-stroke: 1.5px var(--line-strong);
-  pointer-events: none;
 }
 .progetto-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; }
 .progetto-cat { font-size: .9rem; color: var(--card-soft); }
@@ -427,13 +423,13 @@
 .evento-data {
   display: flex; flex-direction: column;
   padding-right: 20px; border-right: 1px solid var(--line);
-  .giorno { font-family: var(--font-display); font-weight: 700; font-size: 3rem; line-height: 1; color: var(--accent); }
+  .giorno { font-family: var(--font-display); font-weight: 700; font-size: 3rem; line-height: 1; color: var(--signal); }
   .mese { font-size: .92rem; font-weight: 500; color: var(--card-soft); text-transform: capitalize; }
 }
 .evento-luogo {
   display: flex; align-items: flex-start; gap: 8px;
   font-size: .95rem; color: var(--card-soft);
-  svg { flex: 0 0 auto; margin-top: 2px; color: var(--accent); }
+  svg { flex: 0 0 auto; margin-top: 2px; color: var(--signal); }
 }
 @media (max-width: 760px) {
   .evento { grid-template-columns: 76px minmax(0, 1fr); padding: 18px; }
@@ -497,6 +493,7 @@
   gap: 24px 56px; align-items: center;
 }
 .nl-testo {
+  .nl-sigillo { width: 56px; margin-bottom: 16px; }
   h2 { font-size: clamp(1.7rem, 1.2rem + 1.6vw, 2.4rem); }
   p { margin-top: 12px; line-height: 1.6; color: var(--text-soft); max-width: 52ch; }
 }
@@ -567,14 +564,15 @@
   // Pilastri come righe di una tabella di controllo.
   .pilastri { grid-template-columns: minmax(0, 1fr); gap: 0; border: 1px solid var(--line); }
   .pilastro {
-    display: grid; grid-template-columns: 200px minmax(0, 1fr) auto; align-items: center;
-    column-gap: 28px; padding: 18px 22px; border: 0; border-bottom: 1px solid var(--line);
+    display: grid; grid-template-columns: 40px 200px minmax(0, 1fr) auto; align-items: center;
+    column-gap: 24px; padding: 18px 22px; border: 0; border-bottom: 1px solid var(--line);
     &:hover { transform: none; background: var(--accent-soft); box-shadow: none; }
     h3 { margin: 0; font-size: 1.3rem; }
   }
   .pilastro-ill { display: none; }
-  .pilastro-extra { grid-column: 1 / -1; }
-  .pilastro-toggle { margin: 0; grid-column: 3; grid-row: 1; }
+  .pilastro-sigillo { width: 40px; margin: 0; filter: none; grid-row: 1 / span 2; align-self: start; }
+  .pilastro-extra { grid-column: 2 / -1; }
+  .pilastro-toggle { margin: 0; grid-column: 4; grid-row: 1; }
 
   .numeri { border: 1px solid var(--line); }
   .numero { padding-left: 20px; }
@@ -590,7 +588,7 @@
     &:hover { transform: none; box-shadow: none; background: var(--accent-soft); }
   }
   .progetto-meta { grid-column: 1; grid-row: 1 / 3; flex-direction: column; align-items: flex-start; }
-  .progetto-codice { display: none; }
+  .progetto-emblema { display: none; }
 
   .evento:hover, .articolo:hover { transform: none; }
   .magazine { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -598,9 +596,9 @@
   .articolo.apertura .copertina { width: 42%; flex: 0 0 42%; }
 
   @media (max-width: 899px) {
-    .pilastro { grid-template-columns: minmax(0, 1fr) auto; }
-    .pilastro-claim { grid-column: 1 / -1; grid-row: 2; }
-    .pilastro-toggle { grid-column: 2; }
+    .pilastro { grid-template-columns: 40px minmax(0, 1fr) auto; }
+    .pilastro-claim { grid-column: 2 / -1; grid-row: 2; }
+    .pilastro-toggle { grid-column: 3; }
     .progetto, .progetto:first-child { grid-template-columns: minmax(0, 1fr); }
     .progetto-meta, .progetto h3, .progetto .progetto-desc, .progetto .progetto-impatto { grid-column: 1 !important; grid-row: auto !important; text-align: left !important; }
     .magazine { grid-template-columns: minmax(0, 1fr); }
@@ -642,7 +640,6 @@
   .articolo.apertura .copertina { flex: 0 0 46%; }
   @media (max-width: 899px) { .articolo.apertura { flex-direction: column; } }
 
-  .gov-sigla { border-radius: 50%; }
 }
 
 // =============================================================================

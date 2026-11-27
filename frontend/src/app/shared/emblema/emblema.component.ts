@@ -4,7 +4,7 @@
 //
 //  La Direzione lo decide nel Theme Builder (campo emblemaHero del velo):
 //   - 'cassaforte' (predefinito) → <fidc-safe-logo>, la cassaforte digitale;
-//   - 'scudo'                    → <fidc-cyber-shield>, scudo con scansione;
+//   - 'scudo'                    → scudo con verifica (famiglia shared/emblemi);
 //   - 'nucleo'                   → <fidc-security-core>, nucleo geometrico.
 //
 //  Il componente legge la scelta da ThemeService, quindi cambia in tempo
@@ -13,7 +13,7 @@
 
 import { Component, computed, inject, input } from '@angular/core';
 import { SafeLogoComponent } from '../safe-logo/safe-logo.component';
-import { CyberShieldComponent } from '../svg-motifs/svg-motifs.component';
+import { EmblemaTemaComponent } from '../emblemi/emblema-tema.component';
 import { ThemeService } from '../theme/theme.service';
 
 /** Le figure disponibili per l'hero. */
@@ -81,10 +81,10 @@ export class SecurityCoreComponent {}
 @Component({
   selector: 'fidc-emblema',
   standalone: true,
-  imports: [SafeLogoComponent, CyberShieldComponent, SecurityCoreComponent],
+  imports: [SafeLogoComponent, EmblemaTemaComponent, SecurityCoreComponent],
   template: `
     @switch (scelto()) {
-      @case ('scudo')  { <div class="scudo"><fidc-cyber-shield></fidc-cyber-shield></div> }
+      @case ('scudo')  { <div class="scudo"><fidc-emblema-tema tipo="verifica" [vivo]="true"></fidc-emblema-tema></div> }
       @case ('nucleo') { <fidc-security-core></fidc-security-core> }
       @default         { <fidc-safe-logo></fidc-safe-logo> }
     }

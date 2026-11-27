@@ -107,6 +107,25 @@ const cache = new Map<ScenaIllustrazione, string>();
     .fidc-ill .laccio { fill: none; stroke: var(--c-peach); stroke-width: 1.4; }
     .fidc-ill .badge { fill: var(--c-cream); }
     .fidc-ill .badge-riga { fill: var(--c-purple); }
+    /* Dettagli: tratti sottili nel tono dell'abito. */
+    .fidc-ill .tratto { fill: none; stroke-width: .9; stroke-linecap: round; stroke-linejoin: round; }
+    .fidc-ill .tratto.segno-scuro { stroke: rgba(51, 61, 109, .32); }
+    .fidc-ill .tratto.segno-chiaro { stroke: rgba(255, 240, 217, .24); }
+    .fidc-ill .tratto.ciocca.segno-chiaro { stroke: rgba(255, 240, 217, .3); }
+    .fidc-ill .suola { stroke-width: 1.2; }
+    .fidc-ill .volume { fill: var(--c-deep-blue); opacity: .11; }
+    .fidc-ill .luce { fill: var(--c-cream); opacity: .1; }
+    .fidc-ill .ombra-collo { fill: var(--c-deep-blue); opacity: .22; }
+    .fidc-ill .colletto { stroke-width: .7; stroke-linejoin: round; }
+    .fidc-ill .colletto.segno-scuro { stroke: rgba(51, 61, 109, .35); }
+    .fidc-ill .colletto.segno-chiaro { stroke: rgba(255, 240, 217, .3); }
+    .fidc-ill .bottone.segno-scuro { fill: rgba(51, 61, 109, .55); }
+    .fidc-ill .bottone.segno-chiaro { fill: rgba(255, 240, 217, .5); }
+    .fidc-ill .f-pesca, .fidc-ill .fibbia { fill: var(--c-peach); }
+    .fidc-ill .cintura.segno-scuro { fill: var(--c-deep-blue); }
+    .fidc-ill .cintura.segno-chiaro { fill: rgba(255, 240, 217, .16); }
+    .fidc-ill .orologio { fill: var(--c-deep-blue); }
+    .fidc-ill .quadrante, .fidc-ill .orecchino { fill: var(--c-cream); }
     .fidc-ill .occhiali { fill: none; stroke: var(--c-deep-blue); stroke-width: 1.3; stroke-linejoin: round; }
 
     /* --- l'unico movimento di ogni scena --- */
