@@ -45,6 +45,8 @@ export interface RichiestaConferma {
    * chi preme Invio per abitudine non deve cancellare niente per sbaglio.
    */
   distruttiva?: boolean;
+  /** Campo di testo da compilare (es. la nota per l'autore). */
+  campo?: { etichetta: string; segnaposto?: string; obbligatorio?: boolean };
 }
 
 /** Stato interno della finestra attualmente aperta. */
@@ -53,6 +55,8 @@ interface StatoDialogo extends RichiestaConferma {
   soloAvviso: boolean;
   /** Funzione da richiamare con la risposta dell'utente. */
   rispondi: (esito: boolean) => void;
+  /** Testo scritto nel campo, se c'è. */
+  testo?: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -74,6 +78,30 @@ export class DialogoService {
         rispondi: (esito) => { this.stato.set(null); resolve(esito); }
       });
     });
+  }
+
+  /**
+   * Chiede un testo (es. una nota) e attende la risposta.
+   * @returns il testo scritto, oppure null se l'utente ha annullato.
+   */
+  chiedi(richiesta: RichiestaConferma & { campo: NonNullable<RichiestaConferma['campo']> }): Promise<string | null> {
+    return new Promise<string | null>((resolve) => {
+      const stato: StatoDialogo = {
+        ...richiesta,
+        azione: richiesta.azione ?? 'Conferma',
+        annulla: richiesta.annulla ?? 'Annulla',
+        soloAvviso: false,
+        testo: '',
+        rispondi: (esito) => { const t = this.stato()?.testo ?? ''; this.stato.set(null); resolve(esito ? t.trim() : null); }
+      };
+      this.stato.set(stato);
+    });
+  }
+
+  /** Aggiorna il testo del campo mentre l'utente scrive. */
+  scrivi(testo: string): void {
+    const s = this.stato();
+    if (s) this.stato.set({ ...s, testo });
   }
 
   /**

@@ -11,7 +11,9 @@
 
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { FidcApiService, Evento, News } from '../../services/fidc-api.service';
+import { FidcApiService, Documento, Evento, News, StatoContenuto, statoDi } from '../../services/fidc-api.service';
+import { Flusso } from '../../shared/flusso';
+import { permessiArea } from '../../shared/permessi';
 import { AuthService } from '../../services/auth.service';
 
 /**
@@ -26,18 +28,37 @@ import { AuthService } from '../../services/auth.service';
     <header class="head">
       <h1>Panoramica</h1>
       <p>{{ auth.isSuperUser()
-            ? 'Stai vedendo i dati dell\\'intera Federazione.'
-            : 'Stai vedendo i contenuti di cui sei responsabile.' }}</p>
+            ? 'Stai vedendo i dati dell’intera Federazione.'
+            : 'Stai vedendo i contenuti su cui puoi intervenire.' }}</p>
     </header>
+
+    <!-- Cose che aspettano te: prima di tutto il resto, perché bloccano altri. -->
+    @if (daApprovare().length || daRivedere().length) {
+      <section class="attese" aria-label="In attesa di un tuo intervento">
+        @for (a of daApprovare(); track a.area) {
+          <a class="attesa" [routerLink]="'/admin/' + a.area" [queryParams]="{ filtro: 'approvare' }">
+            <strong>{{ a.n }}</strong>
+            <span>{{ a.n === 1 ? a.uno : a.molti }} da approvare</span>
+          </a>
+        }
+        @for (a of daRivedere(); track a.area) {
+          <a class="attesa rivedere" [routerLink]="'/admin/' + a.area">
+            <strong>{{ a.n }}</strong>
+            <span>{{ a.n === 1 ? a.rimandatoUno : a.rimandatiMolti }} dal revisore, con una nota</span>
+          </a>
+        }
+      </section>
+    }
 
     <!-- Azioni frequenti a un clic: è ciò che si fa più spesso aprendo il backoffice. -->
     <nav class="rapide" aria-label="Azioni rapide">
-      <a class="btn-primary" routerLink="/admin/eventi" [queryParams]="{ nuovo: 1 }">Nuovo evento</a>
-      <a class="btn-outline" routerLink="/admin/news" [queryParams]="{ nuovo: 1 }">Scrivi una news</a>
-      <a class="btn-outline" routerLink="/admin/documenti" [queryParams]="{ nuovo: 1 }">Carica un documento</a>
+      @if (auth.puo('eventi.scrivere')) { <a class="btn-primary" routerLink="/admin/eventi" [queryParams]="{ nuovo: 1 }">Nuovo evento</a> }
+      @if (auth.puo('news.scrivere')) { <a class="btn-outline" routerLink="/admin/news" [queryParams]="{ nuovo: 1 }">Scrivi una news</a> }
+      @if (auth.puo('documenti.scrivere')) { <a class="btn-outline" routerLink="/admin/documenti" [queryParams]="{ nuovo: 1 }">Carica un documento</a> }
     </nav>
 
     <div class="tiles">
+      @if (vedeEventi) {
       <article class="tile principale">
         <h2>Eventi</h2>
         <p class="numero" [attr.aria-label]="eventi().length + ' eventi'">{{ caricamento() ? '–' : eventi().length }}</p>
@@ -45,7 +66,9 @@ import { AuthService } from '../../services/auth.service';
         <p class="sub">Pubblicati {{ eventiPubblicati() }} su {{ eventi().length }}</p>
         <a routerLink="/admin/eventi" class="go">Gestisci gli eventi</a>
       </article>
+      }
 
+      @if (vedeNews) {
       <article class="tile">
         <h2>News</h2>
         <p class="numero" [attr.aria-label]="news().length + ' news'">{{ caricamento() ? '–' : news().length }}</p>
@@ -53,14 +76,13 @@ import { AuthService } from '../../services/auth.service';
         <p class="sub">Pubblicate {{ newsPubblicate() }} su {{ news().length }}</p>
         <a routerLink="/admin/news" class="go">Gestisci le news</a>
       </article>
+      }
 
       <article class="tile">
         <h2>I tuoi permessi</h2>
-        <p class="ruolo">{{ auth.isSuperUser() ? 'Direzione' : 'Redazione' }}</p>
-        <p class="sub">{{ auth.isSuperUser()
-              ? 'Puoi intervenire sui contenuti di tutti gli autori, sugli utenti e sull\\'aspetto del sito.'
-              : 'Puoi intervenire solo sui contenuti di cui sei autore.' }}</p>
-        @if (auth.isSuperUser()) { <a routerLink="/admin/utenti" class="go">Gestisci gli utenti</a> }
+        <p class="ruolo">{{ auth.livello() }}</p>
+        <p class="sub">{{ auth.riassunto() }}.</p>
+        @if (auth.isSuperUser()) { <a routerLink="/admin/permessi" class="go">Gestisci i permessi</a> }
       </article>
     </div>
   </div>
@@ -98,6 +120,20 @@ import { AuthService } from '../../services/auth.service';
       &:hover { color: var(--signal); text-decoration-color: currentColor; }
     }
 
+    .attese { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 24px; }
+    .attesa {
+      display: flex; align-items: baseline; gap: 12px; flex: 0 1 380px;
+      padding: 16px 20px; color: var(--text);
+      background: var(--surface); border: 1px solid var(--signal); border-left-width: 4px;
+      border-radius: var(--radius);
+      transition: background .2s;
+      strong { font-family: var(--font-display); font-size: 2rem; line-height: 1; color: var(--signal); font-variant-numeric: tabular-nums; }
+      span { color: var(--text-soft); line-height: 1.4; }
+      &:hover { background: var(--accent-soft); }
+      &:focus-visible { outline: none; box-shadow: var(--glow-focus); }
+      &.rivedere { border-color: var(--text); strong { color: var(--text); } }
+    }
+
     @media (max-width: 900px) {
       .tiles { grid-template-columns: minmax(0, 1fr); }
       .rapide a { flex: 1 1 100%; }
@@ -110,7 +146,32 @@ export class DashboardHomeComponent implements OnInit {
 
   readonly eventi = signal<Evento[]>([]);
   readonly news = signal<News[]>([]);
+  readonly documenti = signal<Documento[]>([]);
   readonly caricamento = signal(true);
+
+  readonly vedeEventi = this.auth.puoUno(permessiArea('eventi'));
+  readonly vedeNews = this.auth.puoUno(permessiArea('news'));
+  private readonly vedeDocumenti = this.auth.puoUno(permessiArea('documenti'));
+
+  private readonly flussi = {
+    news: new Flusso(this.auth, 'news'),
+    eventi: new Flusso(this.auth, 'eventi'),
+    documenti: new Flusso(this.auth, 'documenti')
+  };
+
+  /** Contenuti in coda che spetta a te approvare, per area. */
+  readonly daApprovare = computed(() => this.conta((f, c) => f.puoRevisionare(c)));
+  /** Tuoi contenuti rimandati indietro con una nota. */
+  readonly daRivedere = computed(() => this.conta((f, c) => f.mio(c) && statoDi(c) === 'DaRivedere'));
+
+  private conta(prova: (f: Flusso, c: { stato?: StatoContenuto; pubblicato?: boolean; autore: number }) => boolean) {
+    const righe = [
+      { area: 'news', uno: 'News', molti: 'News', rimandatoUno: 'News rimandata', rimandatiMolti: 'News rimandate', n: this.news().filter((x) => prova(this.flussi.news, { stato: x.stato, pubblicato: x.pubblicato, autore: x.autoreId })).length },
+      { area: 'eventi', uno: 'Evento', molti: 'Eventi', rimandatoUno: 'Evento rimandato', rimandatiMolti: 'Eventi rimandati', n: this.eventi().filter((x) => prova(this.flussi.eventi, { stato: x.stato, pubblicato: x.pubblicato, autore: x.relatoreId })).length },
+      { area: 'documenti', uno: 'Documento', molti: 'Documenti', rimandatoUno: 'Documento rimandato', rimandatiMolti: 'Documenti rimandati', n: this.documenti().filter((x) => prova(this.flussi.documenti, { stato: x.stato, autore: x.caricatoDaId })).length }
+    ];
+    return righe.filter((r) => r.n > 0);
+  }
 
   readonly eventiPubblicati = computed(() => this.eventi().filter((e) => e.pubblicato).length);
   readonly newsPubblicate = computed(() => this.news().filter((n) => n.pubblicato).length);
@@ -121,9 +182,11 @@ export class DashboardHomeComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    let pendenti = 2;
+    let pendenti = 1 + (this.vedeEventi ? 1 : 0) + (this.vedeNews ? 1 : 0) + (this.vedeDocumenti ? 1 : 0);
     const fine = () => { if (--pendenti === 0) this.caricamento.set(false); };
-    this.api.getEventiGestione().subscribe({ next: (e) => this.eventi.set(e), complete: fine, error: fine });
-    this.api.getNewsGestione().subscribe({ next: (n) => this.news.set(n), complete: fine, error: fine });
+    if (this.vedeEventi) this.api.getEventiGestione().subscribe({ next: (e) => this.eventi.set(e), complete: fine, error: fine });
+    if (this.vedeNews) this.api.getNewsGestione().subscribe({ next: (n) => this.news.set(n), complete: fine, error: fine });
+    if (this.vedeDocumenti) this.api.getDocumentiGestione().subscribe({ next: (d) => this.documenti.set(d), complete: fine, error: fine });
+    fine();
   }
 }

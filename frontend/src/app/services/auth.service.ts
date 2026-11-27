@@ -9,6 +9,9 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { tap } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 import { FidcApiService, AuthResponse } from './fidc-api.service';
+import {
+  AssettoPermessi, Permesso, assettoDaRuolo, consente, consenteUno, livello, normalizza, riassunto
+} from '../shared/permessi';
 
 /** Chiavi usate per persistere la sessione nel browser. */
 const TOKEN_KEY = 'fidc.jwt';
@@ -18,6 +21,8 @@ const USER_KEY = 'fidc.user';
 export interface SessioneUtente {
   nomeCompleto: string;
   ruolo: string;
+  direzione?: boolean;
+  permessi?: string[];
 }
 
 /** Ruoli applicativi (specchio dell'enum backend RuoloTipo). */
@@ -42,8 +47,28 @@ export class AuthService {
   readonly utente = computed(() => this._utente());
   /** Ruolo corrente (null se non autenticato). */
   readonly ruolo = computed<Ruolo | null>(() => (this._utente()?.ruolo as Ruolo) ?? null);
-  /** True se l'utente corrente è SuperUser. */
-  readonly isSuperUser = computed(() => this.ruolo() === 'SuperUser');
+  /**
+   * Permessi della persona collegata. Se il server li invia si usano quelli;
+   * altrimenti si ricavano dal ruolo storico (shared/permessi.ts).
+   */
+  readonly assetto = computed<AssettoPermessi | null>(() => {
+    const u = this._utente();
+    if (!u) return null;
+    if (u.direzione !== undefined || u.permessi !== undefined)
+      return { direzione: !!u.direzione, permessi: normalizza(u.permessi ?? []) };
+    return assettoDaRuolo(u.ruolo);
+  });
+  /** True se la persona ha il controllo completo (Direzione). */
+  readonly isSuperUser = computed(() => !!this.assetto()?.direzione);
+  /** "Direzione", "Redazione" o "Socio". */
+  readonly livello = computed(() => livello(this.assetto()));
+  /** Che cosa può fare, in una riga. */
+  readonly riassunto = computed(() => riassunto(this.assetto()));
+
+  /** Vero se la persona ha il permesso (la Direzione li ha tutti). */
+  puo(p: Permesso): boolean { return consente(this.assetto(), p); }
+  /** Vero se la persona ha almeno uno dei permessi. */
+  puoUno(ps: Permesso[]): boolean { return consenteUno(this.assetto(), ps); }
   /** Id numerico dell'utente corrente (dal claim "sub" del JWT), 0 se ignoto. */
   readonly userId = computed(() => this.estraiUserId(this._token()));
 
@@ -111,7 +136,11 @@ export class AuthService {
 
   private salvaSessione(res: AuthResponse): void {
     localStorage.setItem(TOKEN_KEY, res.token);
-    const utente: SessioneUtente = { nomeCompleto: res.nomeCompleto, ruolo: res.ruolo };
+    const utente: SessioneUtente = {
+      nomeCompleto: res.nomeCompleto, ruolo: res.ruolo,
+      ...(res.direzione !== undefined ? { direzione: res.direzione } : {}),
+      ...(res.permessi !== undefined ? { permessi: res.permessi } : {})
+    };
     localStorage.setItem(USER_KEY, JSON.stringify(utente));
     this._token.set(res.token);
     this._utente.set(utente);

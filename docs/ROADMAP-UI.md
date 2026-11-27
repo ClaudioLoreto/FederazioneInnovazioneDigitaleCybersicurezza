@@ -83,6 +83,13 @@ subito, senza passaggi intermedi inutili.
 
 ---
 
+## Priorità 5 — Backend da adeguare (rinviato su richiesta)
+
+### 5.1 Matrice dei permessi e flusso di revisione sul server
+Il frontend è pronto e oggi ricava i permessi dal ruolo storico. Il contratto
+completo (login, `PUT /utenti/{id}/permessi`, stati dei contenuti, `approva`,
+`rimanda`, migrazione dei dati) è in `docs/PERMESSI.md`.
+
 ## Fatto
 
 | Data | Intervento | Dove |
@@ -129,3 +136,6 @@ subito, senza passaggi intermedi inutili.
 | 2026-11-27 | Famiglia di 15 emblemi a scudo: pilastri, governance, progetti, newsletter, accesso, registrazione | `shared/emblemi` |
 | 2026-11-27 | Persone con abiti curati: colletti, cravatte, polsini, orologi, tasche, pieghe, ciocche, volumi | `illustrazioni/figura.ts` |
 | 2026-11-27 | Velo 2: date e link in pesca (il viola su blu era illeggibile); vetrina di accesso piena nel velo 3 | `landing`, `auth-shell` |
+| 2026-11-27 | Matrice dei permessi al posto dei ruoli fissi (Socio, Redazione, Direzione) con modelli rapidi | `permessi-admin`, `shared/permessi.ts` |
+| 2026-11-27 | Flusso di revisione su news, eventi e documenti: bozza, invio, approvazione, rimando con nota | `shared/flusso.ts`, `*-admin` |
+| 2026-11-27 | Pannello: "da approvare" e "rimandati" in testa; azioni e riquadri secondo i permessi | `dashboard-home` |

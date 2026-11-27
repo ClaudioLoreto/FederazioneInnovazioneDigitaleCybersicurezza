@@ -10,7 +10,7 @@ import { Component, computed, effect, inject, signal } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive, Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { AnimatedLogoComponent } from '../../shared/animated-logo/animated-logo.component';
-import { descriviRuolo } from '../../shared/ruoli';
+import { Permesso, permessiArea } from '../../shared/permessi';
 
 @Component({
   selector: 'fidc-admin-shell',
@@ -252,31 +252,38 @@ export class AdminShellComponent {
   readonly compatto = signal(this.leggiCompatto());
 
   /**
-   * Voci del menu. Quelle con soloDirezione compaiono solo al ruolo SuperUser:
-   * nasconderle è una comodità, la protezione vera è sugli endpoint del server.
+   * Voci del menu. Ognuna compare solo a chi ha almeno uno dei permessi
+   * indicati (matrice in shared/permessi.ts); "Permessi" solo alla Direzione.
+   * Nasconderle è una comodità, la protezione vera è sugli endpoint del server.
    * Le icone sono tracciati SVG 24×24 a linea.
    */
-  private readonly voci: { label: string; rotta: string; icona: string; esatta?: boolean; soloDirezione?: boolean; gruppo?: string }[] = [
+  private readonly voci: { label: string; rotta: string; icona: string; esatta?: boolean; serve?: Permesso[]; soloDirezione?: boolean; gruppo?: string }[] = [
     { label: 'Pannello', rotta: '/admin/dashboard', esatta: true, icona: 'M4 4h7v7H4zM13 4h7v4h-7zM13 10h7v10h-7zM4 13h7v7H4z' },
-    { label: 'Eventi', rotta: '/admin/eventi', icona: 'M4 6h16v14H4zM4 10h16M9 3v5M15 3v5' },
-    { label: 'News', rotta: '/admin/news', icona: 'M5 4h11l3 3v13H5zM8 9h8M8 13h8M8 17h5' },
-    { label: 'Documenti', rotta: '/admin/documenti', icona: 'M4 7h6l2 2h8v10H4zM12 12v5M9.5 14.5L12 17l2.5-2.5' },
-    { label: 'Utenti', rotta: '/admin/utenti', soloDirezione: true, gruppo: 'Amministrazione', icona: 'M9 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM3 20c0-3.3 2.7-6 6-6s6 2.7 6 6M16 4.5a3.5 3.5 0 0 1 0 6.5M18 14c2 .8 3 3 3 6' },
-    { label: 'Newsletter', rotta: '/admin/newsletter', soloDirezione: true, icona: 'M3 6h18v12H3zM3 7l9 6 9-6' },
-    { label: 'Aspetto del sito', rotta: '/admin/impostazioni', soloDirezione: true, icona: 'M12 3a9 9 0 1 0 0 18c1.1 0 1.5-.8 1.5-1.6 0-1.2-1-1.6-1-2.6 0-.9.7-1.5 1.6-1.5H17a4 4 0 0 0 4-4c0-4.6-4-8.3-9-8.3zM7.5 12.5h.01M9.5 8h.01M14.5 8h.01' }
+    { label: 'Eventi', rotta: '/admin/eventi', serve: permessiArea('eventi'), icona: 'M4 6h16v14H4zM4 10h16M9 3v5M15 3v5' },
+    { label: 'News', rotta: '/admin/news', serve: permessiArea('news'), icona: 'M5 4h11l3 3v13H5zM8 9h8M8 13h8M8 17h5' },
+    { label: 'Documenti', rotta: '/admin/documenti', serve: permessiArea('documenti'), icona: 'M4 7h6l2 2h8v10H4zM12 12v5M9.5 14.5L12 17l2.5-2.5' },
+    { label: 'Account', rotta: '/admin/utenti', serve: ['utenti.gestire'], gruppo: 'Amministrazione', icona: 'M9 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM3 20c0-3.3 2.7-6 6-6s6 2.7 6 6M16 4.5a3.5 3.5 0 0 1 0 6.5M18 14c2 .8 3 3 3 6' },
+    { label: 'Newsletter', rotta: '/admin/newsletter', serve: ['newsletter.gestire'], icona: 'M3 6h18v12H3zM3 7l9 6 9-6' },
+    { label: 'Aspetto del sito', rotta: '/admin/impostazioni', serve: ['sito.aspetto'], icona: 'M12 3a9 9 0 1 0 0 18c1.1 0 1.5-.8 1.5-1.6 0-1.2-1-1.6-1-2.6 0-.9.7-1.5 1.6-1.5H17a4 4 0 0 0 4-4c0-4.6-4-8.3-9-8.3zM7.5 12.5h.01M9.5 8h.01M14.5 8h.01' },
+    { label: 'Permessi', rotta: '/admin/permessi', soloDirezione: true, icona: 'M12 3l7 3v5c0 4.6-3 8.4-7 10-4-1.6-7-5.4-7-10V6zM9 12l2 2 4-4' }
   ];
 
   readonly vociVisibili = computed(() => {
     const direzione = this.auth.isSuperUser();
-    return this.voci.filter((v) => !v.soloDirezione || direzione);
+    this.auth.assetto();   // ricalcola quando cambiano i permessi
+    const visibili = this.voci.filter((v) =>
+      v.soloDirezione ? direzione : !v.serve || this.auth.puoUno(v.serve));
+    // L'intestazione del gruppo va sulla prima voce visibile del gruppo.
+    const ammin = visibili.findIndex((v) => ['/admin/utenti', '/admin/newsletter', '/admin/impostazioni', '/admin/permessi'].includes(v.rotta));
+    return visibili.map((v, i) => ({ ...v, gruppo: i === ammin ? 'Amministrazione' : undefined }));
   });
 
   iniziali(nome: string): string {
     return nome.split(/\s+/).filter(Boolean).slice(0, 2).map((p) => p[0]?.toUpperCase()).join('');
   }
 
-  /** Denominazione ufficiale e ambito del ruolo dell'utente collegato. */
-  readonly ruolo = computed(() => descriviRuolo(this.auth.utente()?.ruolo));
+  /** Livello d'accesso e riassunto dei permessi dell'utente collegato. */
+  readonly ruolo = computed(() => ({ etichetta: this.auth.livello(), ambito: this.auth.riassunto() }));
 
   private leggiCompatto(): boolean {
     try { return localStorage.getItem('fidc.admin.compatto') === '1'; } catch { return false; }

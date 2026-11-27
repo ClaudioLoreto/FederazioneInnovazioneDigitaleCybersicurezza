@@ -112,7 +112,7 @@
   input { padding-left: 40px; background: var(--surface); }
 }
 .segmenti {
-  display: inline-flex; padding: 3px; gap: 2px;
+  display: inline-flex; flex-wrap: wrap; max-width: 100%; padding: 3px; gap: 2px;
   border: 1px solid var(--line); border-radius: calc(var(--radius) + 3px); background: var(--surface);
   button {
     display: inline-flex; align-items: center; gap: 6px; min-height: 38px; padding: 6px 12px;
@@ -185,7 +185,27 @@ td.t { font-weight: 600; color: var(--text); }
   white-space: nowrap;
   &.on { color: var(--on-accent); background: var(--accent); border: 1px solid var(--accent); }
   &.on::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+  // Flusso di revisione: in attesa (contorno pieno nel colore di segnale) e
+  // rimandato all'autore (contorno pieno nel colore del testo, con l'anello).
+  &.attesa { color: var(--signal); border: 1px solid var(--signal); }
+  &.rivedere { color: var(--text); border: 1px solid var(--text); }
+  &.attesa::before, &.rivedere::before { content: ''; width: 6px; height: 6px; border-radius: 50%; border: 1.5px solid currentColor; }
 }
+
+// Azione da fare subito (es. "Approva"): stessa forma del .mini, colore d'azione.
+.mini.evidenza {
+  background: var(--accent); color: var(--on-accent); border-color: var(--btn-edge, var(--accent));
+  &:hover { color: var(--on-accent); filter: brightness(1.06); }
+}
+
+// Nota lasciata dal revisore, in testa al modulo dell'autore.
+.nota-revisione {
+  margin: -6px 0 20px; padding: 12px 16px;
+  border-left: 4px solid var(--signal); background: var(--accent-soft); border-radius: var(--radius);
+  strong { display: block; margin-bottom: 4px; color: var(--text); }
+  p { color: var(--text-soft); line-height: 1.5; white-space: pre-line; }
+}
+.flusso-info { margin: -8px 0 18px; color: var(--text-soft); font-size: .95rem; }
 
 // ---- Schermi stretti ----------------------------------------------------------------------
 // Il modulo passa a una colonna. La tabella resta una tabella e scorre in

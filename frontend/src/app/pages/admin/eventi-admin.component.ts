@@ -1,15 +1,17 @@
 // =============================================================================
 //  frontend/src/app/pages/admin/eventi-admin.component.ts
-//  BACKOFFICE — Gestione Eventi (CRUD). La lista è già filtrata lato server:
-//  SuperUser vede tutto, il Relatore solo i propri. Solo palette FIDC.
+//  BACKOFFICE — Gestione Eventi (CRUD) con il flusso di revisione
+//  (shared/flusso.ts) e il pannello iscritti. La lista la filtra il server in
+//  base ai permessi; qui bottoni e filtri seguono la matrice. Solo palette FIDC.
 // =============================================================================
 
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
-import { NgFor, NgIf, DatePipe } from '@angular/common';
+import { NgClass, NgFor, NgIf, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { trigger, transition, style, animate } from '@angular/animations';
-import { FidcApiService, Evento, Pilastro, Partecipante } from '../../services/fidc-api.service';
+import { FidcApiService, Evento, Pilastro, Partecipante, StatoContenuto, statoDi } from '../../services/fidc-api.service';
+import { Flusso, etichettaStato } from '../../shared/flusso';
 import { DialogoService } from '../../shared/dialogo/dialogo.service';
 import { AvvisiService } from '../../shared/avvisi/avvisi.service';
 import { SelezioneComponent } from '../../shared/campi/selezione.component';
@@ -29,12 +31,17 @@ interface EventoForm {
   luogo: string;
   postiTotali: number;
   pubblicato: boolean;
+  /** Stato e responsabile dell'evento aperto (null per un evento nuovo). */
+  stato: StatoContenuto | null;
+  autore: number | null;
+  notaRevisione: string | null;
 }
 
 /** Form vuoto di default. */
 const VUOTO: EventoForm = {
   id: null, titolo: '', sottotitolo: '', descrizione: '', pilastro: 'Eventi',
-  dataInizio: '', dataFine: '', luogo: '', postiTotali: 50, pubblicato: false
+  dataInizio: '', dataFine: '', luogo: '', postiTotali: 50, pubblicato: false,
+  stato: null, autore: null, notaRevisione: null
 };
 
 /**
@@ -44,7 +51,7 @@ const VUOTO: EventoForm = {
 @Component({
   selector: 'fidc-eventi-admin',
   standalone: true,
-  imports: [NgFor, NgIf, DatePipe, FormsModule, SelezioneComponent, EditorTestoComponent],
+  imports: [NgFor, NgIf, NgClass, DatePipe, FormsModule, SelezioneComponent, EditorTestoComponent],
   animations: [
     trigger('panel', [
       transition(':enter', [
@@ -58,15 +65,23 @@ const VUOTO: EventoForm = {
     <header class="head">
       <div>
         <h1>Eventi</h1>
-        <p class="scope">{{ auth.isSuperUser() ? 'Tutti gli eventi della Federazione' : 'I tuoi eventi' }}</p>
+        <p class="scope">{{ auth.isSuperUser() ? 'Tutti gli eventi della Federazione'
+          : flusso.revisiona ? 'I tuoi eventi e quelli che attendono la tua revisione' : 'I tuoi eventi' }}</p>
       </div>
-      <button class="primary" (click)="nuovo()" *ngIf="!form()">Nuovo evento</button>
+      <button class="primary" (click)="nuovo()" *ngIf="!form() && flusso.puoCreare">Nuovo evento</button>
     </header>
 
     <!-- FORM -->
     <section class="editor hud-panel" *ngIf="form() as f" @panel>
       <h2>{{ f.id ? 'Modifica evento' : 'Nuovo evento' }}</h2>
-      <form (ngSubmit)="salva()" #fr="ngForm">
+      <div class="nota-revisione" *ngIf="f.stato === 'DaRivedere' && f.notaRevisione" role="note">
+        <strong>Nota del revisore</strong>
+        <p>{{ f.notaRevisione }}</p>
+      </div>
+      <p class="flusso-info" *ngIf="!f.id && !flusso.pubblicaDaSe">
+        Quando lo invii, l'evento passa a chi lo revisiona: sarà pubblicato dopo l'approvazione.
+      </p>
+      <form (ngSubmit)="salva(statoPrincipale(f))" #fr="ngForm">
         <div class="grid">
           <label class="full"><span>Titolo</span>
             <input name="titolo" [(ngModel)]="f.titolo" required maxlength="160" />
@@ -95,18 +110,25 @@ const VUOTO: EventoForm = {
           <label><span>Posti totali</span>
             <input type="number" name="postiTotali" [(ngModel)]="f.postiTotali" min="0" />
           </label>
-          <label class="check"><span>Pubblicato</span>
-            <input type="checkbox" name="pubblicato" [(ngModel)]="f.pubblicato" />
-          </label>
         </div>
 
         <p class="error" *ngIf="errore()">{{ errore() }}</p>
 
         <div class="actions">
           <button type="button" class="ghost" (click)="annulla()">Annulla</button>
-          <button type="submit" class="primary" [disabled]="salvataggio() || fr.invalid">
-            {{ salvataggio() ? 'Salvataggio…' : (f.id ? 'Aggiorna' : 'Crea evento') }}
-          </button>
+          <ng-container *ngIf="revisioneInCorso(f); else azioniAutore">
+            <button type="button" class="ghost" [disabled]="salvataggio()" (click)="rimandaDalModulo(f)">Rimanda all'autore</button>
+            <button type="submit" class="primary" [disabled]="salvataggio() || fr.invalid">
+              {{ salvataggio() ? 'Salvataggio…' : 'Approva e pubblica' }}
+            </button>
+          </ng-container>
+          <ng-template #azioniAutore>
+            <button type="button" class="ghost" *ngIf="f.stato !== 'Pubblicato'"
+                    [disabled]="salvataggio() || fr.invalid" (click)="salva('Bozza')">Salva bozza</button>
+            <button type="submit" class="primary" [disabled]="salvataggio() || fr.invalid">
+              {{ salvataggio() ? 'Salvataggio…' : etichettaPrincipale(f) }}
+            </button>
+          </ng-template>
         </div>
       </form>
     </section>
@@ -159,8 +181,9 @@ const VUOTO: EventoForm = {
       </label>
       <div class="segmenti" role="group" aria-label="Stato">
         <button type="button" [class.on]="stato() === 'tutti'" [attr.aria-pressed]="stato() === 'tutti'" (click)="stato.set('tutti')">Tutti <span>{{ eventi().length }}</span></button>
-        <button type="button" [class.on]="stato() === 'pubblicati'" [attr.aria-pressed]="stato() === 'pubblicati'" (click)="stato.set('pubblicati')">Pubblicati <span>{{ conteggio(true) }}</span></button>
-        <button type="button" [class.on]="stato() === 'bozze'" [attr.aria-pressed]="stato() === 'bozze'" (click)="stato.set('bozze')">Bozze <span>{{ conteggio(false) }}</span></button>
+        <button type="button" *ngIf="flusso.revisiona" [class.on]="stato() === 'approvare'" [attr.aria-pressed]="stato() === 'approvare'" (click)="stato.set('approvare')">Da approvare <span>{{ conteggio('approvare') }}</span></button>
+        <button type="button" [class.on]="stato() === 'lavorazione'" [attr.aria-pressed]="stato() === 'lavorazione'" (click)="stato.set('lavorazione')">Non pubblicati <span>{{ conteggio('lavorazione') }}</span></button>
+        <button type="button" [class.on]="stato() === 'pubblicati'" [attr.aria-pressed]="stato() === 'pubblicati'" (click)="stato.set('pubblicati')">Pubblicati <span>{{ conteggio('pubblicati') }}</span></button>
       </div>
     </div>
 
@@ -183,12 +206,16 @@ const VUOTO: EventoForm = {
             <td>{{ e.luogo }}</td>
             <td>{{ e.postiTotali }}</td>
             <td>
-              <span class="state" [class.on]="e.pubblicato">{{ e.pubblicato ? 'Pubblicato' : 'Bozza' }}</span>
+              <span class="state" [ngClass]="classeStato(e)" [attr.title]="e.notaRevisione || null">{{ etichetta2(e) }}</span>
             </td>
             <td class="right">
-              <button class="mini" (click)="apriIscritti(e)">Iscritti</button>
-              <button class="mini" (click)="modifica(e)">Modifica</button>
-              <button class="mini danger" (click)="elimina(e)">Elimina</button>
+              <ng-container *ngIf="flusso.puoRevisionare(c(e))">
+                <button class="mini evidenza" (click)="approva(e)">Approva</button>
+                <button class="mini" (click)="rimanda(e)">Rimanda</button>
+              </ng-container>
+              <button class="mini" *ngIf="auth.puo('eventi.iscritti') && e.pubblicato" (click)="apriIscritti(e)">Iscritti</button>
+              <button class="mini" *ngIf="flusso.puoModificare(c(e))" (click)="modifica(e)">{{ flusso.puoRevisionare(c(e)) ? 'Apri' : 'Modifica' }}</button>
+              <button class="mini danger" *ngIf="flusso.puoEliminare(c(e))" (click)="elimina(e)">Elimina</button>
             </td>
           </tr>
         </tbody>
@@ -206,6 +233,8 @@ export class EventiAdminComponent implements OnInit {
   /** Voci della tendina "Pilastro" (condivise con la gestione news). */
   readonly pilastri = PILASTRI;
   readonly auth = inject(AuthService);
+  /** Regole del flusso di revisione per gli eventi, secondo i permessi. */
+  readonly flusso = new Flusso(this.auth, 'eventi');
 
   readonly eventi = signal<Evento[]>([]);
   readonly caricamento = signal(true);
@@ -218,25 +247,43 @@ export class EventiAdminComponent implements OnInit {
 
   ngOnInit(): void {
     this.carica();
-    // Arrivando dalle azioni rapide del pannello (?nuovo=1) il modulo è già aperto.
-    if (this.route.snapshot.queryParamMap.get('nuovo') === '1') this.nuovo();
+    // Arrivando dalle azioni rapide del pannello (?nuovo=1) il modulo è già aperto;
+    // con ?filtro=approvare si apre direttamente la coda di revisione.
+    if (this.route.snapshot.queryParamMap.get('nuovo') === '1' && this.flusso.puoCreare) this.nuovo();
+    if (this.route.snapshot.queryParamMap.get('filtro') === 'approvare' && this.flusso.revisiona) this.stato.set('approvare');
   }
 
   // --- ricerca e filtro della tabella ------------------------------------------
 
   readonly cerca = signal('');
-  readonly stato = signal<'tutti' | 'pubblicati' | 'bozze'>('tutti');
+  readonly stato = signal<'tutti' | 'approvare' | 'lavorazione' | 'pubblicati'>('tutti');
 
-  conteggio(pubblicato: boolean): number {
-    return this.eventi().filter((x) => x.pubblicato === pubblicato).length;
+  /** L'evento visto dal flusso di revisione. */
+  c(e: Evento) { return { pubblicato: e.pubblicato, stato: e.stato, autore: e.relatoreId }; }
+
+  private passa(e: Evento, filtro: string): boolean {
+    const st = statoDi(e);
+    switch (filtro) {
+      case 'approvare': return this.flusso.puoRevisionare(this.c(e));
+      case 'lavorazione': return st !== 'Pubblicato';
+      case 'pubblicati': return st === 'Pubblicato';
+      default: return true;
+    }
   }
 
-  /** Righe mostrate: filtro per stato + ricerca su x.titolo, x.luogo, x.pilastro, senza maiuscole. */
+  conteggio(filtro: string): number { return this.eventi().filter((x) => this.passa(x, filtro)).length; }
+
+  etichetta2(e: Evento): string { return etichettaStato(statoDi(e)); }
+  classeStato(e: Evento): Record<string, boolean> {
+    const st = statoDi(e);
+    return { on: st === 'Pubblicato', attesa: st === 'InRevisione', rivedere: st === 'DaRivedere' };
+  }
+
+  /** Righe mostrate: filtro per stato + ricerca su titolo, luogo e pilastro, senza maiuscole. */
   readonly visibili = computed(() => {
     const q = this.cerca().trim().toLowerCase();
     const st = this.stato();
-    return this.eventi().filter((x) =>
-      (st === 'tutti' || x.pubblicato === (st === 'pubblicati')) &&
+    return this.eventi().filter((x) => this.passa(x, st) &&
       (!q || [x.titolo, x.luogo, x.pilastro].join(' ').toLowerCase().includes(q)));
   });
 
@@ -310,15 +357,34 @@ export class EventiAdminComponent implements OnInit {
       dataFine: this.toLocal(e.dataFine),
       luogo: e.luogo,
       postiTotali: e.postiTotali,
-      pubblicato: e.pubblicato
+      pubblicato: e.pubblicato,
+      stato: statoDi(e),
+      autore: e.relatoreId,
+      notaRevisione: e.notaRevisione ?? null
     });
+  }
+
+  /** Il modulo aperto è una revisione: evento altrui in attesa di approvazione. */
+  revisioneInCorso(f: EventoForm): boolean {
+    return !!f.id && f.autore !== null && this.flusso.puoRevisionare({ stato: f.stato ?? undefined, autore: f.autore });
+  }
+
+  /** Stato che assume l'evento premendo il bottone principale. */
+  statoPrincipale(f: EventoForm): StatoContenuto {
+    return this.flusso.statoAlSalvataggio(f.id && f.autore !== null ? { stato: f.stato ?? undefined, autore: f.autore } : null);
+  }
+
+  /** Testo del bottone principale: dice esattamente che cosa succede. */
+  etichettaPrincipale(f: EventoForm): string {
+    if (this.statoPrincipale(f) === 'InRevisione') return 'Invia in revisione';
+    return f.stato === 'Pubblicato' ? 'Aggiorna' : 'Pubblica';
   }
 
   /** Chiude il form senza salvare. */
   annulla(): void { this.form.set(null); this.errore.set(null); }
 
-  /** Crea o aggiorna in base alla presenza dell'id. */
-  salva(): void {
+  /** Crea o aggiorna l'evento con lo stato scelto dal bottone premuto. */
+  salva(stato: StatoContenuto): void {
     const f = this.form();
     if (!f || this.salvataggio()) return;
     this.salvataggio.set(true);
@@ -333,7 +399,14 @@ export class EventiAdminComponent implements OnInit {
       dataFine: f.dataFine ? new Date(f.dataFine).toISOString() : null,
       luogo: f.luogo.trim(),
       postiTotali: Number(f.postiTotali) || 0,
-      pubblicato: f.pubblicato
+      pubblicato: stato === 'Pubblicato',
+      stato
+    };
+    const esito: Record<StatoContenuto, [string, string]> = {
+      Pubblicato: [this.revisioneInCorso(f) ? 'Evento approvato' : f.stato === 'Pubblicato' ? 'Evento aggiornato' : 'Evento pubblicato', 'È visibile sul sito e aperto alle iscrizioni.'],
+      InRevisione: ['Evento inviato in revisione', 'Sarà pubblicato dopo l\'approvazione.'],
+      DaRivedere: ['Evento rimandato all\'autore', ''],
+      Bozza: ['Bozza salvata', 'Non è visibile sul sito finché non lo pubblichi o lo invii in revisione.']
     };
 
     const op = f.id
@@ -343,11 +416,46 @@ export class EventiAdminComponent implements OnInit {
     op.subscribe({
       next: () => {
         this.salvataggio.set(false); this.form.set(null); this.carica();
-        this.avvisi.conferma(body.pubblicato ? 'Evento pubblicato' : 'Bozza salvata',
-          body.pubblicato ? 'È visibile sul sito e aperto alle iscrizioni.' : 'Non è visibile sul sito finché non lo pubblichi.');
+        this.avvisi.conferma(esito[stato][0], esito[stato][1]);
       },
       error: () => { this.salvataggio.set(false); this.errore.set('Salvataggio non riuscito. Verifica i dati e riprova.'); }
     });
+  }
+
+  /** Approva un evento in revisione: viene pubblicato. */
+  approva(e: Evento): void {
+    this.api.approva('eventi', e.id).subscribe({
+      next: () => {
+        this.eventi.set(this.eventi().map((x) => x.id === e.id ? { ...x, stato: 'Pubblicato', pubblicato: true, notaRevisione: null } : x));
+        this.avvisi.conferma('Evento approvato', e.titolo);
+      },
+      error: () => this.dialogo.avvisa('Approvazione non riuscita', "L'evento è ancora in revisione. Riprova tra qualche istante.")
+    });
+  }
+
+  /** Rimanda un evento all'autore con una nota obbligatoria. */
+  async rimanda(e: Evento): Promise<void> {
+    const nota = await this.dialogo.chiedi({
+      titolo: "Rimandare l'evento all'autore?",
+      messaggio: `"${e.titolo}" torna all'autore con la tua nota e non sarà pubblicato finché non lo rimanda in revisione.`,
+      azione: 'Rimanda',
+      campo: { etichetta: "Nota per l'autore", segnaposto: 'Che cosa va corretto o completato?', obbligatorio: true }
+    });
+    if (nota === null) return;
+    this.api.rimanda('eventi', e.id, nota).subscribe({
+      next: () => {
+        this.eventi.set(this.eventi().map((x) => x.id === e.id ? { ...x, stato: 'DaRivedere', pubblicato: false, notaRevisione: nota } : x));
+        if (this.form()?.id === e.id) this.form.set(null);
+        this.avvisi.conferma("Evento rimandato all'autore", e.titolo);
+      },
+      error: () => this.dialogo.avvisa('Invio della nota non riuscito', "L'evento è ancora in revisione. Riprova tra qualche istante.")
+    });
+  }
+
+  /** "Rimanda all'autore" dal modulo di revisione. */
+  rimandaDalModulo(f: EventoForm): void {
+    const e = this.eventi().find((x) => x.id === f.id);
+    if (e) this.rimanda(e);
   }
 
   /** Elimina l'evento, previa conferma esplicita. */

@@ -34,12 +34,19 @@ import { DialogoService } from './dialogo.service';
       <h2 id="dlg-titolo">{{ s.titolo }}</h2>
       <p id="dlg-testo" *ngIf="s.messaggio">{{ s.messaggio }}</p>
 
+      <label class="campo" *ngIf="s.campo">
+        <span>{{ s.campo.etichetta }}</span>
+        <textarea rows="4" [value]="s.testo ?? ''" [attr.placeholder]="s.campo.segnaposto || null"
+                  (input)="dialogo.scrivi($any($event.target).value)" #campoTesto></textarea>
+      </label>
+
       <div class="azioni">
         <button type="button" class="annulla" *ngIf="!s.soloAvviso"
                 #primoAnnulla (click)="s.rispondi(false)">
           {{ s.annulla }}
         </button>
         <button type="button" class="conferma" [class.distruttiva]="s.distruttiva"
+                [disabled]="!!s.campo?.obbligatorio && !(s.testo ?? '').trim()"
                 #primaConferma (click)="s.rispondi(true)">
           {{ s.azione }}
         </button>
@@ -84,7 +91,12 @@ import { DialogoService } from './dialogo.service';
     }
     p { margin: 0; color: var(--text-soft); font-size: .93rem; line-height: 1.55; }
 
+    .campo { display: grid; gap: 8px; margin-top: 18px; }
+    .campo span { font-size: .9rem; font-weight: 600; color: var(--text-soft); }
+    .campo textarea { background: var(--surface); resize: vertical; }
+
     .azioni { display: flex; justify-content: flex-end; gap: 12px; margin-top: 26px; flex-wrap: wrap; }
+    .azioni button:disabled { opacity: .55; cursor: not-allowed; }
 
     .azioni button {
       font: inherit; font-weight: 600; font-size: .98rem;
@@ -133,6 +145,9 @@ export class DialogoComponent {
   @ViewChild('box') private box?: ElementRef<HTMLElement>;
   @ViewChild('primoAnnulla') private bottoneAnnulla?: ElementRef<HTMLButtonElement>;
   @ViewChild('primaConferma') private bottoneConferma?: ElementRef<HTMLButtonElement>;
+  @ViewChild('campoTesto') private campoTesto?: ElementRef<HTMLTextAreaElement>;
+
+  private eraAperta = false;
 
   /** Elemento che aveva il fuoco prima dell'apertura, per restituirglielo. */
   private fuocoPrecedente: HTMLElement | null = null;
@@ -140,10 +155,15 @@ export class DialogoComponent {
   constructor() {
     effect(() => {
       const aperta = this.dialogo.stato();
+      // Solo all'apertura e alla chiusura: mentre si scrive nel campo lo stato
+      // cambia a ogni tasto, e il fuoco non va toccato.
+      if (!!aperta === this.eraAperta) return;
+      this.eraAperta = !!aperta;
       if (aperta) {
         this.fuocoPrecedente = document.activeElement as HTMLElement | null;
         // Il bottone esiste solo dopo che Angular ha disegnato la finestra.
         queueMicrotask(() => {
+          if (aperta.campo && this.campoTesto) { this.campoTesto.nativeElement.focus(); return; }
           const bersaglio = aperta.distruttiva
             ? this.bottoneAnnulla?.nativeElement
             : this.bottoneConferma?.nativeElement;
@@ -167,7 +187,7 @@ export class DialogoComponent {
     if (ev.key !== 'Tab') return;
 
     const bottoni = Array.from(
-      this.box?.nativeElement.querySelectorAll<HTMLButtonElement>('button') ?? []
+      this.box?.nativeElement.querySelectorAll<HTMLElement>('textarea, button:not(:disabled)') ?? []
     );
     if (!bottoni.length) return;
 

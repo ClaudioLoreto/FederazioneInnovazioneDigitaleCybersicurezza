@@ -1,7 +1,8 @@
 // =============================================================================
 //  frontend/src/app/pages/admin/utenti-admin.component.ts
-//  BACKOFFICE — GESTIONE UTENTI (solo SuperUser). Elenco account, cambio ruolo
-//  RBAC e rimozione. La rotta è protetta da superUserGuard + [Authorize] server.
+//  BACKOFFICE — ACCOUNT (permesso utenti.gestire). Elenco degli account, livello
+//  d'accesso e rimozione. I permessi non si cambiano qui ma nella sezione
+//  Permessi (solo Direzione), a cui ogni riga rimanda.
 // =============================================================================
 
 import { Component, OnInit, inject, signal } from '@angular/core';
@@ -9,23 +10,25 @@ import { NgFor, NgIf, DatePipe } from '@angular/common';
 import { FidcApiService, UtenteAdmin } from '../../services/fidc-api.service';
 import { DialogoService } from '../../shared/dialogo/dialogo.service';
 import { AvvisiService } from '../../shared/avvisi/avvisi.service';
-import { descriviRuolo } from '../../shared/ruoli';
+import { RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { AssettoPermessi, assettoDaRuolo, livello, normalizza, riassunto } from '../../shared/permessi';
 
 /**
- * Tabella utenti con azioni RBAC: promozione/declassamento (SuperUser↔Relatore)
- * ed eliminazione (soft-delete). Protezioni anti-lockout applicate dal server.
+ * Tabella degli account: livello d'accesso, riassunto dei permessi,
+ * collegamento alla matrice ed eliminazione (soft-delete). Protezioni
+ * anti-lockout applicate dal server.
  */
 @Component({
   selector: 'fidc-utenti-admin',
   standalone: true,
-  imports: [NgFor, NgIf, DatePipe],
+  imports: [NgFor, NgIf, DatePipe, RouterLink],
   template: `
   <div class="page">
     <header class="head">
       <div>
-        <h1>Gestione Utenti</h1>
-        <p class="scope">Account e ruoli dell'intera Federazione (RBAC)</p>
+        <h1>Account</h1>
+        <p class="scope">Le persone registrate alla piattaforma e il loro livello d'accesso.</p>
       </div>
     </header>
 
@@ -33,22 +36,19 @@ import { AuthService } from '../../services/auth.service';
       <p class="empty" *ngIf="!caricamento() && utenti().length === 0">Nessun utente.</p>
       <table *ngIf="utenti().length > 0">
         <thead>
-          <tr><th>Nome</th><th>Email</th><th>Ruolo</th><th>Email confermata</th><th>Registrato</th><th class="right">Azioni</th></tr>
+          <tr><th>Nome</th><th>Email</th><th>Accesso</th><th>Email confermata</th><th>Registrato</th><th class="right">Azioni</th></tr>
         </thead>
         <tbody>
           <tr *ngFor="let u of utenti()">
             <td class="t">{{ u.nome }} {{ u.cognome }}</td>
             <td>{{ u.email }}</td>
             <td>
-              <span class="state" [class.on]="u.ruolo === 'SuperUser'">
-                {{ u.ruolo === 'SuperUser' ? 'Super User' : 'Relatore' }}
-              </span>
+              <span class="state" [class.on]="livelloDi(u) === 'Direzione'" [attr.title]="riassuntoDi(u)">{{ livelloDi(u) }}</span>
             </td>
             <td>{{ u.emailConfermata ? 'Sì' : 'No' }}</td>
             <td>{{ u.createdAt | date:'dd/MM/yyyy' }}</td>
             <td class="right">
-              <button class="mini" *ngIf="u.ruolo !== 'SuperUser'" (click)="promuovi(u)">Promuovi a Super User</button>
-              <button class="mini" *ngIf="u.ruolo === 'SuperUser' && u.id !== meId()" (click)="declassa(u)">Rendi Relatore</button>
+              <a class="mini" *ngIf="auth.isSuperUser()" routerLink="/admin/permessi" [queryParams]="{ persona: u.id }">Permessi</a>
               <button class="mini danger" *ngIf="u.id !== meId()" (click)="elimina(u)">Elimina</button>
               <span class="mini muted" *ngIf="u.id === meId()">Tu</span>
             </td>
@@ -64,7 +64,7 @@ export class UtentiAdminComponent implements OnInit {
   private readonly api = inject(FidcApiService);
   private readonly dialogo = inject(DialogoService);
   private readonly avvisi = inject(AvvisiService);
-  private readonly auth = inject(AuthService);
+  readonly auth = inject(AuthService);
 
   readonly utenti = signal<UtenteAdmin[]>([]);
   readonly caricamento = signal(true);
@@ -83,31 +83,13 @@ export class UtentiAdminComponent implements OnInit {
     });
   }
 
-  promuovi(u: UtenteAdmin): void { this.cambia(u, 'SuperUser'); }
-  declassa(u: UtenteAdmin): void { this.cambia(u, 'Relatore'); }
-
-  /**
-   * Cambia il livello di accesso di un utente.
-   * Chiede conferma perché sposta permessi: promuovere significa dare accesso a
-   * utenti, newsletter e aspetto del sito.
-   */
-  private async cambia(u: UtenteAdmin, ruolo: string): Promise<void> {
-    const nuovo = descriviRuolo(ruolo);
-    const ok = await this.dialogo.conferma({
-      titolo: `Assegnare il profilo ${nuovo.etichetta}?`,
-      messaggio: `${u.nome} ${u.cognome} passerà al profilo ${nuovo.etichetta}: ${nuovo.ambito.toLowerCase()}.`,
-      azione: 'Assegna'
-    });
-    if (!ok) return;
-
-    this.api.cambiaRuoloUtente(u.id, ruolo).subscribe({
-      next: (agg) => { this.utenti.set(this.utenti().map((x) => (x.id === u.id ? agg : x))); this.avvisi.conferma('Utente aggiornato', agg.email); },
-      error: (err) => this.dialogo.avvisa(
-        'Cambio di profilo non riuscito',
-        err?.error?.messaggio ?? 'Il profilo è rimasto invariato. Riprova tra qualche istante.'
-      )
-    });
+  private assetto(u: UtenteAdmin): AssettoPermessi {
+    if (u.direzione !== undefined || u.permessi !== undefined)
+      return { direzione: !!u.direzione, permessi: normalizza(u.permessi ?? []) };
+    return assettoDaRuolo(u.ruolo);
   }
+  livelloDi(u: UtenteAdmin): string { return livello(this.assetto(u)); }
+  riassuntoDi(u: UtenteAdmin): string { return riassunto(this.assetto(u)); }
 
   /** Elimina un account, previa conferma esplicita. */
   async elimina(u: UtenteAdmin): Promise<void> {

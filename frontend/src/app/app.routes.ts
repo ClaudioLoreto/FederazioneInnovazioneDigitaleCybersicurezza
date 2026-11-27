@@ -6,7 +6,8 @@
 // =============================================================================
 
 import { Routes } from '@angular/router';
-import { authGuard, superUserGuard } from './services/auth.guard';
+import { authGuard, permessoGuard, superUserGuard } from './services/auth.guard';
+import { permessiArea } from './shared/permessi';
 // Import EAGER del landing pubblico: è l'entry point del portale, nel bundle main.
 import { LandingComponent } from './pages/landing/landing.component';
 
@@ -78,7 +79,8 @@ export const routes: Routes = [
 
   // -------------------------------------------------------------------------
   // BACKOFFICE protetto (authGuard). Shell con sidebar + moduli CMS.
-  // Le sezioni Utenti e Impostazioni richiedono il ruolo SuperUser (superUserGuard).
+  // Ogni sezione chiede i permessi della matrice (permessoGuard, shared/permessi.ts);
+  // la sezione Permessi è della sola Direzione (superUserGuard).
   // -------------------------------------------------------------------------
   {
     path: 'admin',
@@ -95,33 +97,36 @@ export const routes: Routes = [
       },
       {
         path: 'eventi',
+        canActivate: [permessoGuard(...permessiArea('eventi'))],
         title: 'FIDC — Gestione Eventi',
         loadComponent: () =>
           import('./pages/admin/eventi-admin.component').then((m) => m.EventiAdminComponent)
       },
       {
         path: 'news',
+        canActivate: [permessoGuard(...permessiArea('news'))],
         title: 'FIDC — Gestione News',
         loadComponent: () =>
           import('./pages/admin/news-admin.component').then((m) => m.NewsAdminComponent)
       },
       {
         path: 'documenti',
+        canActivate: [permessoGuard(...permessiArea('documenti'))],
         title: 'FIDC — Area Documenti',
         loadComponent: () =>
           import('./pages/admin/documenti-admin.component').then((m) => m.DocumentiAdminComponent)
       },
-      // --- Riservate al SuperUser -----------------------------------------
+      // --- Amministrazione --------------------------------------------------
       {
         path: 'utenti',
-        canActivate: [superUserGuard],
+        canActivate: [permessoGuard('utenti.gestire')],
         title: 'FIDC — Gestione Utenti',
         loadComponent: () =>
           import('./pages/admin/utenti-admin.component').then((m) => m.UtentiAdminComponent)
       },
       {
         path: 'newsletter',
-        canActivate: [superUserGuard],
+        canActivate: [permessoGuard('newsletter.gestire')],
         title: 'FIDC — Newsletter',
         loadComponent: () =>
           import('./pages/admin/newsletter-admin.component').then((m) => m.NewsletterAdminComponent)
@@ -130,10 +135,17 @@ export const routes: Routes = [
       { path: 'impostazioni-tema', pathMatch: 'full', redirectTo: 'impostazioni' },
       {
         path: 'impostazioni',
-        canActivate: [superUserGuard],
+        canActivate: [permessoGuard('sito.aspetto')],
         title: 'FIDC — Impostazioni & Tema',
         loadComponent: () =>
           import('./pages/admin/impostazioni-tema.component').then((m) => m.ImpostazioniTemaComponent)
+      },
+      {
+        path: 'permessi',
+        canActivate: [superUserGuard],
+        title: 'FIDC — Permessi',
+        loadComponent: () =>
+          import('./pages/admin/permessi-admin.component').then((m) => m.PermessiAdminComponent)
       }
     ]
   },

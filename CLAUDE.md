@@ -7,7 +7,8 @@
 > **Guide operative** (avvio, credenziali, struttura, lavori aperti): cartella `docs/`,
 > indice in `README.md`. Chi arriva dopo (persona o agente) parte da `docs/PER-AGENTI.md`.
 > I lavori ancora da fare stanno in `docs/ROADMAP-UI.md`.
-> In interfaccia i ruoli si chiamano **Direzione** e **Redazione**, non Super User.
+> Non ci sono più ruoli fissi: c'è una **matrice dei permessi** (`docs/PERMESSI.md`).
+> In interfaccia i livelli si chiamano **Socio**, **Redazione** e **Direzione**, mai Super User.
 
 ---
 
@@ -24,7 +25,7 @@ Il progetto implementa **esattamente** le feature descritte in
 | 4 | **Registrazione utenti** (con conferma email) | ✅ | `registrazione` · `AuthController` |
 | 5 | **Newsletter** (iscrizione pubblica + gestione) | ✅ | `NewsletterController` · `newsletter` box landing |
 | 6 | **Area Documenti** (download + gestione, RBAC) | ✅ | `documenti-admin` · `DocumentiController` |
-| 7 | **Gestione Utenti & RBAC** (SuperUser/Relatore) | ✅ | `utenti-admin` · `UtentiController` |
+| 7 | **Gestione Utenti & permessi** (matrice + flusso di revisione) | 🟡 frontend ✅, backend da adeguare | `utenti-admin` · `permessi-admin` · `shared/permessi.ts` · `shared/flusso.ts` · `docs/PERMESSI.md` |
 | 8 | **Theme/Layout selector** (veil dal backoffice) | ✅ | `impostazioni-tema` · `ThemeService` |
 
 > ⚠️ Se aggiungi/cambi una feature, **aggiorna questa tabella**.
@@ -69,7 +70,7 @@ Il progetto implementa **esattamente** le feature descritte in
 - **Frontend**: Angular 17+ standalone, signals, `@angular/animations`. Mobile-first.
 - **Backend**: .NET 8 a domini `FIDC.Api / Bll / Dal / Models`. XML docs `///` obbligatori.
 - **DB**: SQLite (dev, `EnsureCreated`) · SQL Server 2019 (prod) · PostgreSQL (demo).
-- **Auth**: JWT + RBAC (`SuperUser` controllo totale · `Relatore` solo contenuti propri).
+- **Auth**: JWT + matrice dei permessi (flag per persona; Direzione = controllo totale). Vedi `docs/PERMESSI.md`.
 
 ## 3. PALETTE FERREA (solo 4 colori, + opacità)
 `--c-deep-blue #333D6D` · `--c-purple #723EC3` · `--c-peach #FFCF95` · `--c-cream #FFF0D9`.
@@ -176,23 +177,30 @@ polsini, orologio, orecchini, pieghe stirate). Il dettaglio sta negli abiti, mai
 
 ---
 
-## 5. RBAC — MATRICE PERMESSI
-| Sezione backoffice | SuperUser | Relatore |
-|--------------------|:--------:|:--------:|
-| Dashboard | ✅ | ✅ |
-| Eventi / News | ✅ tutti | ✅ solo propri |
-| Area Documenti | ✅ tutti | ✅ solo propri |
-| Gestione Utenti | ✅ | ❌ |
-| Newsletter | ✅ | ❌ |
-| Impostazioni (Tema) | ✅ | ❌ |
+## 5. PERMESSI — MATRICE (niente ruoli fissi)
+Ogni persona ha dei flag, modificabili dalla Direzione in **Backoffice → Permessi**.
+Catalogo, flusso di revisione e contratto API in `docs/PERMESSI.md`; nel codice
+l'unica fonte è `frontend/src/app/shared/permessi.ts`.
 
-Enforcement: lato **server** (`[Authorize(Roles=...)]` + ownership) **e** lato **client**
-(`authGuard`, `superUserGuard`, visibilità menu). Mai fidarsi solo del client.
+| Livello (derivato) | Permessi | Backoffice |
+|---|---|---|
+| Socio | nessuno | solo area personale (account, iscrizioni, newsletter) |
+| Redazione | uno o più flag | solo le sezioni per cui ha flag; bottoni secondo il flusso |
+| Direzione | `direzione = true` | tutto, compresa la sezione Permessi |
+
+Regole: "Pubblica da sé" richiede "Scrive"; senza "Pubblica da sé" si invia in
+revisione; chi ha "Revisiona" approva o rimanda (nota obbligatoria) i contenuti
+altrui; nessuno toglie la Direzione a se stesso.
+
+Enforcement: lato **server** (policy per permesso + proprietà del contenuto) **e**
+lato **client** (`permessoGuard`, voci di menu, bottoni). Mai fidarsi solo del client.
+Interfaccia: la sezione Permessi usa lo stesso design system del CMS
+(`admin-tables.scss`): intestazione, pannello di modifica, ricerca e filtri, tabella.
 
 ## 6. CHECKLIST PRIMA DI CONSEGNARE
 - [ ] Contenuto da unica sorgente; tema solo come skin (nessun testo duplicato nei layout).
 - [ ] Tutte le 8 feature del §0 presenti e collegate all'API.
 - [ ] Solo 4 colori; bottoni contrastati; hero su una riga.
-- [ ] RBAC su server + client. Migrazione DB documentata se cambia lo schema.
+- [ ] Permessi su server + client (matrice). Migrazione DB documentata se cambia lo schema.
 - [ ] `prefers-reduced-motion` gestito; mobile impeccabile.
 - [ ] `npm run build` e `dotnet build` verdi.

@@ -21,7 +21,25 @@ export interface RegisterRequest {
 export interface AuthResponse {
   token: string;
   nomeCompleto: string;
+  /** Ruolo storico: resta finché il server non invia i permessi (docs/PERMESSI.md). */
   ruolo: string;
+  /** Controllo completo. Assente sul server attuale: si ricava dal ruolo. */
+  direzione?: boolean;
+  /** Permessi della matrice (shared/permessi.ts). Assenti sul server attuale. */
+  permessi?: string[];
+}
+
+/**
+ * Stato di un contenuto nel flusso di revisione. Il server attuale conosce solo
+ * "pubblicato sì/no": `statoDi()` ricava lo stato anche da quello.
+ */
+export type StatoContenuto = 'Bozza' | 'InRevisione' | 'DaRivedere' | 'Pubblicato';
+
+/** Campi del flusso di revisione comuni a news, eventi e documenti. */
+export interface FlussoRevisione {
+  stato?: StatoContenuto;
+  /** Nota lasciata da chi ha rimandato il contenuto all'autore. */
+  notaRevisione?: string | null;
 }
 
 /** Pilastro tematico (specchio dell'enum backend PilastroTipo, serializzato come stringa). */
@@ -40,6 +58,8 @@ export interface Evento {
   postiTotali: number;
   pubblicato: boolean;
   relatoreId: number;
+  stato?: StatoContenuto;
+  notaRevisione?: string | null;
 }
 
 /** News pubblica (specchio dell'entità News). */
@@ -54,6 +74,8 @@ export interface News {
   pubblicato: boolean;
   dataPubblicazione?: string | null;
   autoreId: number;
+  stato?: StatoContenuto;
+  notaRevisione?: string | null;
 }
 
 /** Visibilità di un documento (specchio di VisibilitaDocumento). */
@@ -68,6 +90,9 @@ export interface Documento {
   categoria: string;
   visibilita: VisibilitaDocumento;
   caricatoDaId: number;
+  /** Assente sul server attuale: un documento esistente è considerato pubblicato. */
+  stato?: StatoContenuto;
+  notaRevisione?: string | null;
 }
 
 /** Partecipante a un evento, come lo restituisce il backoffice (PartecipanteDto). */
@@ -89,6 +114,9 @@ export interface UtenteAdmin {
   ruolo: string;
   emailConfermata: boolean;
   createdAt: string;
+  /** Matrice dei permessi (docs/PERMESSI.md). Assenti sul server attuale. */
+  direzione?: boolean;
+  permessi?: string[];
 }
 
 /** Iscritto newsletter (specchio di IscrizioneNewsletter). */
@@ -280,9 +308,27 @@ export class FidcApiService {
     return this.http.get<UtenteAdmin[]>(`${this.base}/utenti`);
   }
 
-  /** Cambia il ruolo RBAC di un utente. */
-  cambiaRuoloUtente(id: number, ruolo: string): Observable<UtenteAdmin> {
-    return this.http.put<UtenteAdmin>(`${this.base}/utenti/${id}/ruolo`, { ruolo });
+
+  /** Salva i permessi di una persona (solo Direzione). */
+  salvaPermessi(id: number, assetto: { direzione: boolean; permessi: string[] }): Observable<UtenteAdmin> {
+    return this.http.put<UtenteAdmin>(`${this.base}/utenti/${id}/permessi`, assetto);
+  }
+
+  // --- Flusso di revisione (news · eventi · documenti) ----------------------
+
+  /** L'autore manda il contenuto in revisione. */
+  inviaInRevisione(area: 'news' | 'eventi' | 'documenti', id: number): Observable<void> {
+    return this.http.post<void>(`${this.base}/${area}/${id}/revisione`, {});
+  }
+
+  /** Il revisore approva: il contenuto viene pubblicato. */
+  approva(area: 'news' | 'eventi' | 'documenti', id: number): Observable<void> {
+    return this.http.post<void>(`${this.base}/${area}/${id}/approva`, {});
+  }
+
+  /** Il revisore rimanda il contenuto all'autore con una nota. */
+  rimanda(area: 'news' | 'eventi' | 'documenti', id: number, nota: string): Observable<void> {
+    return this.http.post<void>(`${this.base}/${area}/${id}/rimanda`, { nota });
   }
 
   /** Elimina (soft-delete) un utente. */
@@ -301,4 +347,10 @@ export class FidcApiService {
   salvaTema(body: TemaConfig): Observable<TemaConfig> {
     return this.http.put<TemaConfig>(`${this.base}/tema`, body);
   }
+}
+
+/** Stato di un contenuto, ricavato anche dal solo flag "pubblicato" del server attuale. */
+export function statoDi(x: { pubblicato?: boolean; stato?: StatoContenuto }): StatoContenuto {
+  if (x.stato) return x.stato;
+  return x.pubblicato === false ? 'Bozza' : 'Pubblicato';
 }
