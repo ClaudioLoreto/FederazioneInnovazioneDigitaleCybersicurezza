@@ -26,8 +26,10 @@ import { DialogoService } from '../../shared/dialogo/dialogo.service';
 import { SelezioneComponent, OpzioneSelezione } from '../../shared/campi/selezione.component';
 import { EmblemaTemaComponent } from '../../shared/emblemi/emblema-tema.component';
 import { ContenutiSito, SLOGAN_MAX } from '../../content/home-content';
+import { ChiaveLegale, PERCORSI_LEGALI, daCompletare } from '../../content/testi-legali';
+import { EditorTestoComponent } from '../../shared/campi/editor-testo.component';
 
-type Sezione = 'identita' | 'apertura' | 'evidenza' | 'pilastri' | 'associazione' | 'progetti' | 'newsletter' | 'contatti';
+type Sezione = 'identita' | 'apertura' | 'evidenza' | 'pilastri' | 'associazione' | 'progetti' | 'newsletter' | 'contatti' | 'legali';
 
 /** Emblemi selezionabili, con il nome che vede la redazione. */
 const EMBLEMI: OpzioneSelezione[] = [
@@ -67,7 +69,7 @@ const RETI: OpzioneSelezione[] = ['LinkedIn', 'Facebook', 'Instagram', 'YouTube'
 @Component({
   selector: 'fidc-contenuti-admin',
   standalone: true,
-  imports: [FormsModule, SelezioneComponent, EmblemaTemaComponent],
+  imports: [FormsModule, SelezioneComponent, EmblemaTemaComponent, EditorTestoComponent],
   animations: [
     trigger('panel', [
       transition(':enter', [style({ opacity: 0, transform: 'translateY(-8px)' }), animate('220ms ease-out', style({ opacity: 1, transform: 'none' }))])
@@ -95,8 +97,14 @@ export class ContenutiAdminComponent implements OnInit {
     { chiave: 'associazione', nome: 'Associazione', descrizione: 'Chi siamo, numeri chiave, missione e organi di governo. Le parti vuote non compaiono sul sito.' },
     { chiave: 'progetti', nome: 'Progetti', descrizione: 'I progetti in evidenza. Il primo apre la sezione in grande. Senza progetti la sezione non compare.' },
     { chiave: 'newsletter', nome: 'Newsletter', descrizione: 'Il riquadro di iscrizione in fondo alla home.' },
-    { chiave: 'contatti', nome: 'Contatti', descrizione: 'Recapiti e profili social nel piè di pagina. Si mostrano solo quelli compilati.' }
+    { chiave: 'contatti', nome: 'Contatti', descrizione: 'Recapiti e profili social nel piè di pagina. Si mostrano solo quelli compilati.' },
+    { chiave: 'legali', nome: 'Pagine legali', descrizione: 'Privacy, cookie, note legali e accessibilità. Sono bozze: completa le parti tra parentesi quadre e falle verificare a un legale prima della pubblicazione.' }
   ];
+
+  /** Le pagine legali, nell'ordine in cui compaiono nel piè di pagina. */
+  readonly pagineLegali: { chiave: ChiaveLegale; percorso: string }[] =
+    (Object.keys(PERCORSI_LEGALI) as ChiaveLegale[]).map((k) => ({ chiave: k, percorso: PERCORSI_LEGALI[k] }));
+  daCompletare(testo: string): boolean { return daCompletare(testo); }
   readonly sezione = signal<Sezione>('identita');
   readonly corrente = computed(() => this.sezioni.find((s) => s.chiave === this.sezione())!);
 

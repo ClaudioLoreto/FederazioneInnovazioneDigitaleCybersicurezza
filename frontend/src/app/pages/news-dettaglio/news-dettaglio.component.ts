@@ -40,7 +40,7 @@ import { VetrinaService } from '../../services/vetrina.service';
           <div class="container stretto">
             <nav class="briciole" aria-label="Percorso">
               <a routerLink="/">Home</a><span aria-hidden="true">/</span>
-              <a routerLink="/" fragment="news">News</a><span aria-hidden="true">/</span>
+              <a routerLink="/news">Notizie</a><span aria-hidden="true">/</span>
               <span aria-current="page">{{ etichetta(n.pilastro) }}</span>
             </nav>
             <p class="meta">
@@ -96,7 +96,7 @@ import { VetrinaService } from '../../services/vetrina.service';
         } @else {
           <h1>Questa notizia non è disponibile</h1>
           <p>Potrebbe essere stata rimossa o non essere ancora pubblicata.</p>
-          <a class="btn-primary" routerLink="/" fragment="news">Torna alle notizie</a>
+          <a class="btn-primary" routerLink="/news">Tutte le notizie</a>
         }
       </div></section>
     }

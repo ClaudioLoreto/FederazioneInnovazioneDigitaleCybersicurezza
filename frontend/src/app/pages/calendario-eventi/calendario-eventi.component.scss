@@ -1,0 +1,127 @@
+// =============================================================================
+//  pages/calendario-eventi/calendario-eventi.component.scss
+//  Calendario mensile accanto all'elenco. Testata e corpo da dettaglio.scss.
+//  Solo token del tema: segue il velo attivo.
+// =============================================================================
+
+@use '../../../styles/palette' as *;
+
+.apertura-cal { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; }
+.apertura-emblema { width: clamp(72px, 4rem + 3vw, 120px); flex: 0 0 auto; }
+
+// ---- Filtri (stessa forma dei filtri del backoffice) ----------------------------------
+.filtri { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-bottom: 28px; }
+.cerca {
+  position: relative; flex: 1 1 260px; max-width: 420px;
+  svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; fill: none; stroke: var(--text-muted); stroke-width: 2; stroke-linecap: round; }
+  input { padding-left: 40px; }
+}
+.scelte {
+  display: inline-flex; flex-wrap: wrap; max-width: 100%; padding: 3px; gap: 2px;
+  border: 1px solid var(--line); border-radius: calc(var(--radius) + 3px); background: var(--surface);
+  button {
+    min-height: 40px; padding: 6px 14px;
+    background: transparent; color: var(--text-soft); border: 0; border-radius: var(--radius);
+    font: inherit; font-size: .95rem; font-weight: 500; cursor: pointer;
+    &:hover { color: var(--text); }
+    &.on { background: var(--accent); color: var(--on-accent); }
+    &:focus-visible { outline: none; box-shadow: var(--glow-focus); }
+  }
+}
+
+.cal-griglia { display: grid; grid-template-columns: minmax(300px, 400px) minmax(0, 1fr); gap: 32px 48px; align-items: start; }
+
+// ---- Calendario --------------------------------------------------------------------------
+.calendario {
+  position: sticky; top: calc(var(--header-h, 72px) + 16px);
+  padding: 20px;
+  background: var(--card-bg); color: var(--card-text);
+  border: 1px solid var(--card-border); border-radius: var(--radius);
+  transition: opacity .2s;
+  &.spento { opacity: .55; }
+}
+.cal-testa {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 14px;
+  h2 { font-size: 1.3rem; text-align: center; }
+}
+.cal-passo {
+  display: grid; place-items: center; width: 40px; height: 40px;
+  background: transparent; color: var(--card-text); cursor: pointer;
+  border: 1px solid var(--line); border-radius: var(--radius);
+  svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  &:hover { border-color: var(--signal); color: var(--signal); }
+  &:focus-visible { outline: none; box-shadow: var(--glow-focus); }
+}
+.cal-settimana, .cal-giorni { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; margin: 0; padding: 0; list-style: none; }
+.cal-settimana li { text-align: center; font-size: .8rem; font-weight: 600; color: var(--card-soft); text-transform: capitalize; padding-bottom: 6px; }
+.cal-giorni li.fuori { opacity: .35; }
+.giorno {
+  position: relative; width: 100%; aspect-ratio: 1;
+  display: grid; place-items: center; align-content: center; gap: 3px;
+  font: inherit; font-size: .95rem; color: var(--card-soft);
+  background: transparent; border: 1px solid transparent; border-radius: var(--radius);
+  font-variant-numeric: tabular-nums;
+  &.oggi { border-color: var(--line-strong); color: var(--card-text); font-weight: 600; }
+}
+button.giorno {
+  cursor: pointer; color: var(--card-text); font-weight: 600;
+  background: var(--accent-soft);
+  &:hover { border-color: var(--signal); }
+  &.scelto { background: var(--accent); color: var(--on-accent); .punti i { background: var(--on-accent); } }
+  &:focus-visible { outline: none; box-shadow: var(--glow-focus); }
+}
+.punti { display: flex; gap: 3px; height: 5px; i { width: 5px; height: 5px; border-radius: 50%; background: var(--signal); } }
+.cal-piede { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line); }
+.legenda {
+  display: flex; align-items: center; gap: 6px; font-size: .85rem; color: var(--card-soft);
+  i { display: inline-block; width: 14px; height: 14px; border-radius: 4px; }
+  .l-evento { background: var(--accent-soft); box-shadow: inset 0 -4px 0 -2px var(--signal); }
+  .l-oggi { border: 1px solid var(--line-strong); margin-left: 10px; }
+}
+
+// ---- Elenco ------------------------------------------------------------------------------
+.elenco { display: grid; gap: 12px; align-content: start; }
+.elenco-titolo { font-size: clamp(1.4rem, 1.1rem + .8vw, 1.8rem); margin-bottom: 6px; }
+.evento-riga {
+  position: relative;
+  display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 8px 22px; align-items: start;
+  padding: 20px 22px;
+  background: var(--card-bg); color: var(--card-text);
+  border: 1px solid var(--card-border); border-radius: var(--radius);
+  transition: transform .3s var(--ease-spatial), border-color .25s;
+  &:hover { transform: translateX(4px); border-color: var(--line-strong); h3 { text-decoration: underline; text-underline-offset: 4px; } }
+  &:focus-within { box-shadow: var(--glow-focus); }
+  &.imminente { border-color: var(--signal); border-left-width: 4px; }
+  &.passato { opacity: .72; }
+  &.scheletro { min-height: 120px; }
+  h3 { font-size: 1.2rem; margin: 6px 0 4px; }
+}
+.er-data {
+  display: flex; flex-direction: column; padding-right: 16px; border-right: 1px solid var(--line);
+  .giorno-num { font-family: var(--font-display); font-weight: 600; font-size: 2.4rem; line-height: 1; color: var(--signal); }
+  .mese { font-size: .9rem; font-weight: 500; color: var(--card-soft); text-transform: capitalize; }
+  .ora { font-size: .85rem; color: var(--card-soft); margin-top: 4px; }
+}
+.er-meta { display: flex; flex-wrap: wrap; gap: 8px; }
+.badge.concluso { border-style: dashed; color: var(--card-soft); }
+.er-sotto { color: var(--card-soft); line-height: 1.5; }
+.er-luogo {
+  display: flex; align-items: center; gap: 6px; margin-top: 6px; font-size: .95rem; color: var(--card-soft);
+  svg { width: 16px; height: 16px; flex: 0 0 auto; fill: none; stroke: var(--signal); stroke-width: 1.8; }
+}
+.vuoto {
+  display: grid; gap: 14px; justify-items: start;
+  padding: 28px; border: 1px dashed var(--line-strong); border-radius: var(--radius);
+  p { color: var(--text-soft); line-height: 1.6; }
+}
+
+@media (max-width: 899px) {
+  .cal-griglia { grid-template-columns: minmax(0, 1fr); }
+  .calendario { position: static; }
+  .apertura-emblema { display: none; }
+}
+@media (max-width: 480px) {
+  .evento-riga { grid-template-columns: minmax(0, 1fr); }
+  .er-data { flex-direction: row; align-items: baseline; gap: 8px; padding: 0; border: 0; }
+  .er-data .giorno-num { font-size: 1.6rem; }
+}

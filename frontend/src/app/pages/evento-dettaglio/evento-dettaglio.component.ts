@@ -50,7 +50,7 @@ type StatoIscrizione = 'libero' | 'invio' | 'iscritto' | 'annullamento' | 'error
         } @else {
           <h1>Questo evento non è disponibile</h1>
           <p>Potrebbe essere stato rimosso o non essere ancora pubblicato. Guarda gli altri eventi in programma.</p>
-          <a class="btn-primary" routerLink="/" fragment="eventi">Vedi il calendario</a>
+          <a class="btn-primary" routerLink="/eventi">Vedi il calendario</a>
         }
       </div></section>
     } @else { @if (evento(); as e) {
@@ -58,7 +58,7 @@ type StatoIscrizione = 'libero' | 'invio' | 'iscritto' | 'annullamento' | 'error
         <div class="container">
           <nav class="briciole" aria-label="Percorso">
             <a routerLink="/">Home</a><span aria-hidden="true">/</span>
-            <a routerLink="/" fragment="eventi">Eventi</a><span aria-hidden="true">/</span>
+            <a routerLink="/eventi">Eventi</a><span aria-hidden="true">/</span>
             <span aria-current="page">{{ e.titolo }}</span>
           </nav>
 
@@ -109,6 +109,8 @@ type StatoIscrizione = 'libero' | 'invio' | 'iscritto' | 'annullamento' | 'error
                     @if (stato() === 'invio') { <span class="spinner" aria-hidden="true"></span> Iscrizione in corso }
                     @else { Iscriviti all'evento }
                   </button>
+                  <p class="nota">Useremo i tuoi dati solo per organizzare l'evento.
+                    <a routerLink="/privacy">Informativa sulla privacy</a></p>
                 }
                 @if (messaggio()) { <p class="nota" role="status">{{ messaggio() }}</p> }
 

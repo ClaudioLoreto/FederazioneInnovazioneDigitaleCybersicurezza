@@ -210,7 +210,10 @@
           <p>Summit, laboratori e giornate formative in tutta Italia. L'iscrizione è riservata
              a chi ha un account della Federazione.</p>
         </div>
-        <a class="btn-primary" routerLink="/registrati">Crea il tuo account</a>
+        <div class="testa-azioni">
+          <a class="btn-outline" routerLink="/eventi">Tutti gli eventi</a>
+          <a class="btn-primary" routerLink="/registrati">Crea il tuo account</a>
+        </div>
       </header>
 
       @if (caricamento()) {
@@ -252,9 +255,12 @@
   @if (caricamento() || sezioni().news) {
   <section class="sezione" [class]="tono('news')" id="news" aria-labelledby="t-news">
     <div class="container">
-      <header class="sezione-testa" fidcReveal>
-        <h2 id="t-news">Dalla Federazione</h2>
-        <p>Ricerche, programmi e posizioni pubbliche, raccontati da chi ci lavora.</p>
+      <header class="sezione-testa sezione-testa-riga" fidcReveal>
+        <div>
+          <h2 id="t-news">Dalla Federazione</h2>
+          <p>Ricerche, programmi e posizioni pubbliche, raccontati da chi ci lavora.</p>
+        </div>
+        <a class="btn-outline" routerLink="/news">Tutte le notizie</a>
       </header>
 
       @if (caricamento()) {
@@ -317,6 +323,10 @@
             @if (nlStato() === 'invio') { <span class="spinner" aria-hidden="true"></span> Iscrizione in corso }
             @else { {{ c().newsletter.cta }} }
           </button>
+          <label class="nl-consenso">
+            <input type="checkbox" name="nlConsenso" [(ngModel)]="nlConsenso" [disabled]="nlStato() === 'invio'" />
+            <span>Acconsento a ricevere la newsletter e ho letto l'<a routerLink="/privacy">informativa sulla privacy</a>.</span>
+          </label>
           <p class="nl-nota" id="nl-nota">
             @if (nlStato() === 'errore') { <span class="nl-errore" role="alert">{{ nlErrore() }}</span> }
             @else { Un numero al mese. Puoi cancellarti con un clic da ogni email. }

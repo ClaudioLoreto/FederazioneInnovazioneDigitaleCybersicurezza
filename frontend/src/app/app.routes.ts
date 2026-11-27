@@ -24,6 +24,44 @@ export const routes: Routes = [
   },
 
   // Pagine di dettaglio pubbliche: ogni card di news ed eventi porta qui.
+  // Calendario di tutti gli eventi e archivio delle notizie.
+  {
+    path: 'eventi',
+    pathMatch: 'full',
+    title: 'FIDC — Calendario degli eventi',
+    loadComponent: () => import('./pages/calendario-eventi/calendario-eventi.component').then((m) => m.CalendarioEventiComponent)
+  },
+  {
+    path: 'news',
+    pathMatch: 'full',
+    title: 'FIDC — Notizie',
+    loadComponent: () => import('./pages/archivio-news/archivio-news.component').then((m) => m.ArchivioNewsComponent)
+  },
+  // Pagine legali: un componente, quattro testi modificabili dal backoffice.
+  {
+    path: 'privacy',
+    title: 'FIDC — Privacy',
+    data: { chiave: 'privacy' },
+    loadComponent: () => import('./pages/pagina-legale/pagina-legale.component').then((m) => m.PaginaLegaleComponent)
+  },
+  {
+    path: 'cookie',
+    title: 'FIDC — Cookie',
+    data: { chiave: 'cookie' },
+    loadComponent: () => import('./pages/pagina-legale/pagina-legale.component').then((m) => m.PaginaLegaleComponent)
+  },
+  {
+    path: 'note-legali',
+    title: 'FIDC — Note legali',
+    data: { chiave: 'noteLegali' },
+    loadComponent: () => import('./pages/pagina-legale/pagina-legale.component').then((m) => m.PaginaLegaleComponent)
+  },
+  {
+    path: 'accessibilita',
+    title: 'FIDC — Accessibilità',
+    data: { chiave: 'accessibilita' },
+    loadComponent: () => import('./pages/pagina-legale/pagina-legale.component').then((m) => m.PaginaLegaleComponent)
+  },
   {
     path: 'eventi/:id',
     title: 'FIDC — Evento',

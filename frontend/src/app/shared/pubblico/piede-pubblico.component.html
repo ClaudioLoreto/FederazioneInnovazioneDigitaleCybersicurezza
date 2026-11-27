@@ -48,8 +48,10 @@
     }
 
     <nav class="piede-col" aria-label="Collegamenti utili">
-      <h2>Per i soci</h2>
+      <h2>La Federazione</h2>
       <ul>
+        <li><a routerLink="/eventi">Calendario degli eventi</a></li>
+        <li><a routerLink="/news">Notizie</a></li>
         <li><a routerLink="/area-documenti">Area documenti</a></li>
         <li><a routerLink="/login">Area riservata</a></li>
         <li><a routerLink="/registrati">Diventa socio</a></li>
@@ -61,6 +63,12 @@
   <div class="container">
     <div class="piede-fondo">
       <p>© {{ anno }} {{ identita().nome }}</p>
+      <nav class="legali" aria-label="Informazioni legali">
+        <a routerLink="/privacy">Privacy</a>
+        <a routerLink="/cookie">Cookie</a>
+        <a routerLink="/note-legali">Note legali</a>
+        <a routerLink="/accessibilita">Accessibilità</a>
+      </nav>
       <a href="/" (click)="naviga('inizio', $event)">Torna su</a>
     </div>
   </div>

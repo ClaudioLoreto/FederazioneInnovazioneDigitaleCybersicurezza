@@ -93,6 +93,20 @@ import { AuthShellComponent } from '../../shared/auth/auth-shell.component';
             }
           </div>
 
+          <!-- Consensi: l'informativa è obbligatoria, la newsletter no (e parte spenta). -->
+          <div class="consensi">
+            <label class="consenso" [class.errato]="!privacyLetta && inviato()">
+              <input type="checkbox" name="privacy" [(ngModel)]="privacyLetta" required />
+              <span>Ho letto l'<a routerLink="/privacy" target="_blank">informativa sulla privacy</a>
+                (si apre in una nuova scheda).</span>
+            </label>
+            @if (!privacyLetta && inviato()) { <p class="msg-campo">Per creare l'account serve la presa visione dell'informativa.</p> }
+            <label class="consenso">
+              <input type="checkbox" name="newsletter" [(ngModel)]="newsletter" />
+              <span>Voglio ricevere la newsletter della Federazione. Facoltativo: posso cancellarmi da ogni email.</span>
+            </label>
+          </div>
+
           @if (errore()) {
             <div class="avviso" [class.rete]="erroreRete()" role="alert">
               <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M12 3l9 16H3z M12 10v4 M12 17v.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/></svg>
@@ -117,6 +131,10 @@ export class RegistrazioneComponent {
   private readonly api = inject(FidcApiService);
 
   model: RegisterRequest = { nome: '', cognome: '', email: '', password: '' };
+  /** Presa visione dell'informativa: obbligatoria. */
+  privacyLetta = false;
+  /** Consenso alla newsletter: facoltativo e spento in partenza. */
+  newsletter = false;
 
   readonly caricamento = signal(false);
   readonly inviato = signal(false);
@@ -165,6 +183,9 @@ export class RegistrazioneComponent {
 
     this.api.register(body).subscribe({
       next: (r) => {
+        // Iscrizione alla newsletter solo con il consenso esplicito; un errore qui
+        // non deve far sembrare fallita la registrazione.
+        if (this.newsletter) this.api.iscriviNewsletter(body.email).subscribe({ error: () => { /* già iscritto o servizio assente */ } });
         this.caricamento.set(false);
         this.messaggio.set(r.messaggio);
         this.completato.set(true);

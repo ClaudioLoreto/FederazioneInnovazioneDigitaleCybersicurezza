@@ -148,6 +148,8 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
   evidenzia(e: Evento): boolean { return imminente(e) || this.c().evidenza.eventoId === e.id; }
 
   nlEmail = '';
+  /** Consenso esplicito alla newsletter (GDPR): la casella parte vuota. */
+  nlConsenso = false;
   readonly nlStato = signal<'idle' | 'invio' | 'ok' | 'errore'>('idle');
   readonly nlErrore = signal('');
   readonly nlEmailInviata = signal('');
@@ -251,12 +253,18 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
       this.nlStato.set('errore');
       return;
     }
+    if (!this.nlConsenso) {
+      this.nlErrore.set('Per iscriverti serve il tuo consenso: spunta la casella sotto il campo.');
+      this.nlStato.set('errore');
+      return;
+    }
     this.nlStato.set('invio');
     this.api.iscriviNewsletter(email).subscribe({
       next: () => {
         this.nlEmailInviata.set(email);
         this.nlStato.set('ok');
         this.nlEmail = '';
+        this.nlConsenso = false;
       },
       error: (err: unknown) => {
         const http = err instanceof HttpErrorResponse ? err : null;

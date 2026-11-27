@@ -1,0 +1,135 @@
+<fidc-testata-pubblica></fidc-testata-pubblica>
+
+<main id="contenuto">
+  <section class="tone-dark apertura">
+    <div class="container apertura-cal">
+      <div>
+        <nav class="briciole" aria-label="Percorso">
+          <a routerLink="/">Home</a><span aria-hidden="true">/</span>
+          <span aria-current="page">Eventi</span>
+        </nav>
+        <h1>Calendario degli eventi</h1>
+        <p class="sottotitolo">Summit, laboratori e giornate formative della Federazione.
+          L'iscrizione è riservata a chi ha un account.</p>
+      </div>
+      <fidc-emblema-tema class="apertura-emblema" tipo="calendario" [vivo]="true" aria-hidden="true"></fidc-emblema-tema>
+    </div>
+  </section>
+
+  <section class="tone-light corpo">
+    <div class="container">
+      <div class="filtri" role="search">
+        <label class="cerca">
+          <span class="sr-only">Cerca un evento</span>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+          <input type="search" [value]="cerca()" (input)="cerca.set($any($event.target).value)" placeholder="Cerca per titolo o luogo" />
+        </label>
+        <div class="scelte" role="group" aria-label="Ambito">
+          @for (a of ambiti; track a.valore) {
+            <button type="button" [class.on]="ambito() === a.valore" [attr.aria-pressed]="ambito() === a.valore"
+                    (click)="ambito.set(a.valore)">{{ a.etichetta }}</button>
+          }
+        </div>
+      </div>
+
+      <div class="cal-griglia">
+        <!-- MESE -->
+        <section class="calendario" aria-labelledby="t-mese" [class.spento]="!!cerca().trim()">
+          <header class="cal-testa">
+            <button type="button" class="cal-passo" (click)="cambiaMese(-1)" aria-label="Mese precedente">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>
+            </button>
+            <h2 id="t-mese" aria-live="polite">{{ nomeMese() }}</h2>
+            <button type="button" class="cal-passo" (click)="cambiaMese(1)" aria-label="Mese successivo">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+            </button>
+          </header>
+
+          <ol class="cal-settimana" aria-hidden="true">
+            @for (g of giorniSettimana; track g) { <li>{{ g.slice(0, 3) }}</li> }
+          </ol>
+          <ol class="cal-giorni">
+            @for (g of giorni(); track g.chiave) {
+              <li [class.fuori]="!g.delMese">
+                @if (g.eventi.length) {
+                  <button type="button" class="giorno con-eventi"
+                          [class.oggi]="g.oggi" [class.scelto]="giornoScelto() === g.chiave"
+                          [attr.aria-pressed]="giornoScelto() === g.chiave"
+                          [attr.aria-label]="descriviGiorno(g)" (click)="scegliGiorno(g)">
+                    <span class="num">{{ g.data.getDate() }}</span>
+                    <span class="punti" aria-hidden="true">
+                      @for (e of g.eventi.slice(0, 3); track e.id) { <i></i> }
+                    </span>
+                  </button>
+                } @else {
+                  <span class="giorno" [class.oggi]="g.oggi" [attr.aria-label]="descriviGiorno(g)">
+                    <span class="num">{{ g.data.getDate() }}</span>
+                  </span>
+                }
+              </li>
+            }
+          </ol>
+
+          <div class="cal-piede">
+            <p class="legenda"><i class="l-evento" aria-hidden="true"></i> giorno con eventi
+              <i class="l-oggi" aria-hidden="true"></i> oggi</p>
+            @if (giornoScelto()) {
+              <button type="button" class="btn-outline btn-sm" (click)="giornoScelto.set(null)">Mostra tutto il mese</button>
+            }
+          </div>
+        </section>
+
+        <!-- ELENCO -->
+        <section class="elenco" aria-labelledby="t-elenco" aria-live="polite">
+          <h2 id="t-elenco" class="elenco-titolo">{{ titoloElenco() }}</h2>
+
+          @if (caricamento()) {
+            @for (s of [1, 2, 3]; track s) { <div class="evento-riga scheletro"></div> }
+          } @else {
+            @for (e of elenco(); track e.id) {
+              <article class="evento-riga" [class.imminente]="evidente(e)" [class.passato]="concluso(e)">
+                <time class="er-data" [attr.datetime]="e.dataInizio">
+                  <span class="giorno-num">{{ e.dataInizio | date:'dd' }}</span>
+                  <span class="mese">{{ e.dataInizio | date:'MMM yyyy' }}</span>
+                  <span class="ora">{{ e.dataInizio | date:'HH:mm' }}</span>
+                </time>
+                <div class="er-corpo">
+                  <p class="er-meta">
+                    <span class="badge">{{ etichetta(e.pilastro) }}</span>
+                    @if (concluso(e)) { <span class="badge concluso">Concluso</span> }
+                    @else { @if (imminenza(e); as q) { <span class="badge" [class.badge-strong]="evidente(e)">{{ q }}</span> } }
+                  </p>
+                  <h3><a class="esteso" [routerLink]="['/eventi', e.id]">{{ e.titolo }}</a></h3>
+                  @if (e.sottotitolo) { <p class="er-sotto">{{ e.sottotitolo }}</p> }
+                  <p class="er-luogo">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12z"/><circle cx="12" cy="10" r="2.5"/></svg>
+                    {{ e.luogo }}
+                  </p>
+                </div>
+              </article>
+            } @empty {
+              <div class="vuoto">
+                @if (cerca().trim()) {
+                  <p>Nessun evento corrisponde alla ricerca.</p>
+                  <button type="button" class="btn-outline btn-sm" (click)="cerca.set('')">Cancella la ricerca</button>
+                } @else if (!filtrati().length) {
+                  <p>Non ci sono eventi pubblicati{{ ambito() !== 'tutti' ? ' in questo ambito' : '' }}. Iscriviti alla newsletter per sapere quando ne annunciamo uno.</p>
+                  <a class="btn-primary btn-sm" routerLink="/" fragment="newsletter">Iscriviti alla newsletter</a>
+                } @else {
+                  <p>Nessun evento in questo mese.</p>
+                  @if (meseConEventi(); as m) {
+                    <button type="button" class="btn-outline btn-sm" (click)="vaiAlMese(m)">
+                      Vai a {{ nomeDi(m) }}
+                    </button>
+                  }
+                }
+              </div>
+            }
+          }
+        </section>
+      </div>
+    </div>
+  </section>
+</main>
+
+<fidc-piede-pubblico></fidc-piede-pubblico>

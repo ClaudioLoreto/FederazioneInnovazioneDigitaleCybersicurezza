@@ -174,8 +174,17 @@ avviso (`AvvisiService`) con lo stesso verbo del bottone. Gli errori restano nel
 modulo o in un dialogo, non negli avvisi.
 
 **Pagine pubbliche**: ogni card di news ed eventi porta al dettaglio (`/news/:id`,
-`/eventi/:id`); testata e piè di pagina sono componenti condivisi (`shared/pubblico/`);
+`/eventi/:id`); `/eventi` è il calendario mensile con elenco, `/news` l'archivio per mese;
+testata e piè di pagina sono componenti condivisi (`shared/pubblico/`);
 gli indirizzi sconosciuti mostrano la pagina 404, non un redirect muto.
+
+**Pagine legali e consensi**: `/privacy`, `/cookie`, `/note-legali`, `/accessibilita`
+(un componente, testi da Contenuti del sito → Pagine legali; bozze in
+`content/testi-legali.ts`, con le parti [tra parentesi] da completare e far verificare a un
+legale). Il sito usa solo strumenti tecnici (localStorage, font self-hosted): **niente
+banner dei cookie**; se si aggiungono statistiche o contenuti di terze parti, vanno
+rivisti pagina cookie e consenso. Registrazione: presa visione dell'informativa
+obbligatoria, newsletter facoltativa e spenta. Newsletter: consenso esplicito con casella.
 
 **Font**: self-hosted da `@fontsource` (niente Google Fonts: GDPR e build offline).
 IBM Plex Serif 600 (titoli, autorevole) + IBM Plex Sans (testo): una sola famiglia.

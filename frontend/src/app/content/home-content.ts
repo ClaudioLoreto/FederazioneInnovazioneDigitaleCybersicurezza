@@ -18,6 +18,7 @@
 
 import type { TemaEmblema } from '../shared/emblemi/emblema-tema.component';
 import type { ScenaIllustrazione } from '../shared/illustrazioni/illustrazione.component';
+import { ChiaveLegale, LEGALI_PREDEFINITI, PaginaLegale } from './testi-legali';
 
 /** Chiavi fisse dei quattro pilastri (le ancore del menu dipendono da queste). */
 export type ChiavePilastro = 'attivita' | 'eventi' | 'formazione' | 'ricerca';
@@ -114,6 +115,8 @@ export interface ContenutiSito {
     orari: string;
     social: Social[];
   };
+  /** Pagine legali: privacy, cookie, note legali, accessibilità (bozze in testi-legali.ts). */
+  legali: Record<ChiaveLegale, PaginaLegale>;
 }
 
 /** Lunghezza massima dello slogan (regola dell'hero in CLAUDE.md §4-bis). */
@@ -208,7 +211,8 @@ export const CONTENUTI_PREDEFINITI: ContenutiSito = {
       'una selezione curata dal nostro osservatorio.',
     cta: 'Iscriviti alla newsletter'
   },
-  contatti: { sede: '', email: '', pec: '', telefono: '', whatsapp: '', orari: '', social: [] }
+  contatti: { sede: '', email: '', pec: '', telefono: '', whatsapp: '', orari: '', social: [] },
+  legali: LEGALI_PREDEFINITI
 };
 
 // =============================================================================

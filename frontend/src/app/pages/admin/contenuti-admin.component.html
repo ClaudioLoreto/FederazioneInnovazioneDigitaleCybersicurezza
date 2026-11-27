@@ -237,6 +237,31 @@
         </div>
       }
 
+      @case ('legali') {
+        <div class="voci">
+          @for (l of pagineLegali; track l.chiave) {
+            <article class="voce">
+              <div class="voce-testa">
+                <h3>{{ b.legali[l.chiave].titolo }}</h3>
+                @if (daCompletare(b.legali[l.chiave].testo)) {
+                  <span class="state attesa">Da completare</span>
+                } @else {
+                  <span class="state on">Completa</span>
+                }
+                <a class="mini" [href]="l.percorso" target="_blank" rel="noopener">Apri la pagina</a>
+              </div>
+              <div class="grid">
+                <label><span>Titolo</span><input [(ngModel)]="b.legali[l.chiave].titolo" maxlength="60" /></label>
+                <label><span>Ultimo aggiornamento</span><input type="date" [(ngModel)]="b.legali[l.chiave].aggiornata" /></label>
+                <label class="full"><span>Testo</span>
+                  <fidc-editor-testo [(ngModel)]="b.legali[l.chiave].testo" [etichetta]="'Testo: ' + b.legali[l.chiave].titolo"></fidc-editor-testo>
+                </label>
+              </div>
+            </article>
+          }
+        </div>
+      }
+
       @case ('contatti') {
         <div class="grid">
           <label class="full"><span>Sede</span><input [(ngModel)]="b.contatti.sede" maxlength="120" placeholder="Via, numero, CAP e città" /></label>

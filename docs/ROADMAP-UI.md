@@ -147,3 +147,6 @@ Finché manca, il sito usa i testi di partenza e il salvataggio dal backoffice d
 | 2026-11-27 | Contenuti del sito modificabili dal backoffice, con anteprima e salvataggio in blocco | `contenuti-admin`, `ContenutiService` |
 | 2026-11-27 | Tolti i dati inventati (eventi/news di riserva, numeri, governance, progetti, recapiti); sezioni vuote nascoste | `home-content.ts`, `VetrinaService`, `DataSeeder` |
 | 2026-11-27 | Eventi imminenti in evidenza da soli; annuncio con scadenza; news ed evento in evidenza a scelta | `landing`, `VetrinaService` |
+| 2026-11-27 | Calendario degli eventi (/eventi) e archivio delle notizie (/news), collegati da home, dettagli e piè di pagina | `calendario-eventi`, `archivio-news` |
+| 2026-11-27 | Pagine legali modificabili (privacy, cookie, note legali, accessibilità) e consensi nei moduli | `pagina-legale`, `testi-legali.ts`, `registrazione`, `landing` |
+| 2026-11-27 | Corretto: il testo HTML di news e pagine legali ignorava la tipografia dell'articolo | `dettaglio.scss` |

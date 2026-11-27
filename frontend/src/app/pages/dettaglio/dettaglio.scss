@@ -38,21 +38,26 @@
 .corpo-griglia { display: grid; gap: 40px 56px; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); align-items: start; }
 
 // Tipografia dell'articolo: righe di 60–70 caratteri, interlinea generosa.
+// Il testo arriva come HTML ([innerHTML]) e i suoi elementi non hanno gli
+// attributi dell'incapsulamento di Angular: le regole sui discendenti passano
+// quindi da ::ng-deep, sempre ancorate a .testo per non uscire dalla pagina.
 .testo {
   max-width: 68ch;
   font-size: clamp(1.05rem, 1rem + .2vw, 1.15rem);
   line-height: 1.75;
   color: var(--text);
+}
+.testo ::ng-deep {
   :where(p, ul, ol, blockquote) + :where(p, ul, ol, blockquote, h2, h3) { margin-top: 1.1em; }
-  :where(h2, h3) { margin-top: 1.6em; }
-  h2 { font-size: 1.6rem; } h3 { font-size: 1.3rem; }
+  :where(h2, h3) { margin-top: 1.6em; margin-bottom: .2em; line-height: 1.2; }
+  h2 { font-size: 1.5rem; } h3 { font-size: 1.25rem; }
   ul, ol { padding-left: 1.3em; }
   li + li { margin-top: .35em; }
   a { color: var(--signal); text-decoration: underline; text-underline-offset: 4px; }
   strong { font-weight: 600; }
   blockquote { padding-left: 1em; border-left: 3px solid var(--signal); font-style: italic; color: var(--text-soft); }
+  > p:first-child { font-size: 1.12em; }
 }
-.testo > p:first-child { font-size: 1.12em; }
 
 .illustrazione-corpo {
   overflow: hidden; border-radius: var(--radius);

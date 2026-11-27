@@ -49,6 +49,7 @@
   font-size: .9rem; color: var(--text-muted);
   a { color: var(--text-soft); &:hover { color: var(--signal); } }
 }
+.legali { display: flex; flex-wrap: wrap; gap: 8px 20px; a { text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--line); } }
 
 
 @media (max-width: 899px) {

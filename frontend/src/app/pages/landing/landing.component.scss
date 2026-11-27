@@ -32,6 +32,7 @@
   max-width: none;
   display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 20px 40px;
   > div { max-width: 720px; }
+  > .testa-azioni { display: flex; flex-wrap: wrap; gap: 10px; max-width: none; }
 }
 .link-freccia {
   display: inline-flex; align-items: center; gap: 8px;
@@ -554,6 +555,13 @@
   button { min-height: 54px; }
 }
 .nl-nota { grid-column: 1 / -1; font-size: .9rem; color: var(--text-soft); }
+.nl-consenso {
+  grid-column: 1 / -1;
+  display: flex; align-items: flex-start; gap: 10px; cursor: pointer;
+  font-size: .92rem; line-height: 1.5; color: var(--text);
+  input { flex: 0 0 auto; width: 20px; height: 20px; margin-top: 1px; accent-color: var(--accent); cursor: pointer; }
+  a { color: var(--text); text-decoration: underline; text-underline-offset: 3px; font-weight: 600; }
+}
 .nl-errore {
   display: inline-block; font-weight: 600; color: var(--text);
   padding-left: 10px; border-left: 3px solid var(--text);
