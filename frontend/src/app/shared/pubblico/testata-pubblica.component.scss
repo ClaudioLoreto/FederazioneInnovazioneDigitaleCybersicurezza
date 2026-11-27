@@ -1,0 +1,161 @@
+// Testata pubblica: marchio, menu, azioni, pannello mobile. Condivisa da home e pagine interne.
+
+@use '../../../styles/palette' as *;
+
+:host { display: contents; }
+
+// =============================================================================
+//  INTESTAZIONE
+// =============================================================================
+.testata {
+  position: sticky; top: 0; z-index: 40;
+  height: var(--header-h);
+  color: var(--text);
+  background: color-mix(in srgb, var(--canvas-bg) 62%, transparent);
+  backdrop-filter: blur(14px) saturate(1.2);
+  -webkit-backdrop-filter: blur(14px) saturate(1.2);
+  border-bottom: 1px solid transparent;
+  transition: background .3s, border-color .3s, box-shadow .3s;
+
+  &.scorsa {
+    background: color-mix(in srgb, var(--canvas-bg) 92%, transparent);
+    border-bottom-color: var(--line);
+  }
+}
+.testata-inner {
+  height: 100%;
+  max-width: 1440px; margin-inline: auto;
+  padding-inline: clamp(16px, 3vw, 40px);
+  display: flex; align-items: center; gap: 24px;
+}
+.marchio { flex: 0 0 auto; width: clamp(150px, 15vw, 196px); display: block; }
+
+.nav-desktop {
+  display: none;
+  margin-inline: auto;
+  gap: clamp(14px, 1.5vw, 24px);
+  a {
+    position: relative;
+    padding: 8px 0;
+    font-size: .94rem; font-weight: 500;
+    color: var(--text-soft);
+    white-space: nowrap;
+    transition: color .2s;
+    // Sottolineatura che cresce dal centro: indica dove porta il clic.
+    &::after {
+      content: ''; position: absolute; left: 50%; right: 50%; bottom: 2px; height: 2px;
+      background: var(--signal);
+      transition: left .3s var(--ease-spatial), right .3s var(--ease-spatial);
+    }
+    &:hover, &.attiva { color: var(--text); }
+    &:hover::after, &.attiva::after { left: 0; right: 0; }
+  }
+}
+.testata-azioni { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+.nav-desktop + .testata-azioni { margin-left: 0; }
+
+.burger {
+  width: 46px; height: 46px; flex: 0 0 auto;
+  display: grid; place-content: center; gap: 5px;
+  background: var(--surface-strong);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  cursor: pointer;
+  span {
+    display: block; width: 20px; height: 2px; background: var(--text);
+    transition: transform .3s var(--ease-spatial), opacity .2s;
+  }
+  &[aria-expanded='true'] span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  &[aria-expanded='true'] span:nth-child(2) { opacity: 0; }
+  &[aria-expanded='true'] span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+}
+
+@media (min-width: 1280px) {
+  .nav-desktop { display: flex; }
+  .burger { display: none; }
+}
+@media (max-width: 640px) { .unisciti { display: none; } }
+@media (max-width: 459px) { .testata-azioni .btn-primary { display: none; } }
+
+// =============================================================================
+//  MENU MOBILE ("velo mobile")
+// =============================================================================
+.drawer {
+  position: fixed; inset: 0; z-index: 60;
+  overflow: hidden;           // il pannello chiuso sta fuori schermo: non deve allargare la pagina
+  pointer-events: none;
+  visibility: hidden;
+  transition: visibility 0s linear .45s;
+  &.aperto { pointer-events: auto; visibility: visible; transition-delay: 0s; }
+}
+.drawer-velo {
+  position: absolute; inset: 0;
+  background: color-mix(in srgb, var(--canvas-bg) 70%, transparent);
+  backdrop-filter: blur(6px);
+  opacity: 0; transition: opacity .35s;
+  .aperto & { opacity: 1; }
+}
+.drawer-pannello {
+  position: absolute; top: 0; right: 0; bottom: 0;
+  width: min(420px, 90vw);
+  display: flex; flex-direction: column;
+  padding: 16px 24px max(24px, env(safe-area-inset-bottom));
+  background: var(--canvas-bg);            // opaco: nulla trapela da sotto
+  color: var(--text);
+  border-left: 1px solid var(--line-strong);
+  overflow-y: auto;
+  transform: translateX(100%);
+  transition: transform .45s var(--ease-spatial);
+  .aperto & { transform: none; }
+
+  ul { list-style: none; }
+  li {
+    opacity: 0; transform: translateX(28px);
+    transition: opacity .4s var(--ease-spatial), transform .4s var(--ease-spatial);
+    transition-delay: calc(var(--i, 0) * 40ms + 120ms);
+  }
+  .aperto & li { opacity: 1; transform: none; }
+  li a {
+    display: flex; align-items: center; justify-content: space-between;
+    min-height: 56px;
+    font-family: var(--font-display); font-size: 1.45rem; font-weight: 600;
+    border-bottom: 1px solid var(--line);
+    &::after {
+      content: ''; width: 9px; height: 9px;
+      border-top: 2px solid var(--signal); border-right: 2px solid var(--signal);
+      transform: rotate(45deg);
+    }
+  }
+}
+.drawer-testa {
+  display: flex; align-items: center; justify-content: space-between;
+  min-height: 56px; margin-bottom: 12px;
+}
+.drawer-titolo { font-size: .95rem; color: var(--text-muted); }
+.drawer-chiudi {
+  width: 46px; height: 46px; display: grid; place-items: center;
+  background: var(--surface-strong); color: var(--text);
+  border: 1px solid var(--line-strong); border-radius: var(--radius);
+  cursor: pointer;
+  transition: transform .3s var(--ease-spatial);
+  &:hover { transform: rotate(90deg); }
+}
+.drawer-cta {
+  margin-top: auto; padding-top: 28px;
+  display: grid; gap: 12px;
+  a { width: 100%; }
+}
+
+
+:host-context([data-theme='2']) {
+  .testata { --header-h: 64px; border-bottom: 1px solid var(--line-strong); }
+}
+:host-context([data-theme='3']) {
+  .testata {
+    top: 10px; margin: 10px clamp(10px, 2vw, 24px) 0;
+    border-radius: 999px; border: 1px solid var(--line);
+    background: color-mix(in srgb, var(--canvas-bg) 86%, transparent);
+    box-shadow: 0 10px 30px -18px var(--text);
+    &.scorsa { border-color: var(--line); }
+  }
+}

@@ -323,6 +323,18 @@ select:-webkit-autofill {
 * { scrollbar-color: var(--c-purple) transparent; scrollbar-width: thin; }
 
 /* =============================================================================
+   TRANSIZIONI FRA PAGINE (View Transitions, attivate nel router)
+   La scena di rete ha un nome proprio e resta ferma: cambia solo il contenuto,
+   che esce sfumando e entra salendo di poco.
+   ============================================================================= */
+fidc-background-canvas { view-transition-name: scena-rete; }
+::view-transition-group(scena-rete) { animation: none; }
+::view-transition-old(root) { animation: vt-esce .22s ease-in both; }
+::view-transition-new(root) { animation: vt-entra .42s var(--ease-spatial) .06s both; }
+@keyframes vt-esce { to { opacity: 0; transform: translateY(-6px); } }
+@keyframes vt-entra { from { opacity: 0; transform: translateY(14px); } }
+
+/* =============================================================================
    ACCESSIBILITÀ — riduzione del movimento
    Ogni animazione nuova va aggiunta qui.
    ============================================================================= */
@@ -333,5 +345,6 @@ select:-webkit-autofill {
     transition-duration: .01ms !important;
   }
   .reveal-armed { opacity: 1; transform: none; }
+  ::view-transition-old(root), ::view-transition-new(root) { animation: none; }
   .btn, .btn-primary, .btn-accent, .btn-outline, .btn-ghost { transform: none !important; }
 }

@@ -9,7 +9,7 @@ import { NgFor, NgIf, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { trigger, transition, style, animate } from '@angular/animations';
-import { FidcApiService, Evento, Pilastro } from '../../services/fidc-api.service';
+import { FidcApiService, Evento, Pilastro, Partecipante } from '../../services/fidc-api.service';
 import { DialogoService } from '../../shared/dialogo/dialogo.service';
 import { SelezioneComponent } from '../../shared/campi/selezione.component';
 import { EditorTestoComponent } from '../../shared/campi/editor-testo.component';
@@ -110,6 +110,44 @@ const VUOTO: EventoForm = {
       </form>
     </section>
 
+    <!-- ISCRITTI di un evento: chi viene, quanti posti restano, esportazione. -->
+    <section class="editor hud-panel iscritti" *ngIf="iscrittiDi() as ev" @panel aria-labelledby="t-iscritti">
+      <div class="iscritti-testa">
+        <div>
+          <h2 id="t-iscritti">Iscritti a “{{ ev.titolo }}”</h2>
+          <p class="scope">{{ ev.dataInizio | date:'d MMMM y, HH:mm' }} · {{ ev.luogo }}</p>
+        </div>
+        <button type="button" class="ghost" (click)="iscrittiDi.set(null)">Chiudi</button>
+      </div>
+
+      <div class="riempimento" *ngIf="!caricoIscritti()">
+        <div class="riempimento-barra" aria-hidden="true">
+          <span [style.width.%]="percentuale(partecipanti().length, ev.postiTotali)"></span>
+        </div>
+        <p><strong>{{ partecipanti().length }}</strong> iscritti su {{ ev.postiTotali }} posti
+          <span *ngIf="ev.postiTotali > partecipanti().length"> · ne restano {{ ev.postiTotali - partecipanti().length }}</span>
+          <span *ngIf="ev.postiTotali > 0 && partecipanti().length >= ev.postiTotali"> · evento al completo</span></p>
+      </div>
+
+      <p class="empty" *ngIf="!caricoIscritti() && !erroreIscritti() && partecipanti().length === 0">Ancora nessun iscritto.</p>
+      <p class="error" *ngIf="erroreIscritti()">{{ erroreIscritti() }}</p>
+
+      <table *ngIf="partecipanti().length > 0">
+        <thead><tr><th>Nome</th><th>Email</th><th>Iscritto il</th></tr></thead>
+        <tbody>
+          <tr *ngFor="let p of partecipanti()">
+            <td class="t">{{ p.nomeCompleto }}</td>
+            <td><a [href]="'mailto:' + p.email">{{ p.email }}</a></td>
+            <td>{{ p.iscrittoIl | date:'d MMM y, HH:mm' }}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="actions" *ngIf="partecipanti().length > 0">
+        <button type="button" class="primary" (click)="esportaCsv(ev)">Esporta in CSV</button>
+      </div>
+    </section>
+
     <!-- TABELLA -->
     <section class="table-wrap hud-panel">
       <p class="empty" *ngIf="!caricamento() && eventi().length === 0">Nessun evento. Creane uno con “Nuovo evento”.</p>
@@ -132,6 +170,7 @@ const VUOTO: EventoForm = {
               <span class="state" [class.on]="e.pubblicato">{{ e.pubblicato ? 'Pubblicato' : 'Bozza' }}</span>
             </td>
             <td class="right">
+              <button class="mini" (click)="apriIscritti(e)">Iscritti</button>
               <button class="mini" (click)="modifica(e)">Modifica</button>
               <button class="mini danger" (click)="elimina(e)">Elimina</button>
             </td>
@@ -176,14 +215,56 @@ export class EventiAdminComponent implements OnInit {
     });
   }
 
-  /** Apre il form vuoto. */
   etichetta(v: string): string { return etichettaPilastro(v); }
 
-  nuovo(): void { this.errore.set(null); this.form.set({ ...VUOTO }); }
+  // --- iscritti --------------------------------------------------------------
+
+  readonly iscrittiDi = signal<Evento | null>(null);
+  readonly partecipanti = signal<Partecipante[]>([]);
+  readonly caricoIscritti = signal(false);
+  readonly erroreIscritti = signal<string | null>(null);
+
+  apriIscritti(e: Evento): void {
+    this.form.set(null);
+    this.iscrittiDi.set(e);
+    this.partecipanti.set([]);
+    this.erroreIscritti.set(null);
+    this.caricoIscritti.set(true);
+    this.api.getPartecipanti(e.id).subscribe({
+      next: (l) => { this.partecipanti.set(l); this.caricoIscritti.set(false); },
+      error: (err) => {
+        this.caricoIscritti.set(false);
+        this.erroreIscritti.set(err?.status === 403
+          ? 'Puoi vedere gli iscritti solo degli eventi di cui sei responsabile.'
+          : 'Elenco non disponibile in questo momento. Riprova tra poco.');
+      }
+    });
+    if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  percentuale(n: number, tot: number): number { return tot > 0 ? Math.min(100, Math.round((n / tot) * 100)) : 0; }
+
+  /** Scarica l'elenco iscritti in CSV (separatore ";" per Excel in italiano). */
+  esportaCsv(e: Evento): void {
+    const cella = (v: string) => `"${v.replace(/"/g, '""')}"`;
+    const righe = [['Nome', 'Email', 'Iscritto il'].map(cella).join(';'),
+      ...this.partecipanti().map((p) => [p.nomeCompleto, p.email, new Date(p.iscrittoIl).toLocaleString('it-IT')].map(cella).join(';'))];
+    const url = URL.createObjectURL(new Blob(['\uFEFF' + righe.join('\r\n')], { type: 'text/csv;charset=utf-8' }));
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `iscritti-${e.titolo.toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 50)}.csv`;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
+  /** Apre il form vuoto. */
+
+  nuovo(): void { this.errore.set(null); this.iscrittiDi.set(null); this.form.set({ ...VUOTO }); }
 
   /** Apre il form precompilato per la modifica. */
   modifica(e: Evento): void {
     this.errore.set(null);
+    this.iscrittiDi.set(null);
     this.form.set({
       id: e.id,
       titolo: e.titolo,

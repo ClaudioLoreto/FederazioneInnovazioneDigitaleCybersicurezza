@@ -22,6 +22,20 @@ export const routes: Routes = [
     title: 'FIDC — Federazione Innovazione, Digitale e Cybersicurezza'
   },
 
+  // Pagine di dettaglio pubbliche: ogni card di news ed eventi porta qui.
+  {
+    path: 'eventi/:id',
+    title: 'FIDC — Evento',
+    loadComponent: () =>
+      import('./pages/evento-dettaglio/evento-dettaglio.component').then((m) => m.EventoDettaglioComponent)
+  },
+  {
+    path: 'news/:id',
+    title: 'FIDC — Notizia',
+    loadComponent: () =>
+      import('./pages/news-dettaglio/news-dettaglio.component').then((m) => m.NewsDettaglioComponent)
+  },
+
   // Registrazione utente pubblica (salva su SQLite via .NET API)
   {
     path: 'registrati',
@@ -124,6 +138,11 @@ export const routes: Routes = [
     ]
   },
 
-  // Fallback: qualsiasi rotta sconosciuta torna alla Landing Page pubblica.
-  { path: '**', redirectTo: '' }
+  // Indirizzo sconosciuto: una pagina che lo dice e propone dove andare.
+  {
+    path: '**',
+    title: 'FIDC — Pagina non trovata',
+    loadComponent: () =>
+      import('./pages/non-trovata/non-trovata.component').then((m) => m.NonTrovataComponent)
+  }
 ];

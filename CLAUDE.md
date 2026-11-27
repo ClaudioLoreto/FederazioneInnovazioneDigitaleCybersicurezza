@@ -19,8 +19,8 @@ Il progetto implementa **esattamente** le feature descritte in
 | # | Feature richiesta | Stato | Dove |
 |---|-------------------|-------|------|
 | 1 | **CMS** (gestione contenuti dal backoffice) | ✅ | `pages/admin/*` + `*Controller.cs` |
-| 2 | **News** (pubblicazione + gestione) | ✅ | `news-admin` · `NewsController` |
-| 3 | **Eventi** (pubblicazione + iscrizioni) | ✅ | `eventi-admin` · `EventiController` · `IscrizioniController` |
+| 2 | **News** (pubblicazione + gestione) | ✅ | `news-admin` · `news-dettaglio` · `NewsController` |
+| 3 | **Eventi** (pubblicazione + iscrizioni) | ✅ | `eventi-admin` (pannello Iscritti + CSV) · `evento-dettaglio` (iscrizione pubblica) · `EventiController` · `IscrizioniController` |
 | 4 | **Registrazione utenti** (con conferma email) | ✅ | `registrazione` · `AuthController` |
 | 5 | **Newsletter** (iscrizione pubblica + gestione) | ✅ | `NewsletterController` · `newsletter` box landing |
 | 6 | **Area Documenti** (download + gestione, RBAC) | ✅ | `documenti-admin` · `DocumentiController` |
@@ -92,7 +92,8 @@ Fonte unica: `frontend/src/styles/_palette.scss`. I temi rimescolano SOLO questi
 **Palette e contrasto**
 - Solo `#333D6D` `#723EC3` `#FFCF95` `#FFF0D9` (+ alpha). Nei componenti si usano i
   token; gli hex compaiono in `styles/_palette.scss`, `theme.service.ts` (PALETTE),
-  negli SVG degli emblemi e come valori di riserva del canvas.
+  negli SVG degli emblemi, nella favicon e come valori di riserva del canvas.
+  Emblemi e illustrazioni sono vignette autonome: usano `--c-*` direttamente.
   Verifica: `grep -rnoE '#[0-9A-Fa-f]{3,8}\b' frontend/src | grep -viE '333D6D|723EC3|FFCF95|FFF0D9'`
   deve trovare solo le password di prova (`Fidc#2026!`).
 - Ogni `var(--x)` usato deve essere definito: un token inesistente diventa nero
@@ -135,6 +136,15 @@ Fonte unica: `frontend/src/styles/_palette.scss`. I temi rimescolano SOLO questi
   il pallino viola orbitante nel logo, entrate fade-up su ogni sezione.
 - Ammesse: rivelazioni all'ingresso nel viewport (`fidcReveal`), contatori KPI,
   risposte alle azioni dell'utente (espandi, invia, conferma).
+
+**Illustrazioni** (`shared/illustrazioni/`): persone generate da un manichino unico
+(`figura.ts`) con proporzioni umane, arti rastremati, mani, capelli e abiti; le scene
+(`scene.ts`) le mettono in posa su fondale viola. Mai più figure fatte di cerchi e
+rettangoli accostati. Nessun tratto del viso, un solo tono di pelle per tutti.
+
+**Pagine pubbliche**: ogni card di news ed eventi porta al dettaglio (`/news/:id`,
+`/eventi/:id`); testata e piè di pagina sono componenti condivisi (`shared/pubblico/`);
+gli indirizzi sconosciuti mostrano la pagina 404, non un redirect muto.
 
 **Font**: self-hosted da `@fontsource` (niente Google Fonts: GDPR e build offline).
 Chakra Petch (titoli) + IBM Plex Sans (testo). Alternative del builder: Sora, Source Serif 4.

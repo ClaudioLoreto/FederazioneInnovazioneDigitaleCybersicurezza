@@ -2,245 +2,134 @@
 //  frontend/src/app/shared/illustrazioni/illustrazione.component.ts
 //
 //  A COSA SERVE
-//  Una famiglia di illustrazioni di persone al lavoro, una per ogni ambito di
-//  cui si occupa la Federazione. Si usa così:
+//  Illustrazioni di persone al lavoro, una per ogni ambito della Federazione:
 //
 //      <fidc-illustrazione scena="analisi"></fidc-illustrazione>
 //
-//  PERCHÉ ESISTE
-//  Il sito raccontava se stesso solo con cassaforti e scudi. Sono metafore di
-//  protezione, e da sole dicono "qui dentro c'è qualcosa al sicuro" ma non
-//  dicono *chi* fa *che cosa*. Una persona chinata su un grafico si capisce
-//  senza leggere: qualcuno studia dei dati. Un tavolo con tre persone attorno:
-//  qualcuno si coordina. È così che un visitatore che non ha mai sentito
-//  nominare la Federazione capisce di cosa si occupa prima ancora di leggere.
+//  Un visitatore che non conosce la Federazione capisce di cosa si occupa
+//  prima ancora di leggere: qualcuno espone un progetto, una relatrice parla
+//  a una sala, un docente spiega, una ricercatrice studia dei dati.
 //
-//  LE REGOLE DELLA FAMIGLIA (da rispettare se se ne aggiunge una)
-//  1. Stesso riquadro per tutte, 240 × 170: sono intercambiabili nello stesso
-//     spazio senza ricalcolare i margini.
-//  2. Nessun tratto del viso. Niente occhi, niente bocca, niente capelli, nessun
-//     tono di pelle. Sono figure istituzionali, non personaggi: chiunque deve
-//     potercisi riconoscere, e non si rischia di rappresentare una sola persona.
-//  3. Colori solo dai token del tema, mai codici esadecimali. Così le
-//     illustrazioni cambiano insieme al velo scelto dalla Direzione.
-//  4. Geometria semplice: cerchi e rettangoli arrotondati. Un disegno complesso
-//     a 240 pixel diventa una macchia.
-//  5. Sono decorative: `aria-hidden`, perché il testo accanto dice già tutto e
-//     un lettore di schermo non deve leggere due volte la stessa cosa.
-//  6. Al massimo un movimento lento per scena, e si ferma con
-//     `prefers-reduced-motion`.
+//  COME È FATTA (versione 2, novembre 2026)
+//  La prima versione accostava cerchi e rettangoli e sembrava fatta da un
+//  robot. Ora c'è un manichino unico (figura.ts) con proporzioni umane, arti
+//  rastremati, mani, capelli, abiti e pose; le scene (scene.ts) lo mettono in
+//  posa dentro un ambiente. Aggiungere una scena = scrivere una funzione.
+//
+//  REGOLE DELLA FAMIGLIA
+//  1. Riquadro 320 × 220 per tutte, stesso fondale viola con pavimento.
+//  2. Nessun tratto del viso; un solo tono di pelle per tutti (vedi figura.ts).
+//  3. Sono vignette autonome, come gli emblemi: usano i 4 colori istituzionali
+//     (--c-*) e non i token del velo, così restano leggibili su ogni fondo.
+//  4. Decorative: aria-hidden, il testo accanto dice già tutto.
+//  5. Un solo elemento si muove per scena (classe .vivo), si ferma con
+//     prefers-reduced-motion.
 // =============================================================================
 
-import { Component, Input } from '@angular/core';
-import { NgSwitch, NgSwitchCase } from '@angular/common';
+import { Component, Input, ViewEncapsulation, inject } from '@angular/core';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { SCENE } from './scene';
 
 /** Le scene disponibili. Il nome dice cosa stanno facendo le persone. */
 export type ScenaIllustrazione =
-  | 'gruppo-di-lavoro'   // tavoli tecnici, coordinamento          → Attività
-  | 'conferenza'         // relatore e pubblico                    → Eventi
-  | 'formazione'         // aula, lavagna, chi impara              → Formazione
-  | 'analisi'            // dati al computer, osservatorio         → Ricerca
-  | 'consulenza';        // affiancamento uno a uno                → Consulenza
+  | 'gruppo-di-lavoro'   // mappa di progetto alla lavagna        → Attività
+  | 'conferenza'         // relatrice, schermo, pubblico          → Eventi
+  | 'formazione'         // docente e allievi al portatile        → Formazione
+  | 'analisi'            // dati ai monitor                       → Ricerca
+  | 'consulenza';        // colloquio uno a uno                   → Consulenza
+
+/** Markup già calcolato: ogni scena si genera una volta sola per sessione. */
+const cache = new Map<ScenaIllustrazione, string>();
 
 @Component({
   selector: 'fidc-illustrazione',
   standalone: true,
-  imports: [NgSwitch, NgSwitchCase],
+  // Il markup arriva da innerHTML, quindi gli stili non possono essere
+  // incapsulati: sono tutti sotto il prefisso .fidc-ill per non uscire.
+  encapsulation: ViewEncapsulation.None,
   template: `
-    <svg viewBox="0 0 240 170" class="ill" [ngSwitch]="scena"
-         xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
-
-      <!-- ============ ATTIVITÀ: tre persone attorno a un tavolo ============ -->
-      <g *ngSwitchCase="'gruppo-di-lavoro'">
-        <!-- Persona in fondo, di spalle al fondale -->
-        <circle class="testa" cx="120" cy="44" r="13"/>
-        <path class="corpo" d="M100 92 q0-22 20-22 t20 22 z"/>
-
-        <!-- Persona a sinistra -->
-        <circle class="testa" cx="58" cy="62" r="13"/>
-        <path class="corpo" d="M38 110 q0-22 20-22 t20 22 z"/>
-
-        <!-- Persona a destra -->
-        <circle class="testa" cx="182" cy="62" r="13"/>
-        <path class="corpo" d="M162 110 q0-22 20-22 t20 22 z"/>
-
-        <!-- Tavolo -->
-        <ellipse class="piano" cx="120" cy="124" rx="82" ry="20"/>
-        <ellipse class="contorno" cx="120" cy="124" rx="82" ry="20" fill="none"/>
-
-        <!-- Documenti sul tavolo -->
-        <rect class="dato" x="86" y="116" width="26" height="15" rx="2"/>
-        <rect class="dato tenue" x="130" y="119" width="22" height="13" rx="2"/>
-        <line class="riga" x1="90" y1="121" x2="108" y2="121"/>
-        <line class="riga" x1="90" y1="126" x2="103" y2="126"/>
-
-        <!-- Gambe del tavolo -->
-        <line class="contorno" x1="120" y1="144" x2="120" y2="160"/>
-        <line class="contorno" x1="104" y1="160" x2="136" y2="160"/>
-      </g>
-
-      <!-- ============ EVENTI: relatore, schermo e pubblico ============ -->
-      <g *ngSwitchCase="'conferenza'">
-        <!-- Schermo di sala -->
-        <rect class="schermo" x="112" y="20" width="106" height="66" rx="4"/>
-        <rect class="contorno" x="112" y="20" width="106" height="66" rx="4" fill="none"/>
-        <line class="riga" x1="124" y1="38" x2="188" y2="38"/>
-        <line class="riga" x1="124" y1="50" x2="206" y2="50"/>
-        <line class="riga" x1="124" y1="62" x2="170" y2="62"/>
-
-        <!-- Relatore al leggio -->
-        <circle class="testa" cx="52" cy="46" r="13"/>
-        <path class="corpo" d="M32 96 q0-24 20-24 t20 24 z"/>
-        <!-- Braccio alzato: sta illustrando qualcosa -->
-        <path class="arto" d="M70 82 q14-6 20-20" fill="none"/>
-        <rect class="piano" x="26" y="96" width="52" height="34" rx="3"/>
-        <rect class="contorno" x="26" y="96" width="52" height="34" rx="3" fill="none"/>
-
-        <!-- Pubblico in primo piano, di spalle -->
-        <g class="pubblico">
-          <circle class="testa scura" cx="46" cy="148" r="11"/>
-          <path class="corpo scuro" d="M28 170 q0-16 18-16 t18 16 z"/>
-          <circle class="testa scura" cx="106" cy="152" r="11"/>
-          <path class="corpo scuro" d="M88 170 q0-16 18-16 t18 16 z"/>
-          <circle class="testa scura" cx="166" cy="148" r="11"/>
-          <path class="corpo scuro" d="M148 170 q0-16 18-16 t18 16 z"/>
-          <circle class="testa scura" cx="220" cy="153" r="11"/>
-          <path class="corpo scuro" d="M202 170 q0-16 18-16 t18 16 z"/>
-        </g>
-      </g>
-
-      <!-- ============ FORMAZIONE: lavagna, docente, allievi ============ -->
-      <g *ngSwitchCase="'formazione'">
-        <!-- Lavagna -->
-        <rect class="schermo" x="20" y="16" width="118" height="76" rx="4"/>
-        <rect class="contorno" x="20" y="16" width="118" height="76" rx="4" fill="none"/>
-        <line class="riga" x1="34" y1="36" x2="104" y2="36"/>
-        <line class="riga" x1="34" y1="50" x2="122" y2="50"/>
-        <line class="riga" x1="34" y1="64" x2="86" y2="64"/>
-        <!-- Il segno che il docente sta tracciando ora -->
-        <line class="riga viva" x1="34" y1="78" x2="94" y2="78"/>
-
-        <!-- Docente accanto alla lavagna, braccio verso il pannello -->
-        <circle class="testa" cx="172" cy="42" r="13"/>
-        <path class="corpo" d="M152 104 q0-30 20-30 t20 30 z"/>
-        <path class="arto" d="M154 82 q-14-4-22-12" fill="none"/>
-
-        <!-- Banchi degli allievi -->
-        <g>
-          <circle class="testa scura" cx="60" cy="126" r="11"/>
-          <path class="corpo scuro" d="M42 150 q0-18 18-18 t18 18 z"/>
-          <rect class="piano" x="34" y="150" width="52" height="6" rx="2"/>
-        </g>
-        <g>
-          <circle class="testa scura" cx="152" cy="130" r="11"/>
-          <path class="corpo scuro" d="M134 152 q0-16 18-16 t18 16 z"/>
-          <rect class="piano" x="126" y="152" width="52" height="6" rx="2"/>
-        </g>
-      </g>
-
-      <!-- ============ RICERCA: analisi di dati al computer ============ -->
-      <g *ngSwitchCase="'analisi'">
-        <!-- Monitor -->
-        <rect class="schermo" x="118" y="30" width="98" height="68" rx="4"/>
-        <rect class="contorno" x="118" y="30" width="98" height="68" rx="4" fill="none"/>
-        <!-- Istogramma: l'unico movimento della scena -->
-        <g class="grafico">
-          <rect class="dato barra b1" x="132" y="66" width="14" height="24" rx="1"/>
-          <rect class="dato barra b2" x="154" y="54" width="14" height="36" rx="1"/>
-          <rect class="dato barra b3" x="176" y="60" width="14" height="30" rx="1"/>
-          <rect class="dato barra b4" x="198" y="46" width="12" height="44" rx="1"/>
-        </g>
-        <line class="riga" x1="128" y1="90" x2="214" y2="90"/>
-        <!-- Piedistallo del monitor -->
-        <line class="contorno" x1="167" y1="98" x2="167" y2="110"/>
-        <line class="contorno" x1="150" y1="110" x2="184" y2="110"/>
-
-        <!-- Persona seduta, di tre quarti, braccio sulla scrivania -->
-        <circle class="testa" cx="64" cy="52" r="14"/>
-        <path class="corpo" d="M40 112 q0-30 24-30 t24 30 z"/>
-        <path class="arto" d="M84 100 q16 2 26 10" fill="none"/>
-        <!-- Schienale della sedia -->
-        <path class="contorno" d="M30 112 q-8-24 4-38" fill="none"/>
-
-        <!-- Scrivania -->
-        <rect class="piano" x="20" y="112" width="204" height="7" rx="2"/>
-        <line class="contorno" x1="34" y1="119" x2="34" y2="152"/>
-        <line class="contorno" x1="210" y1="119" x2="210" y2="152"/>
-      </g>
-
-      <!-- ============ CONSULENZA: affiancamento uno a uno ============ -->
-      <g *ngSwitchCase="'consulenza'">
-        <!-- Consulente a sinistra -->
-        <circle class="testa" cx="62" cy="46" r="14"/>
-        <path class="corpo" d="M38 106 q0-30 24-30 t24 30 z"/>
-        <path class="arto" d="M84 94 q14 2 22 10" fill="none"/>
-
-        <!-- Persona assistita a destra -->
-        <circle class="testa scura" cx="180" cy="52" r="13"/>
-        <path class="corpo scuro" d="M158 108 q0-28 22-28 t22 28 z"/>
-        <path class="arto" d="M158 96 q-14 2-22 8" fill="none"/>
-
-        <!-- Scrivania condivisa -->
-        <rect class="piano" x="24" y="112" width="192" height="7" rx="2"/>
-        <line class="contorno" x1="40" y1="119" x2="40" y2="154"/>
-        <line class="contorno" x1="200" y1="119" x2="200" y2="154"/>
-
-        <!-- Portatile aperto tra i due -->
-        <path class="schermo" d="M104 108 L112 76 H140 L148 108 Z"/>
-        <path class="contorno" d="M104 108 L112 76 H140 L148 108 Z" fill="none"/>
-        <rect class="piano" x="98" y="108" width="56" height="5" rx="2"/>
-
-        <!-- Lucchetto sopra lo schermo: il tema del colloquio è la sicurezza -->
-        <g class="lucchetto">
-          <rect class="dato" x="114" y="44" width="24" height="18" rx="3"/>
-          <path class="arto" d="M119 44 v-6 a7 7 0 0 1 14 0 v6" fill="none"/>
-        </g>
-      </g>
-    </svg>
+    <svg viewBox="0 0 320 220" class="fidc-ill" preserveAspectRatio="xMidYMid slice"
+         xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"
+         [innerHTML]="markup"></svg>
   `,
   styles: [`
-    :host { display: block; }
-    .ill { width: 100%; height: auto; display: block; }
+    fidc-illustrazione { display: block; }
+    .fidc-ill { width: 100%; height: auto; display: block; }
 
-    /* --- Colori: tutti dai token, così seguono il velo attivo --- */
-    .corpo   { fill: var(--accent); }
-    .testa   { fill: var(--accent-2); }
-    .scuro, .scura { opacity: .55; }
+    /* --- ambiente --- */
+    .fidc-ill .fondale { fill: var(--c-purple); }
+    .fidc-ill .griglia line { stroke: rgba(255, 240, 217, .07); stroke-width: 1; }
+    .fidc-ill .pavimento { fill: rgba(51, 61, 109, .35); }
+    .fidc-ill .ombra { fill: rgba(51, 61, 109, .4); }
+    .fidc-ill .pannello, .fidc-ill .arredo { fill: var(--c-deep-blue); }
+    .fidc-ill .arredo-linea { fill: none; stroke: var(--c-deep-blue); stroke-width: 4; stroke-linecap: round; }
+    .fidc-ill .sedia path, .fidc-ill .sedia rect { fill: var(--c-deep-blue); }
+    .fidc-ill .sedia .sedia-gambe { fill: none; stroke: var(--c-deep-blue); stroke-width: 3; stroke-linecap: round; }
+    .fidc-ill .nota { fill: var(--c-peach); }
+    .fidc-ill .nota.chiara { fill: var(--c-cream); }
+    .fidc-ill .filo { fill: none; stroke: var(--c-peach); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; opacity: .8; }
+    .fidc-ill .laptop { fill: var(--c-cream); }
+    .fidc-ill .logo { fill: var(--c-purple); }
+    .fidc-ill .foglia { fill: var(--c-deep-blue); }
+    .fidc-ill .foglia.chiara { fill: var(--c-peach); }
+    .fidc-ill .vaso, .fidc-ill .tazza-corpo { fill: var(--c-cream); }
+    .fidc-ill .schermo-scudo { fill: var(--c-purple); stroke: var(--c-cream); stroke-width: 2; }
+    .fidc-ill .schermo-spunta { fill: none; stroke: var(--c-peach); stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; }
+    .fidc-ill .riga-chiara { fill: var(--c-cream); }
+    .fidc-ill .riga { fill: var(--c-peach); opacity: .7; }
+    .fidc-ill .cursore-codice, .fidc-ill .lucchetto-corpo, .fidc-ill .logo-leggio { fill: var(--c-peach); }
+    .fidc-ill .lucchetto-arco { fill: none; stroke: var(--c-peach); stroke-width: 3.4; }
+    .fidc-ill .lucchetto-foro { fill: var(--c-deep-blue); }
+    .fidc-ill .barra { fill: var(--c-peach); }
+    .fidc-ill .b2, .fidc-ill .b4 { fill: var(--c-cream); }
+    .fidc-ill .tablet-corpo { fill: var(--c-deep-blue); stroke: var(--c-cream); stroke-width: 1.6; }
 
-    /* Arredi e schermi nel colore del testo della card: si staccano sempre dal
-       fondo. (Prima usavano --surface-2 e --bordo, mai definiti: diventavano neri.) */
-    .piano   { fill: var(--card-text, var(--text)); opacity: .9; }
-    .schermo { fill: var(--card-text, var(--text)); }
-    .contorno{ stroke: var(--card-soft, var(--text-soft)); stroke-width: 1.6; stroke-linecap: round; }
-    .arto    { stroke: var(--accent); stroke-width: 4; stroke-linecap: round; }
-    .riga    { stroke: var(--card-bg, var(--surface)); stroke-width: 2; stroke-linecap: round; opacity: .5; }
-    .riga.viva { stroke: var(--accent-2); opacity: 1; }
-    .dato    { fill: var(--accent-2); }
-    .dato.tenue { opacity: .5; }
+    /* --- persone --- */
+    .fidc-ill .pelle { fill: var(--c-peach); }
+    .fidc-ill .busto.a-blu, .fidc-ill .manica.a-blu, .fidc-ill .risvolto.a-blu, .fidc-ill .gamba.p-blu,
+    .fidc-ill .scarpa.s-blu, .fidc-ill .capelli.h-blu, .fidc-ill .c-blu, .fidc-ill .g-blu { fill: var(--c-deep-blue); }
+    .fidc-ill .busto.a-crema, .fidc-ill .manica.a-crema, .fidc-ill .risvolto.a-crema, .fidc-ill .gamba.p-crema,
+    .fidc-ill .scarpa.s-crema, .fidc-ill .capelli.h-crema, .fidc-ill .c-crema, .fidc-ill .g-crema { fill: var(--c-cream); }
+    .fidc-ill .busto.a-pesca, .fidc-ill .manica.a-pesca, .fidc-ill .risvolto.a-pesca { fill: var(--c-peach); }
+    .fidc-ill .busto.a-viola, .fidc-ill .manica.a-viola, .fidc-ill .c-viola, .fidc-ill .capelli.h-viola { fill: var(--c-purple); }
+    .fidc-ill .risvolto { stroke: rgba(51, 61, 109, .25); stroke-width: .8; }
+    /* Profilo delle maniche: solo dove la manica è chiara come il busto. */
+    .fidc-ill .profilo { display: none; }
+    .fidc-ill .profilo.manica.a-crema, .fidc-ill .profilo.manica.a-pesca { display: inline; stroke: rgba(51, 61, 109, .28); stroke-width: 1.6; }
+    .fidc-ill .profilo.manica.a-blu { display: inline; stroke: rgba(255, 240, 217, .16); stroke-width: 1.6; }
+    .fidc-ill .laccio { fill: none; stroke: var(--c-peach); stroke-width: 1.4; }
+    .fidc-ill .badge { fill: var(--c-cream); }
+    .fidc-ill .badge-riga { fill: var(--c-purple); }
+    .fidc-ill .occhiali { fill: none; stroke: var(--c-deep-blue); stroke-width: 1.3; stroke-linejoin: round; }
 
-    /* --- L'unico movimento: le barre del grafico si aggiornano ---
-       Un istogramma fermo è un disegno; uno che si aggiorna dice che
-       l'osservatorio sta effettivamente misurando qualcosa. */
-    .barra {
-      transform-box: fill-box;
-      transform-origin: bottom;
-      animation: barra-cresce 5s ease-in-out infinite;
-    }
-    .b2 { animation-delay: .5s; }
-    .b3 { animation-delay: 1s; }
-    .b4 { animation-delay: 1.5s; }
-
-    @keyframes barra-cresce {
-      0%, 100% { transform: scaleY(1); }
-      50%      { transform: scaleY(.62); }
-    }
-
+    /* --- l'unico movimento di ogni scena --- */
+    .fidc-ill .nota.nuova.vivo { transform-box: fill-box; transform-origin: center; animation: ill-nota 6s ease-in-out infinite; }
+    .fidc-ill .traccia.vivo { stroke-dasharray: 70; animation: ill-traccia 6s ease-in-out infinite; }
+    .fidc-ill .cursore-codice.vivo { animation: ill-cursore 1.1s steps(1) infinite; }
+    .fidc-ill .grafico.vivo .barra { transform-box: fill-box; transform-origin: bottom; animation: ill-barra 5s ease-in-out infinite; }
+    .fidc-ill .grafico.vivo .b2 { animation-delay: .5s; }
+    .fidc-ill .grafico.vivo .b3 { animation-delay: 1s; }
+    .fidc-ill .grafico.vivo .b4 { animation-delay: 1.5s; }
+    .fidc-ill .respira.vivo { animation: ill-respira 4s ease-in-out infinite; }
+    @keyframes ill-nota { 0%, 40% { opacity: 0; transform: scale(.6); } 55%, 100% { opacity: 1; transform: none; } }
+    @keyframes ill-traccia { from { stroke-dashoffset: 70; } 50%, to { stroke-dashoffset: 0; } }
+    @keyframes ill-cursore { 50% { opacity: 0; } }
+    @keyframes ill-barra { 0%, 100% { transform: scaleY(1); } 50% { transform: scaleY(.62); } }
+    @keyframes ill-respira { 50% { stroke: var(--c-peach); } }
     @media (prefers-reduced-motion: reduce) {
-      .barra { animation: none !important; }
+      .fidc-ill .vivo, .fidc-ill .vivo * { animation: none !important; opacity: 1 !important; stroke-dashoffset: 0 !important; }
     }
   `]
 })
 export class IllustrazioneComponent {
+  private readonly sanitizer = inject(DomSanitizer);
+  markup: SafeHtml = '';
+
   /** Quale scena disegnare. */
-  @Input({ required: true }) scena!: ScenaIllustrazione;
+  @Input({ required: true }) set scena(nome: ScenaIllustrazione) {
+    if (!cache.has(nome)) cache.set(nome, (SCENE[nome] ?? SCENE.analisi)());
+    // Markup prodotto dal nostro codice a partire da costanti: non contiene
+    // nulla che arrivi dall'utente o dal server, quindi è sicuro fidarsene.
+    this.markup = this.sanitizer.bypassSecurityTrustHtml(cache.get(nome)!);
+  }
 }

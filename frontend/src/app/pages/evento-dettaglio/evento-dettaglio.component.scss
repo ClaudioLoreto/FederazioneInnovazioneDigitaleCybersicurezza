@@ -1,0 +1,59 @@
+// Il "biglietto": card laterale con data, tacche di strappo e azioni.
+
+.biglietto {
+  position: sticky; top: calc(var(--header-h) + 20px);
+  background: var(--Y-bg); color: var(--Y-text);
+  border-radius: max(var(--radius), 6px);
+  overflow: hidden;
+  box-shadow: 0 30px 60px -30px rgba(51, 61, 109, .8);
+  // Toni fissi chiari: il biglietto è leggibile su qualunque velo.
+  --text: var(--Y-text); --text-soft: var(--Y-soft); --accent: var(--Y-accent);
+  --on-accent: var(--Y-on-accent); --line: var(--Y-line); --surface-strong: var(--Y-surface-strong);
+  --signal: var(--Y-signal); --on-text: var(--Y-on-text); --accent-soft: var(--Y-accent-soft);
+  --btn-edge: transparent;
+}
+.biglietto-data {
+  display: grid; grid-template-columns: auto 1fr; grid-template-rows: auto auto; column-gap: 16px; align-items: end;
+  padding: 24px 24px 20px;
+  background: var(--B-bg); color: var(--B-text);
+  .giorno { grid-row: span 2; font-family: var(--font-display); font-weight: 700; font-size: 4rem; line-height: .85; }
+  .mese { font-family: var(--font-display); font-weight: 600; font-size: 1.3rem; text-transform: capitalize; }
+  .ora { color: var(--B-soft); }
+}
+// Linea di strappo con due tacche semicircolari ai lati.
+.biglietto-taglio {
+  position: relative; height: 0; border-top: 2px dashed var(--Y-line);
+  &::before, &::after {
+    content: ''; position: absolute; top: -11px; width: 20px; height: 20px; border-radius: 50%;
+    background: var(--canvas-bg);
+  }
+  &::before { left: -10px; }
+  &::after { right: -10px; }
+}
+.biglietto-corpo { display: grid; gap: 14px; padding: 22px 24px 24px; }
+.posti { font-weight: 600; }
+.pieno { width: 100%; }
+.nota { font-size: .92rem; color: var(--Y-soft); line-height: 1.5; a { color: var(--Y-accent); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; } }
+.iscritto {
+  display: flex; align-items: center; gap: 10px; font-weight: 600;
+  padding: 10px 12px; border-radius: var(--radius); background: var(--Y-accent-soft);
+  svg { width: 22px; height: 22px; fill: none; stroke: var(--Y-accent); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+}
+.biglietto-azioni { display: flex; flex-wrap: wrap; gap: 8px; padding-top: 6px; border-top: 1px solid var(--Y-line); }
+.biglietto-azioni .btn-sm { flex: 1 1 auto; }
+
+.riepilogo {
+  padding: 24px; border: 1px solid var(--line); border-radius: var(--radius);
+  background: var(--card-bg); color: var(--card-text);
+  h2 { font-size: 1.25rem; margin-bottom: 14px; }
+  dl { display: grid; gap: 12px; }
+  div { display: grid; grid-template-columns: 90px 1fr; gap: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
+  div:last-child { border-bottom: 0; padding-bottom: 0; }
+  dt { color: var(--card-soft); font-size: .92rem; }
+  dd { font-weight: 500; text-transform: none; }
+  dd::first-letter { text-transform: uppercase; }
+}
+
+@media (max-width: 899px) {
+  .biglietto { position: static; }
+}

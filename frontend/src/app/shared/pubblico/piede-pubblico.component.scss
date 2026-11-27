@@ -1,0 +1,56 @@
+// Piè di pagina pubblico: marchio, contatti, collegamenti per i soci.
+
+:host { display: block; }
+
+// =============================================================================
+//  PIEDE
+// =============================================================================
+.piede {
+  background: color-mix(in srgb, var(--canvas-bg) 94%, transparent);
+  scroll-margin-top: var(--header-h);
+  padding-top: calc(72px * var(--density));
+}
+.piede-griglia {
+  display: grid; gap: 40px;
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) minmax(0, .7fr);
+}
+.piede-marchio {
+  fidc-animated-logo { width: 220px; }
+  p { margin-top: 18px; max-width: 42ch; color: var(--text-soft); line-height: 1.6; }
+}
+.social {
+  list-style: none; display: flex; gap: 10px; margin-top: 22px;
+  a {
+    width: 44px; height: 44px; display: grid; place-items: center;
+    border: 1px solid var(--line); border-radius: var(--radius);
+    color: var(--text);
+    transition: background .2s, color .2s, border-color .2s, transform .25s var(--ease-spatial);
+    &:hover { background: var(--accent); color: var(--on-accent); border-color: var(--accent); transform: translateY(-2px); }
+  }
+  svg { width: 20px; height: 20px; }
+}
+.piede-col {
+  h2 { font-size: 1.15rem; margin-bottom: 16px; }
+  address { font-style: normal; display: grid; gap: 8px; color: var(--text-soft); }
+  ul { list-style: none; display: grid; gap: 10px; }
+  a {
+    color: var(--text);
+    text-decoration: underline; text-decoration-color: var(--line-strong); text-underline-offset: 4px;
+    &:hover { color: var(--signal); }
+  }
+  .etichetta { display: inline-block; min-width: 82px; color: var(--text-muted); font-size: .9rem; }
+  .orari { margin-top: 6px; font-size: .9rem; color: var(--text-muted); }
+}
+.piede-fondo {
+  margin-top: 56px; padding-block: 22px;
+  width: 100%;
+  display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px;
+  border-top: 1px solid var(--line);
+  font-size: .9rem; color: var(--text-muted);
+  a { color: var(--text-soft); &:hover { color: var(--signal); } }
+}
+
+
+@media (max-width: 899px) {
+  .piede-griglia { grid-template-columns: minmax(0, 1fr); }
+}

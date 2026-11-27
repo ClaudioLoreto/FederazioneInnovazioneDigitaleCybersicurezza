@@ -7,6 +7,7 @@
 // =============================================================================
 
 using FIDC.Dal.Repositories;
+using FIDC.Models.DTOs;
 using FIDC.Models.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -21,14 +22,17 @@ public class IscrizioniController : ControllerBase
 {
     private readonly IGenericRepository<Iscrizione> _iscrizioni;
     private readonly IGenericRepository<Evento> _eventi;
+    private readonly IGenericRepository<Utente> _utenti;
 
-    /// <summary>Inietta i repository di iscrizioni ed eventi.</summary>
+    /// <summary>Inietta i repository di iscrizioni, eventi e utenti.</summary>
     public IscrizioniController(
         IGenericRepository<Iscrizione> iscrizioni,
-        IGenericRepository<Evento> eventi)
+        IGenericRepository<Evento> eventi,
+        IGenericRepository<Utente> utenti)
     {
         _iscrizioni = iscrizioni;
         _eventi = eventi;
+        _utenti = utenti;
     }
 
     /// <summary>
@@ -82,7 +86,29 @@ public class IscrizioniController : ControllerBase
             return Forbid();
 
         var lista = await _iscrizioni.FindAsync(i => i.EventoId == eventoId, ct);
-        return Ok(lista);
+
+        // Per il backoffice serve sapere CHI si è iscritto, non solo l'id:
+        // si uniscono nome ed email dell'utente (mai la password o altri dati).
+        var ids = lista.Select(i => i.UtenteId).Distinct().ToList();
+        var utenti = await _utenti.FindAsync(u => ids.Contains(u.Id), ct);
+        var perId = utenti.ToDictionary(u => u.Id);
+
+        var partecipanti = lista
+            .OrderBy(i => i.CreatedAt)
+            .Select(i =>
+            {
+                perId.TryGetValue(i.UtenteId, out var utente);
+                return new PartecipanteDto(
+                    i.Id,
+                    i.UtenteId,
+                    utente is null ? "Utente non più presente" : $"{utente.Nome} {utente.Cognome}",
+                    utente?.Email ?? string.Empty,
+                    i.CreatedAt,
+                    i.Presente);
+            })
+            .ToList();
+
+        return Ok(partecipanti);
     }
 
     /// <summary>

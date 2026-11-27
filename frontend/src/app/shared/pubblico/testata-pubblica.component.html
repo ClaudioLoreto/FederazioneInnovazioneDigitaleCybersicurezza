@@ -1,0 +1,54 @@
+<!-- ============================ INTESTAZIONE ============================ -->
+<header class="testata" [class.scorsa]="scorsa()">
+  <div class="testata-inner">
+    <a class="marchio" href="/" (click)="naviga('inizio', $event)" aria-label="Torna all'inizio">
+      <fidc-animated-logo [interactive]="false"></fidc-animated-logo>
+    </a>
+
+    <nav class="nav-desktop" aria-label="Sezioni del sito">
+      @for (v of menu; track v.label) {
+        <a [href]="'/#' + v.ancora" (click)="naviga(v.ancora!, $event)"
+           [class.attiva]="attiva === v.ancora"
+           [attr.aria-current]="attiva === v.ancora ? 'location' : null">{{ v.label }}</a>
+      }
+    </nav>
+
+    <div class="testata-azioni">
+      <a class="btn-outline btn-sm unisciti" routerLink="/registrati">Unisciti</a>
+      <a class="btn-primary btn-sm" routerLink="/login">Area riservata</a>
+      <button type="button" class="burger" (click)="apriMenu(!menuAperto())"
+              [attr.aria-expanded]="menuAperto()" aria-controls="menu-mobile"
+              [attr.aria-label]="menuAperto() ? 'Chiudi il menu' : 'Apri il menu'">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- Menu su schermo stretto: pannello opaco che entra da destra. -->
+<div class="drawer" id="menu-mobile" [class.aperto]="menuAperto()" [attr.aria-hidden]="!menuAperto()"
+     (keydown.escape)="apriMenu(false)">
+  <div class="drawer-velo" (click)="apriMenu(false)"></div>
+  <nav class="drawer-pannello" aria-label="Menu principale">
+    <div class="drawer-testa">
+      <span class="drawer-titolo">Menu</span>
+      <button type="button" class="drawer-chiudi" (click)="apriMenu(false)" aria-label="Chiudi il menu"
+              [tabindex]="menuAperto() ? 0 : -1">
+        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <ul>
+      @for (v of menu; track v.label; let i = $index) {
+        <li [style.--i]="i">
+          <a [href]="'/#' + v.ancora" (click)="naviga(v.ancora!, $event)" [tabindex]="menuAperto() ? 0 : -1">
+            {{ v.label }}
+          </a>
+        </li>
+      }
+    </ul>
+    <div class="drawer-cta">
+      <a class="btn-primary" routerLink="/registrati" [tabindex]="menuAperto() ? 0 : -1">Unisciti alla Federazione</a>
+      <a class="btn-outline" routerLink="/login" [tabindex]="menuAperto() ? 0 : -1">Area riservata</a>
+    </div>
+  </nav>
+</div>

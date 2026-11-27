@@ -70,6 +70,16 @@ export interface Documento {
   caricatoDaId: number;
 }
 
+/** Partecipante a un evento, come lo restituisce il backoffice (PartecipanteDto). */
+export interface Partecipante {
+  iscrizioneId: number;
+  utenteId: number;
+  nomeCompleto: string;
+  email: string;
+  iscrittoIl: string;
+  presente: boolean;
+}
+
 /** Utente del backoffice (specchio sintetico dell'entità Utente). */
 export interface UtenteAdmin {
   id: number;
@@ -137,6 +147,31 @@ export class FidcApiService {
   /** Elenco pubblico degli eventi pubblicati (tipizzato). */
   getEventi(): Observable<Evento[]> {
     return this.http.get<Evento[]>(`${this.base}/eventi`);
+  }
+
+  /** Singolo evento pubblicato (404 se non esiste o non è pubblicato). */
+  getEvento(id: number): Observable<Evento> {
+    return this.http.get<Evento>(`${this.base}/eventi/${id}`);
+  }
+
+  /** Singola news pubblicata (404 se non esiste o non è pubblicata). */
+  getNewsDettaglio(id: number): Observable<News> {
+    return this.http.get<News>(`${this.base}/news/${id}`);
+  }
+
+  /** Iscrive l'utente collegato a un evento (409 se già iscritto). */
+  iscriviEvento(eventoId: number): Observable<{ messaggio: string }> {
+    return this.http.post<{ messaggio: string }>(`${this.base}/iscrizioni/evento/${eventoId}`, {});
+  }
+
+  /** Iscritti a un evento (Direzione, o Redazione se l'evento è suo). */
+  getPartecipanti(eventoId: number): Observable<Partecipante[]> {
+    return this.http.get<Partecipante[]>(`${this.base}/iscrizioni/evento/${eventoId}`);
+  }
+
+  /** Annulla l'iscrizione dell'utente collegato a un evento. */
+  annullaIscrizione(eventoId: number): Observable<void> {
+    return this.http.delete<void>(`${this.base}/iscrizioni/evento/${eventoId}`);
   }
 
   /** Elenco pubblico delle news pubblicate (tipizzato, dalla più recente). */

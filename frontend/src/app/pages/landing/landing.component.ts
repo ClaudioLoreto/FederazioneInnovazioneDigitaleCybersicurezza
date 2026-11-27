@@ -19,16 +19,17 @@ import {
 } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
-import { AnimatedLogoComponent } from '../../shared/animated-logo/animated-logo.component';
 import { CyberShieldComponent } from '../../shared/svg-motifs/svg-motifs.component';
 import { IllustrazioneComponent, ScenaIllustrazione } from '../../shared/illustrazioni/illustrazione.component';
 import { EmblemaComponent } from '../../shared/emblema/emblema.component';
+import { TestataPubblicaComponent } from '../../shared/pubblico/testata-pubblica.component';
+import { PiedePubblicoComponent } from '../../shared/pubblico/piede-pubblico.component';
 import { RevealDirective, ConteggioDirective } from '../../shared/motion/reveal.directive';
 import { etichettaPilastro } from '../../shared/opzioni';
 import {
-  BRAND, CHI_SIAMO, CONTATTI, GOVERNANCE, HERO, MENU, MISSIONE, NEWSLETTER, PILASTRI, PROGETTI,
+  CHI_SIAMO, GOVERNANCE, HERO, MISSIONE, NEWSLETTER, PILASTRI, PROGETTI,
   Pilastro as PilastroHome, eventiDiRiserva, newsDiRiserva
 } from '../../content/home-content';
 import { Evento, FidcApiService, News } from '../../services/fidc-api.service';
@@ -48,7 +49,8 @@ const SEZIONI = ['associazione', 'progetti', 'eventi', 'news', 'contatti'];
   standalone: true,
   imports: [
     DatePipe, FormsModule, RouterLink,
-    AnimatedLogoComponent, CyberShieldComponent, IllustrazioneComponent, EmblemaComponent,
+    CyberShieldComponent, IllustrazioneComponent, EmblemaComponent,
+    TestataPubblicaComponent, PiedePubblicoComponent,
     RevealDirective, ConteggioDirective
   ],
   templateUrl: './landing.component.html',
@@ -57,23 +59,19 @@ const SEZIONI = ['associazione', 'progetti', 'eventi', 'news', 'contatti'];
 export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
   private readonly api = inject(FidcApiService);
   private readonly zone = inject(NgZone);
+  private readonly route = inject(ActivatedRoute);
 
   @ViewChild('slogan', { static: true }) private sloganRef!: ElementRef<HTMLElement>;
-  @ViewChild('testata', { static: true }) private testataRef!: ElementRef<HTMLElement>;
   @ViewChild('orologio', { static: true }) private orologioRef!: ElementRef<HTMLElement>;
 
   // --- contenuto ---------------------------------------------------------------
-  readonly brand = BRAND;
   readonly hero = HERO;
-  readonly menu = MENU;
   readonly pilastri = PILASTRI;
   readonly chiSiamo = CHI_SIAMO;
   readonly missione = MISSIONE;
   readonly governance = GOVERNANCE;
   readonly progetti = PROGETTI;
   readonly nl = NEWSLETTER;
-  readonly contatti = CONTATTI;
-  readonly anno = new Date().getFullYear();
 
   /** Dove porta il collegamento in fondo a ogni pilastro aperto. */
   readonly collegamenti: Record<PilastroHome['chiave'], { ancora: string; label: string }> = {
@@ -93,7 +91,6 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
   readonly tacche = Array.from({ length: 36 }, (_, i) => i * 10);
 
   // --- stato -------------------------------------------------------------------
-  readonly menuAperto = signal(false);
   readonly sezioneAttiva = signal<string | null>(null);
   readonly pilastroAperto = signal<string | null>(null);
 
@@ -144,9 +141,6 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
     const riduci = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     this.zone.runOutsideAngular(() => {
-      // La testata diventa più densa appena si scorre.
-      window.addEventListener('scroll', this.onScroll, { passive: true });
-      this.onScroll();
       if (!riduci) this.decrittaSlogan();
       // Orologio della barra di stato (visibile solo nel velo 2). Scrive nel DOM
       // direttamente: aggiornare lo stato di Angular ogni secondo ridisegnerebbe
@@ -166,14 +160,17 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
       const el = document.getElementById(id);
       if (el) this.spia.observe(el);
     }
+
+    // Arrivando da una pagina interna con un'ancora (/#eventi), si scorre lì.
+    // Il ritardo lascia ai contenuti dell'API il tempo di occupare il loro spazio.
+    const frammento = this.route.snapshot.fragment;
+    if (frammento) setTimeout(() => this.vaiA(frammento), 350);
   }
 
   ngOnDestroy(): void {
-    if (typeof window !== 'undefined') window.removeEventListener('scroll', this.onScroll);
     this.spia?.disconnect();
     clearInterval(this.timerOra);
     cancelAnimationFrame(this.rafSlogan);
-    this.bloccaScorrimento(false);
   }
 
   // --- navigazione ---------------------------------------------------------------
@@ -184,23 +181,12 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
    */
   vaiA(id: string, ev?: Event): void {
     ev?.preventDefault();
-    this.apriMenu(false);
     if (id.startsWith('pilastro-')) this.pilastroAperto.set(id.replace('pilastro-', ''));
     const el = document.getElementById(id);
     if (!el) return;
     const riduci = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     el.scrollIntoView({ behavior: riduci ? 'auto' : 'smooth', block: id.startsWith('pilastro-') ? 'center' : 'start' });
     history.replaceState(null, '', id === 'inizio' ? location.pathname : `#${id}`);
-  }
-
-  /** Apre o chiude il menu su schermo stretto. */
-  apriMenu(aperto: boolean): void {
-    const prima = this.menuAperto();
-    this.menuAperto.set(aperto);
-    this.bloccaScorrimento(aperto);
-    if (typeof document === 'undefined' || prima === aperto) return;
-    // Il fuoco segue il menu: dentro quando si apre, sul pulsante quando si chiude.
-    setTimeout(() => document.querySelector<HTMLElement>(aperto ? '.drawer-chiudi' : '.burger')?.focus(), 60);
   }
 
   togglePilastro(chiave: string): void {
@@ -218,8 +204,6 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
     };
     return scene[pilastro] ?? 'analisi';
   }
-
-  soloCifre(numero: string): string { return numero.replace(/[^\d+]/g, '').replace(/^\+/, ''); }
 
   // --- newsletter ---------------------------------------------------------------
 
@@ -260,14 +244,6 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private fineCaricamento(): void {
     if (--this.attese <= 0) this.caricamento.set(false);
-  }
-
-  private readonly onScroll = () => {
-    this.testataRef.nativeElement.classList.toggle('scorsa', window.scrollY > 12);
-  };
-
-  private bloccaScorrimento(blocca: boolean): void {
-    if (typeof document !== 'undefined') document.body.style.overflow = blocca ? 'hidden' : '';
   }
 
   /**

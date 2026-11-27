@@ -121,6 +121,10 @@ verso il pesca.
 frontend/src/app/
 ├─ pages/                        una cartella per schermata
 │  ├─ landing/                   home pubblica
+│  ├─ evento-dettaglio/          /eventi/:id — biglietto, iscrizione, calendario
+│  ├─ news-dettaglio/            /news/:id — impaginato da articolo
+│  ├─ dettaglio/                 stili condivisi dalle due pagine sopra
+│  ├─ non-trovata/               pagina 404
 │  ├─ admin-login/               accesso al backoffice
 │  ├─ registrazione/             creazione account
 │  ├─ conferma-email/            atterraggio del link ricevuto via email
@@ -144,7 +148,10 @@ frontend/src/app/
 │
 └─ shared/                       componenti riusabili
    ├─ animated-logo/             marchio: simbolo + nome per esteso
-   ├─ illustrazioni/             persone stilizzate (una scena per pilastro)
+   ├─ illustrazioni/             persone illustrate: figura.ts (manichino), scene.ts
+   ├─ pubblico/                  testata e piè di pagina del sito pubblico
+   ├─ emblema/                   cassaforte · scudo · nucleo per l'hero
+   ├─ motion/                    fidcReveal e fidcConteggio
    ├─ safe-logo/                 cassaforte digitale animata
    ├─ svg-motifs/                sfondi decorativi
    ├─ background-canvas/         scena di rete 2D di sfondo

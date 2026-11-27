@@ -11,7 +11,7 @@ Ogni voce spiega **cosa non va**, **perché conta** e **dove si interviene**.
 
 ## Priorità 1 — Registro visivo
 
-### 1.1 Meno metafore da cassaforte, più persone
+### 1.1 Meno metafore da cassaforte, più persone — *chiuso il 2026-11-27, vedi Fatto*
 La cassaforte e lo scudo raccontano *protezione*, ma da soli restringono il messaggio.
 Serve una famiglia di **illustrazioni di persone stilizzate**, tutte con lo stesso stile
 e la stessa palette, mostrate mentre lavorano in contesti riconoscibili: analisi al
@@ -46,7 +46,7 @@ al contenuto.
 Oggi usa la stessa animazione del sito pubblico. Aree diverse dovrebbero avere ambienti
 visivi diversi: aiuta a capire dove ci si trova, oltre a essere più piacevole.
 
-### 2.3 Passaggi tra sezioni
+### 2.3 Passaggi tra sezioni — *in parte: transizioni fra pagine con sfondo fermo*
 Il sito è un unico foglio da scorrere. Le sezioni dovrebbero entrare e uscire come
 pannelli che ruotano nello spazio, sia tra le voci di menu sia tra le schermate del
 backoffice, mantenendo fissi lo sfondo e la navigazione.
@@ -114,3 +114,8 @@ subito, senza passaggi intermedi inutili.
 | 2026-11-27 | Backoffice: icone SVG, menu comprimibile, azioni rapide dal pannello (risolve 4.1) | `admin-shell`, `dashboard-home` |
 | 2026-11-27 | Font self-hosted (`@fontsource`), niente più Google Fonts | `angular.json` |
 | 2026-11-27 | Contenuti di riserva per eventi e news se l'API non risponde: la home non è mai vuota | `home-content.ts` |
+| 2026-11-27 | Illustrazioni rifatte: manichino con proporzioni umane, cinque scene con ambienti e un movimento ciascuna | `shared/illustrazioni/` |
+| 2026-11-27 | Pagine di dettaglio news ed eventi, con iscrizione, calendario (.ics) e condivisione | `news-dettaglio`, `evento-dettaglio` |
+| 2026-11-27 | Pannello Iscritti nel backoffice eventi, riempimento posti ed esportazione CSV | `eventi-admin`, `IscrizioniController` |
+| 2026-11-27 | Pagina 404, transizioni fra pagine con sfondo fermo, favicon e anteprima social | `non-trovata`, `app.config.ts`, `assets/` |
+| 2026-11-27 | "Ultima notizia" nell'hero, collegata al dettaglio | `landing` |

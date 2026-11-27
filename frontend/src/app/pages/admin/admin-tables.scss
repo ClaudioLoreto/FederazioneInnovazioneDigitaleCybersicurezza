@@ -104,6 +104,13 @@
 
 .actions { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 12px; margin-top: 24px; }
 
+// ---- Pannello iscritti ------------------------------------------------------------------
+.iscritti-testa { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 18px; h2 { margin-bottom: 4px; } }
+.riempimento { margin-bottom: 18px; p { margin-top: 8px; color: var(--text-soft); } strong { color: var(--text); font-size: 1.15rem; } }
+.riempimento-barra { height: 8px; border-radius: 4px; background: var(--surface); overflow: hidden;
+  span { display: block; height: 100%; background: var(--signal); border-radius: 4px; transition: width .6s var(--ease-spatial); } }
+.iscritti table a { color: var(--text); text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--line-strong); }
+
 // ---- Tabella dei contenuti ---------------------------------------------------------------
 .table-wrap {
   background: var(--surface);

@@ -1,0 +1,17 @@
+// Impaginazione da articolo: una colonna stretta e centrata.
+@use '../../../styles/palette' as *;
+
+.stretto { max-width: 860px; }
+.apertura h1 { max-width: none; margin-top: 14px; }
+.apertura .meta { margin-top: 0; }
+.copertina-articolo {
+  position: relative; z-index: 1;
+  margin: 0 0 40px; overflow: hidden; border-radius: var(--radius);
+  @include cut-corners(var(--cut));
+  margin-top: calc(-1 * clamp(80px, 10vw, 140px));
+  box-shadow: 0 30px 60px -30px rgba(51, 61, 109, .6);
+}
+.corpo { padding-top: 0; display: flow-root; } // flow-root: il margine negativo della copertina non deve trascinare su tutta la sezione
+.apertura { padding-bottom: calc(clamp(80px, 10vw, 140px) + 32px); }
+.testo { margin-inline: auto; }
+.condividi { max-width: 68ch; margin-inline: auto; }

@@ -54,3 +54,21 @@ public record TemaConfigDto(
     string StileRaggio,
     string AbbinamentoFont,
     string EmblemaHero = "cassaforte");
+
+/// <summary>
+/// Partecipante a un evento, come lo vede il backoffice: chi è e quando si è
+/// iscritto. Restituito da GET /api/iscrizioni/evento/{id}.
+/// </summary>
+/// <param name="IscrizioneId">Id dell'iscrizione.</param>
+/// <param name="UtenteId">Id dell'utente iscritto.</param>
+/// <param name="NomeCompleto">Nome e cognome dell'utente.</param>
+/// <param name="Email">Email dell'utente.</param>
+/// <param name="IscrittoIl">Data e ora dell'iscrizione (UTC).</param>
+/// <param name="Presente">True se la presenza è stata registrata.</param>
+public record PartecipanteDto(
+    int IscrizioneId,
+    int UtenteId,
+    string NomeCompleto,
+    string Email,
+    DateTime IscrittoIl,
+    bool Presente);
