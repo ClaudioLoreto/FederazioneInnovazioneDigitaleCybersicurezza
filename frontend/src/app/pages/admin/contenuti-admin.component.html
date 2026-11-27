@@ -1,0 +1,280 @@
+<div class="page">
+  <header class="head">
+    <div>
+      <h1>Contenuti del sito</h1>
+      <p class="scope">Testi, annunci, numeri e recapiti del sito pubblico. Diventano visibili dopo il salvataggio;
+         prima puoi guardarli con l'anteprima.</p>
+    </div>
+    <button type="button" class="ghost" (click)="anteprima()">Anteprima</button>
+  </header>
+
+  <div class="filtri-tabella">
+    <div class="segmenti" role="group" aria-label="Sezione del sito">
+      @for (s of sezioni; track s.chiave) {
+        <button type="button" [class.on]="sezione() === s.chiave" [attr.aria-pressed]="sezione() === s.chiave"
+                (click)="sezione.set(s.chiave)">{{ s.nome }}</button>
+      }
+    </div>
+  </div>
+
+  @if (servizioPronto()) {
+  <section class="editor hud-panel" @panel aria-labelledby="t-sezione">
+    <h2 id="t-sezione">{{ corrente().nome }}</h2>
+    <p class="sezione-nota">{{ corrente().descrizione }}</p>
+
+    @switch (sezione()) {
+
+      @case ('identita') {
+        <div class="grid">
+          <label class="full"><span>Nome per esteso</span>
+            <input [(ngModel)]="b.identita.nome" maxlength="120" />
+          </label>
+          <label><span>Nome accanto al simbolo, riga 1</span>
+            <input [(ngModel)]="b.identita.righeMarchio[0]" maxlength="28" />
+          </label>
+          <label><span>Riga 2</span>
+            <input [(ngModel)]="b.identita.righeMarchio[1]" maxlength="28" />
+          </label>
+          <label><span>Riga 3</span>
+            <input [(ngModel)]="b.identita.righeMarchio[2]" maxlength="28" />
+          </label>
+          <label><span>Simbolo alternativo (indirizzo di un'immagine, facoltativo)</span>
+            <input [(ngModel)]="b.identita.simbolo" placeholder="Vuoto: scudo sfaccettato della Federazione" />
+          </label>
+          <label class="full"><span>Descrizione in una frase</span>
+            <textarea [(ngModel)]="b.identita.descrizione" rows="2" maxlength="200"></textarea>
+            <small class="aiuto">Compare nel piè di pagina, sotto il marchio.</small>
+          </label>
+        </div>
+      }
+
+      @case ('apertura') {
+        <div class="grid">
+          <label><span>Slogan, prima frase</span>
+            <input [(ngModel)]="b.apertura.slogan[0]" maxlength="50" />
+          </label>
+          <label><span>Slogan, seconda frase (in evidenza)</span>
+            <input [(ngModel)]="b.apertura.slogan[1]" maxlength="50" />
+          </label>
+          <p class="full contatore" [class.oltre]="sloganTroppoLungo()" aria-live="polite">
+            {{ lunghezzaSlogan() }} di {{ sloganMax }} caratteri.
+            @if (sloganTroppoLungo()) { Accorcialo: oltre i {{ sloganMax }} caratteri lo slogan non sta su una riga. }
+            @else { Su schermo largo lo slogan sta su una riga sola. }
+          </p>
+          <label class="full"><span>Presentazione</span>
+            <textarea [(ngModel)]="b.apertura.testo" rows="3" maxlength="320"></textarea>
+          </label>
+          <label><span>Bottone principale (porta alla registrazione)</span>
+            <input [(ngModel)]="b.apertura.ctaPrimaria" maxlength="32" />
+          </label>
+          <label><span>Bottone secondario (porta ai pilastri)</span>
+            <input [(ngModel)]="b.apertura.ctaSecondaria" maxlength="32" />
+          </label>
+        </div>
+
+        <fieldset class="gruppo">
+          <legend>Annuncio</legend>
+          <p class="aiuto">La fascia sotto l'apertura mostra, in quest'ordine: l'annuncio, se attivo; altrimenti
+             un evento che comincia entro una settimana; altrimenti l'ultima news.</p>
+          <div class="grid">
+            <label class="check full"><span>Mostra l'annuncio</span>
+              <input type="checkbox" [(ngModel)]="b.annuncio.attivo" />
+            </label>
+            <label class="full"><span>Testo dell'annuncio</span>
+              <input [(ngModel)]="b.annuncio.testo" maxlength="140" placeholder="Es. Aperte le candidature per l'Academy 2027" />
+            </label>
+            <label><span>Collegamento (facoltativo)</span>
+              <input [(ngModel)]="b.annuncio.collegamento" placeholder="/eventi/12 oppure https://…" />
+            </label>
+            <label><span>Testo del collegamento</span>
+              <input [(ngModel)]="b.annuncio.etichettaCollegamento" maxlength="24" placeholder="Leggi" />
+            </label>
+            <label><span>Togli l'annuncio dopo il (facoltativo)</span>
+              <input type="date" [(ngModel)]="b.annuncio.scadenza" />
+            </label>
+          </div>
+        </fieldset>
+      }
+
+      @case ('evidenza') {
+        <div class="grid">
+          <label class="full"><span>News che apre la sezione notizie</span>
+            <fidc-selezione [(ngModel)]="newsInEvidenza" [opzioni]="opzioniNews()" etichetta="News in evidenza"></fidc-selezione>
+          </label>
+          <label class="full"><span>Evento in testa al calendario</span>
+            <fidc-selezione [(ngModel)]="eventoInEvidenza" [opzioni]="opzioniEventi()" etichetta="Evento in evidenza"></fidc-selezione>
+          </label>
+        </div>
+        <ul class="regole">
+          <li>Un evento che comincia <strong>entro 14 giorni</strong> mostra da solo “Oggi”, “Domani” o “Tra N giorni”.</li>
+          <li>Un evento che comincia <strong>entro 7 giorni</strong> diventa una scheda in evidenza, con il bottone per iscriversi, e
+              compare nella fascia sotto l'apertura se non c'è un annuncio.</li>
+          <li>Gli eventi passati spariscono da soli dalla home.</li>
+        </ul>
+      }
+
+      @case ('pilastri') {
+        <div class="voci">
+          @for (p of b.pilastri; track p.chiave) {
+            <article class="voce">
+              <div class="voce-testa">
+                <fidc-emblema-tema class="voce-emblema" [tipo]="p.emblema" aria-hidden="true"></fidc-emblema-tema>
+                <h3>{{ p.titolo || 'Pilastro senza titolo' }}</h3>
+              </div>
+              <div class="grid">
+                <label><span>Titolo</span><input [(ngModel)]="p.titolo" maxlength="40" /></label>
+                <label><span>Frase breve</span><input [(ngModel)]="p.claim" maxlength="90" /></label>
+                <label class="full"><span>Descrizione (si legge aprendo il pilastro)</span>
+                  <textarea [(ngModel)]="p.descrizione" rows="3" maxlength="420"></textarea>
+                </label>
+                <label><span>Illustrazione</span>
+                  <fidc-selezione [(ngModel)]="p.scena" [opzioni]="scene" etichetta="Illustrazione"></fidc-selezione>
+                </label>
+                <label><span>Emblema</span>
+                  <fidc-selezione [(ngModel)]="p.emblema" [opzioni]="emblemi" etichetta="Emblema"></fidc-selezione>
+                </label>
+              </div>
+            </article>
+          }
+        </div>
+      }
+
+      @case ('associazione') {
+        <div class="grid">
+          <label><span>Titolo della sezione</span><input [(ngModel)]="b.associazione.titolo" maxlength="40" /></label>
+          <label class="full"><span>Chi siamo</span>
+            <textarea [(ngModel)]="b.associazione.testo" rows="4" maxlength="700"></textarea>
+          </label>
+        </div>
+
+        <fieldset class="gruppo">
+          <legend>Numeri chiave</legend>
+          <p class="aiuto">Solo dati verificati. Il numero si conta da zero quando entra in vista; prefissi come “+” restano.</p>
+          @for (n of b.associazione.numeri; track i; let i = $index; let ultimo = $last) {
+            <div class="riga-lista">
+              <label><span>Valore</span><input [(ngModel)]="n.valore" maxlength="10" placeholder="Es. 250" /></label>
+              <label class="largo"><span>Che cosa conta</span><input [(ngModel)]="n.etichetta" maxlength="40" placeholder="Es. Organizzazioni aderenti" /></label>
+              <div class="riga-azioni">
+                <button type="button" class="mini" [disabled]="i === 0" (click)="sposta(b.associazione.numeri, i, -1)" [attr.aria-label]="'Sposta su il numero ' + (i + 1)">Su</button>
+                <button type="button" class="mini" [disabled]="ultimo" (click)="sposta(b.associazione.numeri, i, 1)" [attr.aria-label]="'Sposta giù il numero ' + (i + 1)">Giù</button>
+                <button type="button" class="mini danger" (click)="rimuovi(b.associazione.numeri, i)" [attr.aria-label]="'Rimuovi il numero ' + (i + 1)">Rimuovi</button>
+              </div>
+            </div>
+          } @empty { <p class="vuoto">Nessun numero: la fila dei numeri non compare sul sito.</p> }
+          <button type="button" class="ghost aggiungi" (click)="aggiungi(b.associazione.numeri, nuovoNumero())">Aggiungi un numero</button>
+        </fieldset>
+
+        <fieldset class="gruppo">
+          <legend>Missione</legend>
+          <div class="grid"><label><span>Titolo</span><input [(ngModel)]="b.associazione.missioneTitolo" maxlength="40" /></label></div>
+          @for (m of b.associazione.impegni; track i; let i = $index; let ultimo = $last) {
+            <div class="riga-lista">
+              <label><span>Impegno</span><input [(ngModel)]="m.titolo" maxlength="40" /></label>
+              <label class="largo"><span>Spiegazione</span><textarea [(ngModel)]="m.testo" rows="2" maxlength="260"></textarea></label>
+              <div class="riga-azioni">
+                <button type="button" class="mini" [disabled]="i === 0" (click)="sposta(b.associazione.impegni, i, -1)">Su</button>
+                <button type="button" class="mini" [disabled]="ultimo" (click)="sposta(b.associazione.impegni, i, 1)">Giù</button>
+                <button type="button" class="mini danger" (click)="rimuovi(b.associazione.impegni, i)">Rimuovi</button>
+              </div>
+            </div>
+          } @empty { <p class="vuoto">Nessun impegno: la missione non compare sul sito.</p> }
+          <button type="button" class="ghost aggiungi" (click)="aggiungi(b.associazione.impegni, nuovoImpegno())">Aggiungi un impegno</button>
+        </fieldset>
+
+        <fieldset class="gruppo">
+          <legend>Governance</legend>
+          @for (g of b.associazione.governance; track i; let i = $index; let ultimo = $last) {
+            <div class="riga-lista con-emblema">
+              <fidc-emblema-tema class="voce-emblema" [tipo]="g.emblema" aria-hidden="true"></fidc-emblema-tema>
+              <label><span>Organo</span><input [(ngModel)]="g.nome" maxlength="48" placeholder="Es. Consiglio direttivo" /></label>
+              <label><span>Funzione</span><input [(ngModel)]="g.ruolo" maxlength="48" /></label>
+              <label><span>Ambito</span><input [(ngModel)]="g.area" maxlength="48" /></label>
+              <label><span>Emblema</span><fidc-selezione [(ngModel)]="g.emblema" [opzioni]="emblemi" etichetta="Emblema"></fidc-selezione></label>
+              <div class="riga-azioni">
+                <button type="button" class="mini" [disabled]="i === 0" (click)="sposta(b.associazione.governance, i, -1)">Su</button>
+                <button type="button" class="mini" [disabled]="ultimo" (click)="sposta(b.associazione.governance, i, 1)">Giù</button>
+                <button type="button" class="mini danger" (click)="rimuovi(b.associazione.governance, i)">Rimuovi</button>
+              </div>
+            </div>
+          } @empty { <p class="vuoto">Nessun organo: la sezione governance non compare sul sito.</p> }
+          <button type="button" class="ghost aggiungi" (click)="aggiungi(b.associazione.governance, nuovoOrgano())">Aggiungi un organo</button>
+        </fieldset>
+      }
+
+      @case ('progetti') {
+        <div class="voci">
+          @for (p of b.progetti; track p.codice; let i = $index; let ultimo = $last) {
+            <article class="voce">
+              <div class="voce-testa">
+                <fidc-emblema-tema class="voce-emblema" [tipo]="p.emblema" aria-hidden="true"></fidc-emblema-tema>
+                <h3>{{ p.titolo || 'Nuovo progetto' }}</h3>
+                @if (i === 0) { <span class="state on">Apre la sezione</span> }
+                <div class="riga-azioni">
+                  <button type="button" class="mini" [disabled]="i === 0" (click)="sposta(b.progetti, i, -1)">Su</button>
+                  <button type="button" class="mini" [disabled]="ultimo" (click)="sposta(b.progetti, i, 1)">Giù</button>
+                  <button type="button" class="mini danger" (click)="rimuovi(b.progetti, i)">Rimuovi</button>
+                </div>
+              </div>
+              <div class="grid">
+                <label><span>Titolo</span><input [(ngModel)]="p.titolo" maxlength="60" /></label>
+                <label><span>Ambito</span><input [(ngModel)]="p.categoria" maxlength="40" placeholder="Es. Cybersicurezza" /></label>
+                <label><span>Stato</span><fidc-selezione [(ngModel)]="p.stato" [opzioni]="statiProgetto" etichetta="Stato"></fidc-selezione></label>
+                <label><span>Risultato o impatto</span><input [(ngModel)]="p.impatto" maxlength="48" placeholder="Es. 1.000 borse di studio" /></label>
+                <label class="full"><span>Descrizione</span><textarea [(ngModel)]="p.descrizione" rows="3" maxlength="360"></textarea></label>
+                <label><span>Emblema</span><fidc-selezione [(ngModel)]="p.emblema" [opzioni]="emblemi" etichetta="Emblema"></fidc-selezione></label>
+              </div>
+            </article>
+          } @empty { <p class="vuoto">Nessun progetto: la sezione Progetti e la voce nel menu non compaiono sul sito.</p> }
+        </div>
+        <button type="button" class="ghost aggiungi" (click)="aggiungi(b.progetti, nuovoProgetto())">Aggiungi un progetto</button>
+      }
+
+      @case ('newsletter') {
+        <div class="grid">
+          <label class="full"><span>Titolo</span><input [(ngModel)]="b.newsletter.titolo" maxlength="60" /></label>
+          <label class="full"><span>Testo</span><textarea [(ngModel)]="b.newsletter.testo" rows="3" maxlength="260"></textarea></label>
+          <label><span>Bottone</span><input [(ngModel)]="b.newsletter.cta" maxlength="32" /></label>
+        </div>
+      }
+
+      @case ('contatti') {
+        <div class="grid">
+          <label class="full"><span>Sede</span><input [(ngModel)]="b.contatti.sede" maxlength="120" placeholder="Via, numero, CAP e città" /></label>
+          <label><span>Email</span><input type="email" [(ngModel)]="b.contatti.email" /></label>
+          <label><span>PEC</span><input type="email" [(ngModel)]="b.contatti.pec" /></label>
+          <label><span>Telefono</span><input type="tel" [(ngModel)]="b.contatti.telefono" /></label>
+          <label><span>WhatsApp</span><input type="tel" [(ngModel)]="b.contatti.whatsapp" /></label>
+          <label class="full"><span>Orari della segreteria</span><input [(ngModel)]="b.contatti.orari" maxlength="120" /></label>
+        </div>
+
+        <fieldset class="gruppo">
+          <legend>Profili social</legend>
+          @for (s of b.contatti.social; track i; let i = $index) {
+            <div class="riga-lista">
+              <label><span>Rete</span><fidc-selezione [(ngModel)]="s.rete" [opzioni]="reti" etichetta="Rete"></fidc-selezione></label>
+              <label class="largo"><span>Indirizzo del profilo</span><input type="url" [(ngModel)]="s.url" placeholder="https://…" /></label>
+              <div class="riga-azioni">
+                <button type="button" class="mini danger" (click)="rimuovi(b.contatti.social, i)">Rimuovi</button>
+              </div>
+            </div>
+          } @empty { <p class="vuoto">Nessun profilo: le icone social non compaiono.</p> }
+          <button type="button" class="ghost aggiungi" (click)="aggiungi(b.contatti.social, nuovoSocial())">Aggiungi un profilo</button>
+        </fieldset>
+      }
+    }
+  </section>
+  }
+
+  @if (modificato()) {
+    <div class="sospese" role="status" @barra>
+      <p><strong>Modifiche non salvate</strong> Il sito cambia solo dopo il salvataggio.</p>
+      <div class="sospese-azioni">
+        <button type="button" class="ghost" (click)="annulla()">Annulla modifiche</button>
+        <button type="button" class="ghost" (click)="anteprima()">Anteprima</button>
+        <button type="button" class="primary" [disabled]="salvataggio()" (click)="salva()">
+          {{ salvataggio() ? 'Salvataggio…' : 'Salva contenuti' }}
+        </button>
+      </div>
+    </div>
+  }
+</div>

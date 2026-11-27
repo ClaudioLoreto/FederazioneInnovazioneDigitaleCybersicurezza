@@ -141,6 +141,13 @@ export const routes: Routes = [
           import('./pages/admin/impostazioni-tema.component').then((m) => m.ImpostazioniTemaComponent)
       },
       {
+        path: 'contenuti',
+        canActivate: [permessoGuard('sito.contenuti')],
+        title: 'FIDC — Contenuti del sito',
+        loadComponent: () =>
+          import('./pages/admin/contenuti-admin.component').then((m) => m.ContenutiAdminComponent)
+      },
+      {
         path: 'permessi',
         canActivate: [superUserGuard],
         title: 'FIDC — Permessi',

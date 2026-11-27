@@ -1,7 +1,12 @@
 // =============================================================================
 //  FIDC.Dal » Seeding » DataSeeder.cs
-//  Seeder idempotente: popola il database al primo avvio con dati realistici
-//  e autorevoli della Federazione (utenti RBAC, eventi, news, iscrizioni).
+//  Seeder idempotente. Al primo avvio crea SOLO ciò che serve per partire:
+//  la configurazione del tema e l'account della Direzione. I contenuti veri
+//  (eventi, news, documenti, testi del sito) li inserisce la redazione dal
+//  backoffice: niente dati inventati in produzione.
+//  I dati dimostrativi (relatori, eventi, news, iscrizioni, documenti,
+//  iscritti alla newsletter) si creano solo con Seed:DatiDimostrativi = true
+//  in appsettings.Development.json, per provare il sito in locale.
 //  È SICURO da richiamare ad ogni boot: se i dati esistono già, non duplica.
 //  NB: NON altera lo schema (nessun impatto sul diagramma ER).
 // =============================================================================
@@ -29,7 +34,11 @@ public static class DataSeeder
     /// Ordine: Utenti → Eventi/News (dipendono dagli utenti) → Iscrizioni.
     /// </summary>
     /// <param name="db">Contesto EF Core già migrato.</param>
-    public static async Task SeedAsync(FidcDbContext db)
+    /// <param name="datiDimostrativi">
+    /// Se true crea anche relatori, eventi, news, iscrizioni, documenti e
+    /// iscritti di esempio. Predefinito false: solo tema e account della Direzione.
+    /// </param>
+    public static async Task SeedAsync(FidcDbContext db, bool datiDimostrativi = false)
     {
         // --- 0) TEMA/VELO DI DEFAULT (idempotente e indipendente) -------------
         // Garantisce sempre una riga di configurazione attiva coerente col
@@ -47,7 +56,7 @@ public static class DataSeeder
                 ColoreSfondo = "#FFF0D9",
                 ColoreTesto = "#333D6D",
                 StileRaggio = "soft",
-                AbbinamentoFont = "cyber"
+                AbbinamentoFont = "classico"
             });
             await db.SaveChangesAsync();
         }
@@ -56,13 +65,14 @@ public static class DataSeeder
         if (await db.Utenti.AnyAsync())
             return;
 
-        // --- 1) UTENTI (1 SuperUser + 2 Relatori) -----------------------------
+        // --- 1) UTENTI: Direzione (sempre) + 2 Relatori (solo dimostrativi) ---
         var hash = BCrypt.Net.BCrypt.HashPassword(PasswordDefault);
 
+        // Account di partenza della Direzione: nome e password si cambiano al primo accesso.
         var superUser = new Utente
         {
-            Nome = "Lorenzo",
-            Cognome = "De Santis",
+            Nome = "Direzione",
+            Cognome = "Federazione",
             Email = "direzione@fidc.it",
             PasswordHash = hash,
             Ruolo = UserRole.SuperUser,
@@ -88,6 +98,14 @@ public static class DataSeeder
             Ruolo = UserRole.Relatore,
             EmailConfermata = true
         };
+
+        if (!datiDimostrativi)
+        {
+            // Produzione: solo l'account della Direzione, da cui si crea tutto il resto.
+            await db.Utenti.AddAsync(superUser);
+            await db.SaveChangesAsync();
+            return;
+        }
 
         await db.Utenti.AddRangeAsync(superUser, relatore1, relatore2);
         await db.SaveChangesAsync(); // genera gli Id necessari per le FK

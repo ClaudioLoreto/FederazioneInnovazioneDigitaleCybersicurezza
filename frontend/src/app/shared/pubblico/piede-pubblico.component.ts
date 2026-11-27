@@ -4,10 +4,10 @@
 //  collegamenti per i soci. Condiviso da home e pagine interne.
 // =============================================================================
 
-import { Component, EventEmitter, Input, Output, inject } from '@angular/core';
+import { Component, EventEmitter, Input, Output, computed, inject } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { AnimatedLogoComponent } from '../animated-logo/animated-logo.component';
-import { BRAND, CONTATTI } from '../../content/home-content';
+import { ContenutiService } from '../../services/contenuti.service';
 
 @Component({
   selector: 'fidc-piede-pubblico',
@@ -22,8 +22,16 @@ export class PiedePubblicoComponent {
   @Input() home = false;
   @Output() vai = new EventEmitter<string>();
 
-  readonly brand = BRAND;
-  readonly contatti = CONTATTI;
+  private readonly servizio = inject(ContenutiService);
+  readonly identita = computed(() => this.servizio.attuali().identita);
+  readonly contatti = computed(() => this.servizio.attuali().contatti);
+  /** Social con un indirizzo compilato. */
+  readonly social = computed(() => this.contatti().social.filter((x) => x.url.trim()));
+  /** La colonna Contatti compare solo se c'è almeno un recapito. */
+  readonly haContatti = computed(() => {
+    const k = this.contatti();
+    return !!(k.sede || k.email || k.pec || k.telefono || k.whatsapp || k.orari);
+  });
   readonly anno = new Date().getFullYear();
 
   naviga(id: string, ev?: Event): void {

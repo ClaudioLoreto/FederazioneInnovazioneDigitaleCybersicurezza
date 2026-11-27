@@ -1,0 +1,82 @@
+// =============================================================================
+//  frontend/src/app/pages/admin/contenuti-admin.component.scss
+//  Solo ciò che la pagina dei contenuti aggiunge al design system del CMS
+//  (admin-tables.scss): gruppi di campi, liste ordinabili, schede delle voci e
+//  barra delle modifiche in sospeso (identica a quella dei Permessi).
+// =============================================================================
+
+.page { padding-bottom: 110px; } // spazio per la barra delle modifiche
+
+.sezione-nota { margin: -12px 0 22px; color: var(--text-soft); max-width: 70ch; }
+.aiuto { font-size: .88rem; color: var(--text-muted); line-height: 1.5; }
+.grid label > .aiuto { margin-top: -2px; }
+
+// Contatore dello slogan: diventa evidente quando si supera il limite.
+.contatore {
+  margin: -6px 0 0; font-size: .9rem; color: var(--text-muted);
+  &.oltre { color: var(--text); font-weight: 600; padding-left: 10px; border-left: 3px solid var(--signal); }
+}
+
+// ---- Gruppi di campi -------------------------------------------------------------------
+fieldset.gruppo {
+  margin: 28px 0 0; padding: 22px 0 0; border: 0; border-top: 1px solid var(--line); min-width: 0;
+  legend { float: left; width: 100%; padding: 0; margin-bottom: 8px; font-family: var(--font-display); font-size: 1.15rem; font-weight: 600; color: var(--text); }
+  > .aiuto { clear: both; margin-bottom: 16px; }
+  > .grid { clear: both; margin-bottom: 14px; }
+}
+
+// ---- Liste ordinabili (numeri, impegni, organi, profili) -------------------------------
+.riga-lista {
+  clear: both;
+  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) auto; gap: 12px 14px; align-items: end;
+  padding: 14px; margin-bottom: 10px;
+  border: 1px dashed var(--line); border-radius: var(--radius);
+  label { display: grid; gap: 6px; }
+  label > span { font-size: .85rem; font-weight: 600; color: var(--text-soft); }
+  input, textarea { background: var(--surface); }
+  &.con-emblema { grid-template-columns: 40px repeat(3, minmax(0, 1fr)) minmax(0, 1.2fr) auto; }
+}
+.riga-azioni { display: flex; gap: 6px; flex-wrap: wrap; .mini { margin-left: 0; } }
+.vuoto { clear: both; margin: 6px 0 14px; padding: 14px; color: var(--text-muted); border: 1px dashed var(--line); border-radius: var(--radius); }
+.aggiungi { margin-top: 4px; }
+
+// ---- Schede delle voci (pilastri, progetti) --------------------------------------------
+.voci { display: grid; gap: 16px; margin-bottom: 16px; }
+.voce {
+  padding: 18px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface);
+  .grid input, .grid textarea { background: var(--surface-strong); }
+}
+.voce-testa {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 16px;
+  h3 { font-size: 1.15rem; margin-right: auto; }
+}
+.voce-emblema { width: 36px; flex: 0 0 auto; }
+
+// Regole automatiche dell'evidenza, scritte per chi decide.
+.regole {
+  margin: 22px 0 0; padding: 16px 18px 16px 34px;
+  border-left: 3px solid var(--signal); background: var(--accent-soft); border-radius: var(--radius);
+  li { color: var(--text-soft); line-height: 1.55; }
+  li + li { margin-top: 6px; }
+  strong { color: var(--text); }
+}
+
+// ---- Barra delle modifiche in sospeso (come in Permessi) -------------------------------
+.sospese {
+  position: fixed; z-index: 30; left: 50%; bottom: 20px; transform: translateX(-50%);
+  width: min(820px, calc(100vw - 32px));
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px 20px;
+  padding: 14px 18px;
+  background: var(--canvas-bg); color: var(--text);
+  border: 1px solid var(--signal); border-radius: var(--radius);
+  box-shadow: var(--glow-deep);
+  p { display: grid; gap: 2px; color: var(--text-soft); font-size: .92rem; }
+  strong { color: var(--text); font-size: 1rem; }
+}
+.sospese-azioni { display: flex; gap: 10px; flex-wrap: wrap; }
+
+@media (max-width: 900px) {
+  .riga-lista, .riga-lista.con-emblema { grid-template-columns: minmax(0, 1fr); }
+  .riga-lista .voce-emblema { display: none; }
+  .sospese-azioni { width: 100%; > * { flex: 1 1 auto; } }
+}

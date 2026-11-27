@@ -165,7 +165,7 @@
   filter: drop-shadow(0 26px 48px color-mix(in srgb, var(--canvas-bg) 80%, transparent));
 }
 
-// ---- Ultima notizia ---------------------------------------------------------------
+// ---- Fascia sotto l'apertura: annuncio, evento imminente o ultima notizia ----------
 .hero-notizia {
   grid-area: notizia;
   display: flex; align-items: center; gap: 10px 16px; flex-wrap: wrap;
@@ -188,6 +188,26 @@
 .hn-data { font-size: .9rem; color: var(--text-muted); }
 .hn-titolo { flex: 1 1 320px; min-width: 0; font-weight: 500; }
 .hn-leggi { font-weight: 600; color: var(--text-soft); transition: color .2s; }
+// Annuncio della redazione ed evento imminente: bordo di segnale, si notano di più.
+.hero-notizia.annuncio, .hero-notizia.imminente {
+  border-color: var(--signal); border-left-width: 4px;
+  .hn-titolo { font-weight: 600; }
+  .hn-leggi { color: var(--signal); }
+}
+.hero-notizia.imminente .hn-data { font-weight: 600; color: var(--text); }
+
+// ---- Anteprima dal backoffice ---------------------------------------------------------
+.anteprima {
+  position: fixed; z-index: 60; left: 50%; bottom: 20px; transform: translateX(-50%);
+  width: min(720px, calc(100vw - 32px));
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px 18px;
+  padding: 12px 16px;
+  background: var(--D-bg); color: var(--D-text);
+  border: 1px solid var(--D-signal); border-radius: var(--radius);
+  box-shadow: var(--glow-deep);
+  p { color: var(--D-text-soft); font-size: .95rem; }
+  strong { color: var(--D-signal); margin-right: 8px; }
+}
 
 @media (max-width: 879px) {
   .hero-inner {
@@ -284,7 +304,8 @@
 .numeri {
   position: relative;
   margin-top: calc(56px * var(--density));
-  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
+  // Da uno a quattro numeri (o più): le colonne seguono quanti ne ha inseriti la redazione.
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
   border-top: 1px solid var(--line);
 }
 .numero {
@@ -383,6 +404,11 @@
   .progetto-desc { font-size: 1.08rem; max-width: 52ch; }
   .progetto-impatto { font-size: 1.25rem; }
 }
+// Il progetto di apertura occupa tante righe quanti sono gli altri progetti:
+// con due progetti le schede hanno la stessa altezza, con uno solo prende tutta la riga.
+.progetto:first-child:nth-last-child(2) { grid-row: auto; min-height: 340px; }
+.progetto:first-child:nth-last-child(3) { grid-row: span 2; }
+.progetto:only-child { grid-column: 1 / -1; grid-row: auto; min-height: 300px; }
 // Emblema del tema in alto: dà peso alla card principale e dice di cosa si occupa.
 .progetto-emblema {
   width: clamp(84px, 5rem + 3vw, 128px);
@@ -420,6 +446,17 @@
   h3 { font-size: 1.25rem; margin: 8px 0 6px; }
   p { color: var(--card-soft); line-height: 1.5; }
 }
+.evento-meta { display: flex; flex-wrap: wrap; gap: 8px; }
+// Evento che comincia entro una settimana (o scelto dalla redazione): scheda in
+// evidenza, più grande, con l'iscrizione a portata di mano.
+.evento.in-evidenza {
+  grid-template-columns: 140px minmax(0, 1fr) minmax(0, 240px) auto;
+  padding-block: 30px;
+  border-color: var(--signal); border-left-width: 4px;
+  h3 { font-size: clamp(1.35rem, 1.1rem + .8vw, 1.7rem); }
+  .evento-data .giorno { font-size: 3.6rem; }
+}
+.evento-cta { position: relative; z-index: 1; }
 .evento-data {
   display: flex; flex-direction: column;
   padding-right: 20px; border-right: 1px solid var(--line);
@@ -431,8 +468,14 @@
   font-size: .95rem; color: var(--card-soft);
   svg { flex: 0 0 auto; margin-top: 2px; color: var(--signal); }
 }
+@media (max-width: 1100px) {
+  .evento.in-evidenza { grid-template-columns: 120px minmax(0, 1fr) auto; }
+  .evento.in-evidenza .evento-luogo { grid-column: 2; grid-row: 2; }
+}
 @media (max-width: 760px) {
-  .evento { grid-template-columns: 76px minmax(0, 1fr); padding: 18px; }
+  .evento, .evento.in-evidenza { grid-template-columns: 76px minmax(0, 1fr); padding: 18px; }
+  .evento.in-evidenza .evento-data .giorno { font-size: 2.6rem; }
+  .evento-cta { grid-column: 1 / -1; justify-self: stretch; }
   .evento-data .giorno { font-size: 2.2rem; }
   .evento-data { padding-right: 12px; }
   .evento-luogo { grid-column: 2; }
@@ -472,6 +515,14 @@
   grid-row: span 3;
   h3 { font-size: clamp(1.5rem, 1.1rem + 1.2vw, 2.1rem); }
   .articolo-sommario { font-size: 1.08rem; }
+}
+// Una sola news: occupa tutta la riga, copertina a sinistra e testo a destra,
+// invece di lasciare mezza sezione vuota.
+@media (min-width: 900px) {
+  .articolo.apertura:only-child {
+    grid-column: 1 / -1; grid-row: auto; flex-direction: row; align-items: center;
+    .copertina { flex: 0 0 48%; }
+  }
 }
 // Copertina: la scena illustrata del pilastro della notizia, a tutta larghezza.
 .copertina { display: block; overflow: hidden; }

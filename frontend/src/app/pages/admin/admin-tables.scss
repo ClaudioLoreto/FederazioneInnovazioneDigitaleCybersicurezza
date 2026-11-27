@@ -87,7 +87,7 @@
   min-height: 46px; padding: 0 14px;
   border: 1px dashed var(--line); border-radius: var(--radius);
   cursor: pointer;
-  input { order: -1; width: 20px; height: 20px; }
+  input { order: -1; width: 20px; height: 20px; accent-color: var(--accent); }
   > span { color: var(--text); }
 }
 

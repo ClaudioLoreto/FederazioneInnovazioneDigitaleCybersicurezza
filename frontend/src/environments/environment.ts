@@ -24,7 +24,7 @@ export const environment = {
   profiliDiProva: [
     {
       ruolo: 'Direzione',
-      nome: 'Lorenzo De Santis',
+      nome: 'Direzione Federazione',
       ambito: 'Governa tutta la piattaforma',
       email: 'direzione@fidc.it',
       password: 'Fidc#2026!'
@@ -32,14 +32,14 @@ export const environment = {
     {
       ruolo: 'Redazione',
       nome: 'Giulia Ferraro',
-      ambito: 'Solo i contenuti di cui è autrice',
+      ambito: 'Solo con i dati dimostrativi attivi',
       email: 'g.ferraro@fidc.it',
       password: 'Fidc#2026!'
     },
     {
       ruolo: 'Redazione',
       nome: 'Marco Bianchi',
-      ambito: 'Solo i contenuti di cui è autore',
+      ambito: 'Solo con i dati dimostrativi attivi',
       email: 'm.bianchi@fidc.it',
       password: 'Fidc#2026!'
     }

@@ -1,5 +1,13 @@
 <fidc-testata-pubblica [home]="true" [attiva]="sezioneAttiva()" (vai)="vaiA($event)"></fidc-testata-pubblica>
 
+<!-- Anteprima dal backoffice: si vede solo nel browser di chi la sta guardando. -->
+@if (inAnteprima()) {
+  <div class="anteprima" role="status">
+    <p><strong>Anteprima</strong> Stai vedendo il sito con le modifiche non ancora salvate.</p>
+    <a class="btn-primary btn-sm" routerLink="/admin/contenuti">Torna ai contenuti</a>
+  </div>
+}
+
 <main id="contenuto" class="pagina">
 
   <!-- =============================== HERO =============================== -->
@@ -10,15 +18,15 @@
         <span class="ora" #orologio></span>
       </p>
 
-      <h1 class="slogan" id="slogan" [attr.aria-label]="hero.titolo">
-        <span class="slogan-testo" #slogan aria-hidden="true">@for (r of righeSlogan; track $index) {<span class="riga">{{ r }}</span>@if (!$last) {<span class="spazio">{{ ' ' }}</span>}}</span><span class="cursore" aria-hidden="true"></span>
+      <h1 class="slogan" id="slogan" [attr.aria-label]="sloganIntero()">
+        <span class="slogan-testo" #slogan aria-hidden="true">@for (r of righeSlogan(); track $index) {<span class="riga" [textContent]="r"></span>@if (!$last) {<span class="spazio">{{ ' ' }}</span>}}</span><span class="cursore" aria-hidden="true"></span>
       </h1>
 
       <div class="hero-copia">
-        <p class="hero-sub">{{ hero.sottotitolo }}</p>
+        <p class="hero-sub">{{ hero().testo }}</p>
         <div class="hero-cta">
-          <a class="btn-primary" routerLink="/registrati">{{ hero.ctaPrimaria }}</a>
-          <a class="btn-outline" href="#pilastri" (click)="vaiA('pilastri', $event)">{{ hero.ctaSecondaria }}</a>
+          <a class="btn-primary" routerLink="/registrati">{{ hero().ctaPrimaria }}</a>
+          <a class="btn-outline" href="#pilastri" (click)="vaiA('pilastri', $event)">{{ hero().ctaSecondaria }}</a>
         </div>
       </div>
 
@@ -37,16 +45,29 @@
         <div class="emblema-box"><fidc-emblema></fidc-emblema></div>
       </div>
 
-      <!-- Ultima notizia: dice subito che la Federazione è attiva, e porta al dettaglio. -->
-      @if (!caricamento() && news().length) {
-        <a class="hero-notizia" [routerLink]="['/news', news()[0].id]">
-          <span class="hn-etichetta">Ultima notizia</span>
-          @if (news()[0].dataPubblicazione) {
-            <time class="hn-data" [attr.datetime]="news()[0].dataPubblicazione">{{ news()[0].dataPubblicazione | date:'d MMMM' }}</time>
-          }
-          <span class="hn-titolo">{{ news()[0].titolo }}</span>
-          <span class="hn-leggi" aria-hidden="true">Leggi</span>
-        </a>
+      <!-- Fascia sotto l'apertura, in ordine di precedenza: l'annuncio scritto dalla
+           redazione, poi un evento che comincia entro una settimana, poi l'ultima news.
+           Dice subito che la Federazione è attiva, e porta dove serve. -->
+      @if (fascia(); as f) {
+        @if (!f.link) {
+          <p class="hero-notizia annuncio">
+            <span class="hn-etichetta">{{ f.etichetta }}</span>
+            <span class="hn-titolo">{{ f.titolo }}</span>
+          </p>
+        } @else if (f.interno) {
+          <a class="hero-notizia" [class.annuncio]="f.tipo === 'annuncio'" [class.imminente]="f.tipo === 'evento'" [routerLink]="f.link">
+            <span class="hn-etichetta">{{ f.etichetta }}</span>
+            @if (f.quando) { <span class="hn-data">{{ f.quando }}</span> }
+            <span class="hn-titolo">{{ f.titolo }}</span>
+            <span class="hn-leggi" aria-hidden="true">{{ f.azione }}</span>
+          </a>
+        } @else {
+          <a class="hero-notizia annuncio" [href]="f.link" target="_blank" rel="noopener">
+            <span class="hn-etichetta">{{ f.etichetta }}</span>
+            <span class="hn-titolo">{{ f.titolo }}</span>
+            <span class="hn-leggi" aria-hidden="true">{{ f.azione }}</span>
+          </a>
+        }
       }
     </div>
   </section>
@@ -61,11 +82,11 @@
       </header>
 
       <div class="pilastri">
-        @for (p of pilastri; track p.chiave; let i = $index) {
+        @for (p of c().pilastri; track p.chiave; let i = $index) {
           <article class="pilastro brackets" [id]="'pilastro-' + p.chiave" [fidcReveal]="i * 90"
                    [class.aperto]="pilastroAperto() === p.chiave">
             <div class="pilastro-ill"><fidc-illustrazione [scena]="p.scena"></fidc-illustrazione></div>
-            <fidc-emblema-tema class="pilastro-sigillo" [tipo]="sigilli[p.chiave]" aria-hidden="true"></fidc-emblema-tema>
+            <fidc-emblema-tema class="pilastro-sigillo" [tipo]="p.emblema" aria-hidden="true"></fidc-emblema-tema>
             <h3>{{ p.titolo }}</h3>
             <p class="pilastro-claim">{{ p.claim }}</p>
             <div class="pilastro-extra" [attr.aria-hidden]="pilastroAperto() !== p.chiave">
@@ -93,25 +114,28 @@
     <div class="container">
       <div class="chi">
         <div class="chi-testo" fidcReveal>
-          <h2 id="t-chi">{{ chiSiamo.titolo }}</h2>
-          <p>{{ chiSiamo.testo }}</p>
+          <h2 id="t-chi">{{ c().associazione.titolo }}</h2>
+          <p>{{ c().associazione.testo }}</p>
         </div>
         <div class="chi-scudo" aria-hidden="true"><fidc-emblema-tema tipo="verifica" [vivo]="true"></fidc-emblema-tema></div>
       </div>
 
-      <dl class="numeri">
-        @for (n of chiSiamo.numeri; track n.label; let i = $index) {
-          <div class="numero" [fidcReveal]="i * 80">
-            <dt>{{ n.label }}</dt>
-            <dd [fidcConteggio]="n.valore">{{ n.valore }}</dd>
-          </div>
-        }
-      </dl>
+      @if (c().associazione.numeri.length) {
+        <dl class="numeri" [style.--n]="c().associazione.numeri.length">
+          @for (n of c().associazione.numeri; track i; let i = $index) {
+            <div class="numero" [fidcReveal]="i * 80">
+              <dt>{{ n.etichetta }}</dt>
+              <dd [fidcConteggio]="n.valore">{{ n.valore }}</dd>
+            </div>
+          }
+        </dl>
+      }
 
+      @if (c().associazione.impegni.length) {
       <div class="missione">
-        <h3>{{ missione.titolo }}</h3>
+        <h3>{{ c().associazione.missioneTitolo }}</h3>
         <ul>
-          @for (m of missione.impegni; track m.titolo; let i = $index) {
+          @for (m of c().associazione.impegni; track i; let i = $index) {
             <li [fidcReveal]="i * 90">
               <h4>{{ m.titolo }}</h4>
               <p>{{ m.testo }}</p>
@@ -120,6 +144,9 @@
         </ul>
       </div>
 
+      }
+
+      @if (c().associazione.governance.length) {
       <div class="governance" id="governance">
         <div class="gov-testa" fidcReveal>
           <h3>Governance e fondatori</h3>
@@ -127,7 +154,7 @@
              a garanzia di indipendenza, competenza e trasparenza.</p>
         </div>
         <ul class="gov-griglia">
-          @for (m of governance; track m.nome; let i = $index) {
+          @for (m of c().associazione.governance; track i; let i = $index) {
             <li class="gov-card" [fidcReveal]="i * 60">
               <fidc-emblema-tema class="gov-emblema" [tipo]="m.emblema" aria-hidden="true"></fidc-emblema-tema>
               <div>
@@ -138,11 +165,16 @@
           }
         </ul>
       </div>
+      }
     </div>
   </section>
 
   <!-- ============================== PROGETTI ============================= -->
-  <section class="sezione tone-dark" id="progetti" aria-labelledby="t-progetti">
+  <!-- Le tre sezioni seguenti compaiono solo se hanno contenuti; il tono (scuro
+       o chiaro) si alterna fra quelle presenti, così due fasce uguali non si
+       toccano mai. -->
+  @if (sezioni().progetti) {
+  <section class="sezione" [class]="tono('progetti')" id="progetti" aria-labelledby="t-progetti">
     <div class="container">
       <header class="sezione-testa" fidcReveal>
         <h2 id="t-progetti">Progetti in evidenza</h2>
@@ -151,7 +183,7 @@
       </header>
 
       <div class="progetti">
-        @for (p of progetti; track p.codice; let i = $index) {
+        @for (p of c().progetti; track p.codice; let i = $index) {
           <article class="progetto brackets" [fidcReveal]="i * 90">
             @if (i === 0) { <fidc-emblema-tema class="progetto-emblema" [tipo]="p.emblema" aria-hidden="true"></fidc-emblema-tema> }
             <div class="progetto-meta">
@@ -166,9 +198,11 @@
       </div>
     </div>
   </section>
+  }
 
   <!-- =============================== EVENTI ============================== -->
-  <section class="sezione tone-light precision-grid" id="eventi" aria-labelledby="t-eventi" aria-live="polite">
+  @if (caricamento() || sezioni().eventi) {
+  <section class="sezione" [class]="tono('eventi')" id="eventi" aria-labelledby="t-eventi" aria-live="polite">
     <div class="container">
       <header class="sezione-testa sezione-testa-riga" fidcReveal>
         <div>
@@ -186,13 +220,16 @@
       } @else {
         <ul class="eventi">
           @for (e of eventi(); track e.id; let i = $index) {
-            <li class="evento brackets" [fidcReveal]="i * 80">
+            <li class="evento brackets" [class.in-evidenza]="i === 0 && evidenzia(e)" [fidcReveal]="i * 80">
               <time class="evento-data" [attr.datetime]="e.dataInizio">
                 <span class="giorno">{{ e.dataInizio | date:'dd' }}</span>
                 <span class="mese">{{ e.dataInizio | date:'MMM yyyy' }}</span>
               </time>
               <div class="evento-corpo">
-                <span class="badge">{{ etichetta(e.pilastro) }}</span>
+                <p class="evento-meta">
+                  <span class="badge">{{ etichetta(e.pilastro) }}</span>
+                  @if (imminenza(e); as q) { <span class="badge imminenza" [class.badge-strong]="evidenzia(e)">{{ q }}</span> }
+                </p>
                 <h3><a class="esteso" [routerLink]="['/eventi', e.id]">{{ e.titolo }}</a></h3>
                 <p>{{ e.sottotitolo || e.descrizione }}</p>
               </div>
@@ -200,15 +237,20 @@
                 <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 22s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12z" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="10" r="2.5" fill="currentColor"/></svg>
                 <span>{{ e.luogo }}</span>
               </div>
+              @if (i === 0 && evidenzia(e)) {
+                <a class="btn-primary evento-cta" [routerLink]="['/eventi', e.id]" tabindex="-1" aria-hidden="true">Iscriviti</a>
+              }
             </li>
           }
         </ul>
       }
     </div>
   </section>
+  }
 
   <!-- ================================ NEWS =============================== -->
-  <section class="sezione tone-dark" id="news" aria-labelledby="t-news">
+  @if (caricamento() || sezioni().news) {
+  <section class="sezione" [class]="tono('news')" id="news" aria-labelledby="t-news">
     <div class="container">
       <header class="sezione-testa" fidcReveal>
         <h2 id="t-news">Dalla Federazione</h2>
@@ -242,14 +284,15 @@
       }
     </div>
   </section>
+  }
 
   <!-- ============================= NEWSLETTER ============================ -->
   <section class="newsletter tone-signal" id="newsletter" aria-labelledby="t-nl">
     <div class="container nl-inner">
       <div class="nl-testo">
         <fidc-emblema-tema class="nl-sigillo" tipo="busta" aria-hidden="true"></fidc-emblema-tema>
-        <h2 id="t-nl">{{ nl.titolo }}</h2>
-        <p>{{ nl.testo }}</p>
+        <h2 id="t-nl">{{ c().newsletter.titolo }}</h2>
+        <p>{{ c().newsletter.testo }}</p>
       </div>
 
       @if (nlStato() === 'ok') {
@@ -272,7 +315,7 @@
                  aria-describedby="nl-nota" />
           <button class="btn-accent" type="submit" [disabled]="nlStato() === 'invio'">
             @if (nlStato() === 'invio') { <span class="spinner" aria-hidden="true"></span> Iscrizione in corso }
-            @else { {{ nl.cta }} }
+            @else { {{ c().newsletter.cta }} }
           </button>
           <p class="nl-nota" id="nl-nota">
             @if (nlStato() === 'errore') { <span class="nl-errore" role="alert">{{ nlErrore() }}</span> }

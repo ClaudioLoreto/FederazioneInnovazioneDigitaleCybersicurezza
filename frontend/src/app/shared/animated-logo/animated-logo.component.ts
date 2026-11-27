@@ -28,9 +28,9 @@
 //     leggibile su ogni velo.
 // =============================================================================
 
-import { Component, Input } from '@angular/core';
+import { Component, Input, computed, inject } from '@angular/core';
 import { NgIf } from '@angular/common';
-import { BRAND } from '../../content/home-content';
+import { ContenutiService } from '../../services/contenuti.service';
 
 @Component({
   selector: 'fidc-animated-logo',
@@ -42,9 +42,15 @@ import { BRAND } from '../../content/home-content';
          class="fidc-logo"
          xmlns="http://www.w3.org/2000/svg"
          role="img"
-         [attr.aria-label]="nome">
+         [attr.aria-label]="nome()">
 
       <!-- ============ SIMBOLO: scudo sfaccettato ============ -->
+      <!-- Simbolo alternativo caricato dalla redazione (Contenuti del sito → Identità). -->
+      @if (simbolo()) {
+        <g [attr.transform]="soloSimbolo ? null : 'translate(18 12) scale(1.57)'">
+          <image [attr.href]="simbolo()" x="0" y="0" width="100" height="112" preserveAspectRatio="xMidYMid meet"/>
+        </g>
+      } @else {
       <g class="mark" [attr.transform]="soloSimbolo ? null : 'translate(18 12) scale(1.57)'">
         <path class="scudo" d="M50 4 L92 16 V52 C92 78 74 96 50 108 C26 96 8 78 8 52 V16 Z"/>
         <!-- Faccia alta, più chiara: la luce arriva dall'alto -->
@@ -57,14 +63,15 @@ import { BRAND } from '../../content/home-content';
         <!-- Il punto d'incontro: la Federazione -->
         <circle class="punto" cx="50" cy="47" r="4.6"/>
       </g>
+      }
 
       <!-- ============ NOME PER ESTESO ============ -->
       <!-- Tre righe invece di una: alla larghezza a cui il marchio viene usato
            davvero, una riga sola costringerebbe a caratteri illeggibili. -->
       <g class="nome" *ngIf="!soloSimbolo" transform="translate(212, 0)">
-        <text class="riga-1" x="0" y="72">{{ righe[0] }}</text>
-        <text class="riga-2" x="0" y="112">{{ righe[1] }}</text>
-        <text class="riga-2" x="0" y="148">{{ righe[2] }}</text>
+        <text class="riga-1" x="0" y="72">{{ righe()[0] }}</text>
+        <text class="riga-2" x="0" y="112">{{ righe()[1] }}</text>
+        <text class="riga-2" x="0" y="148">{{ righe()[2] }}</text>
         <line class="filo" x1="0" y1="164" x2="300" y2="164" stroke-width="2"/>
       </g>
     </svg>
@@ -108,7 +115,9 @@ export class AnimatedLogoComponent {
    */
   @Input() soloSimbolo = false;
 
-  /** Nome per esteso, su tre righe: arriva da BRAND per poterlo sostituire. */
-  readonly righe = BRAND.righeMarchio;
-  readonly nome = BRAND.nome;
+  /** Nome per esteso, su tre righe, e simbolo: modificabili dal backoffice. */
+  private readonly contenuti = inject(ContenutiService);
+  readonly righe = computed(() => this.contenuti.attuali().identita.righeMarchio);
+  readonly nome = computed(() => this.contenuti.attuali().identita.nome);
+  readonly simbolo = computed(() => this.contenuti.attuali().identita.simbolo.trim());
 }

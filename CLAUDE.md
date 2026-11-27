@@ -19,7 +19,7 @@ Il progetto implementa **esattamente** le feature descritte in
 
 | # | Feature richiesta | Stato | Dove |
 |---|-------------------|-------|------|
-| 1 | **CMS** (gestione contenuti dal backoffice) | ✅ | `pages/admin/*` + `*Controller.cs` |
+| 1 | **CMS** (gestione contenuti dal backoffice) | ✅ frontend · 🟡 `/api/contenuti` da fare | `pages/admin/*` (incl. `contenuti-admin`) + `*Controller.cs` · `docs/CONTENUTI.md` |
 | 2 | **News** (pubblicazione + gestione) | ✅ | `news-admin` · `news-dettaglio` · `NewsController` |
 | 3 | **Eventi** (pubblicazione + iscrizioni) | ✅ | `eventi-admin` (pannello Iscritti + CSV) · `evento-dettaglio` (iscrizione pubblica) · `EventiController` · `IscrizioniController` |
 | 4 | **Registrazione utenti** (con conferma email) | ✅ | `registrazione` · `AuthController` |
@@ -40,7 +40,8 @@ Il progetto implementa **esattamente** le feature descritte in
 ```
                 ┌──────────────────────────────────────────┐
    BACKEND/DB ──►  CONTENUTO (eventi, news, documenti…)     │  ← UNICA sorgente
-                │  + copy istituzionale in home-content.ts  │
+                │  + testi del sito (/api/contenuti,        │
+                │    partenza in home-content.ts)           │
                 └───────────────────┬──────────────────────┘
                                     │  render UNA volta
                           ┌─────────▼─────────┐
@@ -159,6 +160,14 @@ piastra a scudo scura con bordo sfumato viola→pesca e un simbolo al tratto pes
 (verifica, lucchetto, chiave, impronta, rete, documento, bilancia, libro, grafico,
 chip, calendario, persona, busta, bussola, monitor). Ogni emblema sta dove il suo simbolo ha senso
 (pilastri, newsletter, accesso, registrazione…). Niente icone di altri stili accanto.
+
+**Contenuti** (`docs/CONTENUTI.md`): ogni testo e dato del sito pubblico si modifica da
+Backoffice → Contenuti del sito (`ContenutiService`). **Niente dati inventati**: i valori
+di partenza sono solo testo istituzionale; numeri, governance, progetti e recapiti partono
+vuoti; niente eventi o news di riserva. Una sezione vuota non compare (né la sua voce di
+menu) e le fasce chiare/scure si alternano fra quelle presenti. Eventi entro 14 giorni:
+"Oggi / Domani / Tra N giorni"; entro 7: scheda in evidenza e fascia sotto l'apertura
+(dopo l'annuncio, prima dell'ultima news). Anteprima della bozza prima di salvare.
 
 **Riscontro delle azioni**: ogni salvataggio o eliminazione nel backoffice mostra un
 avviso (`AvvisiService`) con lo stesso verbo del bottone. Gli errori restano nel

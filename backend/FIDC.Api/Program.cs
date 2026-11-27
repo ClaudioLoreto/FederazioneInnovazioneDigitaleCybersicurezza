@@ -165,8 +165,10 @@ if (app.Environment.IsDevelopment())
     else
         db.Database.Migrate();
 
-    // Popola il DB con dati realistici della Federazione (idempotente).
-    await FIDC.Dal.Seeding.DataSeeder.SeedAsync(db);
+    // Al primo avvio: tema e account della Direzione. I dati dimostrativi
+    // (eventi, news, documenti di esempio) solo se Seed:DatiDimostrativi = true.
+    var datiDimostrativi = app.Configuration.GetValue<bool>("Seed:DatiDimostrativi");
+    await FIDC.Dal.Seeding.DataSeeder.SeedAsync(db, datiDimostrativi);
 }
 
 // -----------------------------------------------------------------------------

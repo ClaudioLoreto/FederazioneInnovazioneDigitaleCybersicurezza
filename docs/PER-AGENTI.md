@@ -67,11 +67,14 @@ Non manca un file “segreto” del progetto: mancano solo le cose rigenerabili.
 
 ## 3. Credenziali di prova (tutti i ruoli)
 
-Le crea il seeder al primo avvio. Password unica di sviluppo: `Fidc#2026!`
+Il seeder crea sempre e solo la **Direzione**. I due Relatori (e eventi, news,
+documenti di esempio) solo con `Seed:DatiDimostrativi = true` su un database nuovo.
+Password unica di sviluppo: `Fidc#2026!`. Niente dati inventati in produzione:
+i contenuti si inseriscono dal backoffice (Contenuti del sito, Eventi, News, Documenti).
 
 | Chi è | Email | Ruolo interno | Etichetta in interfaccia | A cosa serve provarlo |
 |---|---|---|---|---|
-| Lorenzo De Santis | `direzione@fidc.it` | `SuperUser` | **Direzione** | Vede tutto: utenti, newsletter, tema |
+| Direzione Federazione | `direzione@fidc.it` | `SuperUser` | **Direzione** | Vede tutto: utenti, newsletter, tema |
 | Giulia Ferraro | `g.ferraro@fidc.it` | `Relatore` | **Redazione** | Vede solo i propri eventi e le proprie news |
 | Marco Bianchi | `m.bianchi@fidc.it` | `Relatore` | **Redazione** | Stesso ruolo, **altri** contenuti: serve a verificare i permessi |
 

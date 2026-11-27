@@ -8,10 +8,11 @@
 //  che scorre fino alla sezione. Altrove si torna alla home con l'ancora.
 // =============================================================================
 
-import { Component, EventEmitter, Input, NgZone, OnDestroy, OnInit, Output, inject, signal } from '@angular/core';
+import { Component, EventEmitter, Input, NgZone, OnDestroy, OnInit, Output, computed, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { AnimatedLogoComponent } from '../animated-logo/animated-logo.component';
 import { MENU } from '../../content/home-content';
+import { VetrinaService } from '../../services/vetrina.service';
 
 @Component({
   selector: 'fidc-testata-pubblica',
@@ -31,11 +32,18 @@ export class TestataPubblicaComponent implements OnInit, OnDestroy {
   /** Richiesta di scorrere a una sezione (solo con home = true). */
   @Output() vai = new EventEmitter<string>();
 
-  readonly menu = MENU;
+  private readonly vetrina = inject(VetrinaService);
+
+  /** Voci del menu: quelle di sezioni senza contenuti non compaiono. */
+  readonly menu = computed(() => {
+    const s = this.vetrina.sezioni();
+    return MENU.filter((v) => !v.serve || s[v.serve]);
+  });
   readonly menuAperto = signal(false);
   readonly scorsa = signal(false);
 
   ngOnInit(): void {
+    this.vetrina.carica();
     if (typeof window === 'undefined') return;
     this.zone.runOutsideAngular(() => window.addEventListener('scroll', this.onScroll, { passive: true }));
     this.onScroll();

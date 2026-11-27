@@ -20,7 +20,7 @@
 // =============================================================================
 
 import {
-  Component, ElementRef, HostListener, Input, ViewChild, computed, forwardRef, signal
+  Component, ElementRef, HostListener, Input, ViewChild, forwardRef, signal
 } from '@angular/core';
 import { NgFor, NgIf } from '@angular/common';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
@@ -97,8 +97,8 @@ export interface OpzioneSelezione {
     /* Freccia disegnata con i bordi: nessuna icona da caricare e segue il tema. */
     .freccia {
       flex: none; width: 8px; height: 8px;
-      border-right: 2px solid var(--accent);
-      border-bottom: 2px solid var(--accent);
+      border-right: 2px solid var(--signal);
+      border-bottom: 2px solid var(--signal);
       transform: rotate(45deg) translate(-2px, -2px);
       transition: transform .22s var(--ease-spatial);
     }
@@ -160,10 +160,14 @@ export class SelezioneComponent implements ControlValueAccessor {
   /** Voce evidenziata mentre si naviga da tastiera. */
   readonly indice = signal(0);
 
-  /** Voce corrispondente al valore corrente. */
-  readonly selezionata = computed(() =>
-    this.opzioni.find((o) => o.valore === this.valore)
-  );
+  /**
+   * Voce corrispondente al valore corrente. È un metodo e non un computed:
+   * `valore` e `opzioni` non sono signal (li scrivono Angular e il modulo), e un
+   * computed resterebbe fermo al primo valore, mostrando "Seleziona…" per sempre.
+   */
+  selezionata(): OpzioneSelezione | undefined {
+    return this.opzioni.find((o) => o.valore === this.valore);
+  }
 
   /** Lettere digitate di recente, per la ricerca rapida. */
   private ricerca = '';

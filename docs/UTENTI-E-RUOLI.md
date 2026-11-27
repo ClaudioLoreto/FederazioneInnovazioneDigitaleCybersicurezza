@@ -4,15 +4,22 @@
 
 ## 1. Credenziali per le prove
 
-Questi tre account vengono creati automaticamente al primo avvio dell'API
-(`backend/FIDC.Dal/Seeding/DataSeeder.cs`). Servono per provare la piattaforma con
-ruoli diversi. Accesso da <http://localhost:4200/admin/login>.
+Al primo avvio l'API crea **solo l'account della Direzione** (`direzione@fidc.it`):
+eventi, news, documenti e testi del sito si inseriscono dal backoffice.
+I due Relatori e i contenuti di esempio esistono solo se in
+`backend/FIDC.Api/appsettings.Development.json` metti `"Seed": { "DatiDimostrativi": true }`
+e parti da un database nuovo (cancella `fidc_dev.db`). Accesso da <http://localhost:4200/admin/login>.
+
+> Non ci sono più ruoli fissi: i permessi di ciascuno si assegnano nella sezione
+> **Permessi** del backoffice (vedi [PERMESSI.md](PERMESSI.md)). Finché il server non
+> salva i permessi, `SuperUser` vale come Direzione e `Relatore` come autore che
+> pubblica da sé.
 
 | Nome e cognome | Email (nome utente) | Password | Ruolo tecnico | Cosa vede |
 |---|---|---|---|---|
-| Lorenzo De Santis | `direzione@fidc.it` | `Fidc#2026!` | `SuperUser` | Tutto il backoffice |
-| Giulia Ferraro | `g.ferraro@fidc.it` | `Fidc#2026!` | `Relatore` | Solo i propri contenuti |
-| Marco Bianchi | `m.bianchi@fidc.it` | `Fidc#2026!` | `Relatore` | Solo i propri contenuti |
+| Direzione Federazione | `direzione@fidc.it` | `Fidc#2026!` | `SuperUser` | Tutto il backoffice |
+| Giulia Ferraro | `g.ferraro@fidc.it` | `Fidc#2026!` | `Relatore` | Solo i propri contenuti (solo con dati dimostrativi) |
+| Marco Bianchi | `m.bianchi@fidc.it` | `Fidc#2026!` | `Relatore` | Solo i propri contenuti (solo con dati dimostrativi) |
 
 > La password è la stessa per tutti ed è definita in un unico punto
 > (`DataSeeder.PasswordDefault`). Vale **solo** per gli ambienti di sviluppo e demo:

@@ -17,7 +17,7 @@ import { TestataPubblicaComponent } from '../../shared/pubblico/testata-pubblica
 import { PiedePubblicoComponent } from '../../shared/pubblico/piede-pubblico.component';
 import { IllustrazioneComponent, ScenaIllustrazione } from '../../shared/illustrazioni/illustrazione.component';
 import { etichettaPilastro } from '../../shared/opzioni';
-import { newsDiRiserva } from '../../content/home-content';
+import { VetrinaService } from '../../services/vetrina.service';
 
 @Component({
   selector: 'fidc-news-dettaglio',
@@ -89,9 +89,15 @@ import { newsDiRiserva } from '../../content/home-content';
       }
     } @else {
       <section class="tone-dark"><div class="container stato-pagina">
-        <h1>Questa notizia non è disponibile</h1>
-        <p>Potrebbe essere stata rimossa o non essere ancora pubblicata.</p>
-        <a class="btn-primary" routerLink="/" fragment="news">Torna alle notizie</a>
+        @if (irraggiungibile()) {
+          <h1>Non riusciamo a caricare la notizia</h1>
+          <p>Il servizio non risponde in questo momento. Riprova tra qualche minuto.</p>
+          <a class="btn-primary" routerLink="/">Torna alla home</a>
+        } @else {
+          <h1>Questa notizia non è disponibile</h1>
+          <p>Potrebbe essere stata rimossa o non essere ancora pubblicata.</p>
+          <a class="btn-primary" routerLink="/" fragment="news">Torna alle notizie</a>
+        }
       </div></section>
     }
     }
@@ -107,7 +113,11 @@ export class NewsDettaglioComponent implements OnInit {
   private readonly meta = inject(Meta);
 
   readonly news = signal<News | null>(null);
-  readonly tutte = signal<News[]>([]);
+  private readonly vetrina = inject(VetrinaService);
+  /** Tutte le news pubblicate (per "altre news"). */
+  readonly tutte = computed(() => this.vetrina.news() ?? []);
+  /** Il server non ha risposto (diverso da "news inesistente"). */
+  readonly irraggiungibile = signal(false);
   readonly caricamento = signal(true);
   readonly copiato = signal(false);
 
@@ -134,15 +144,11 @@ export class NewsDettaglioComponent implements OnInit {
 
   ngOnInit(): void {
     this.route.paramMap.subscribe((p: ParamMap) => this.carica(Number(p.get('id'))));
-    this.api.getNews().subscribe({
-      next: (l) => this.tutte.set(l.length ? l : newsDiRiserva()),
-      error: () => this.tutte.set(newsDiRiserva())
-    });
+    this.vetrina.carica();
   }
 
   private carica(id: number): void {
     this.caricamento.set(true);
-    const riserva = () => newsDiRiserva().find((n) => n.id === id) ?? null;
     const imposta = (n: News | null) => {
       this.news.set(n);
       this.caricamento.set(false);
@@ -153,10 +159,9 @@ export class NewsDettaglioComponent implements OnInit {
         this.meta.updateTag({ property: 'og:description', content: n.sommario });
       }
     };
-    if (id < 0) { imposta(riserva()); return; }
     this.api.getNewsDettaglio(id).subscribe({
       next: imposta,
-      error: (err: HttpErrorResponse) => imposta(err.status === 404 ? null : riserva())
+      error: (err: HttpErrorResponse) => { imposta(null); this.irraggiungibile.set(err.status !== 404); }
     });
   }
 

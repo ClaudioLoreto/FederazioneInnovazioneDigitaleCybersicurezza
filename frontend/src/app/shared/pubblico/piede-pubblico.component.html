@@ -1,17 +1,23 @@
 <!-- ================================ PIEDE ================================ -->
-<footer class="piede tone-dark" id="contatti" aria-labelledby="t-contatti">
+<footer class="piede tone-dark" id="contatti" [attr.aria-labelledby]="haContatti() ? 't-contatti' : null" aria-label="Piè di pagina">
   <div class="container piede-griglia">
     <div class="piede-marchio">
       <fidc-animated-logo [interactive]="false"></fidc-animated-logo>
-      <p>Organizzazione indipendente e senza scopo di lucro per un'Italia digitale più sicura,
-         inclusiva e competente.</p>
+      @if (identita().descrizione) { <p>{{ identita().descrizione }}</p> }
+      @if (social().length) {
       <ul class="social" aria-label="La Federazione sui social">
-        @for (s of contatti.social; track s.rete) {
+        @for (s of social(); track s.rete) {
           <li>
             <a [href]="s.url" target="_blank" rel="noopener" [attr.aria-label]="s.rete + ' (si apre in una nuova scheda)'">
               @switch (s.rete) {
                 @case ('LinkedIn') {
                   <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.98 3.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5zM3 9.5h4V21H3zM9.5 9.5h3.8v1.6h.1c.5-1 1.8-2 3.8-2 4 0 4.8 2.6 4.8 6V21h-4v-5.1c0-1.2 0-2.8-1.7-2.8s-2 1.3-2 2.7V21h-4z" fill="currentColor"/></svg>
+                }
+                @case ('YouTube') {
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21.6 7.2a2.6 2.6 0 0 0-1.8-1.8C18.2 5 12 5 12 5s-6.2 0-7.8.4a2.6 2.6 0 0 0-1.8 1.8C2 8.8 2 12 2 12s0 3.2.4 4.8a2.6 2.6 0 0 0 1.8 1.8C5.8 19 12 19 12 19s6.2 0 7.8-.4a2.6 2.6 0 0 0 1.8-1.8c.4-1.6.4-4.8.4-4.8s0-3.2-.4-4.8zM10 15V9l5.2 3z" fill="currentColor"/></svg>
+                }
+                @case ('X') {
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17.8 3h3.1l-6.8 7.7L22 21h-6.2l-4.9-6.4L5.3 21H2.2l7.3-8.3L2 3h6.4l4.4 5.8zm-1.1 16.2h1.7L7.4 4.7H5.6z" fill="currentColor"/></svg>
                 }
                 @case ('Facebook') {
                   <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 8.5V6.8c0-.8.2-1.3 1.4-1.3H17V2.2c-.3 0-1.3-.2-2.5-.2-2.5 0-4.2 1.5-4.2 4.3v2.2H7.6V12h2.7v10H14V12h2.7l.4-3.5z" fill="currentColor"/></svg>
@@ -24,19 +30,22 @@
           </li>
         }
       </ul>
+      }
     </div>
 
+    @if (haContatti()) {
     <div class="piede-col">
       <h2 id="t-contatti">Contatti</h2>
       <address>
-        <p>{{ contatti.sede }}</p>
-        <p><span class="etichetta">Email</span> <a [href]="'mailto:' + contatti.email">{{ contatti.email }}</a></p>
-        <p><span class="etichetta">PEC</span> <a [href]="'mailto:' + contatti.pec">{{ contatti.pec }}</a></p>
-        <p><span class="etichetta">Telefono</span> <a [href]="'tel:' + soloCifre(contatti.telefono)">{{ contatti.telefono }}</a></p>
-        <p><span class="etichetta">WhatsApp</span> <a [href]="'https://wa.me/' + soloCifre(contatti.whatsapp)" target="_blank" rel="noopener">{{ contatti.whatsapp }}</a></p>
-        <p class="orari">{{ contatti.orari }}</p>
+        @if (contatti().sede) { <p>{{ contatti().sede }}</p> }
+        @if (contatti().email) { <p><span class="etichetta">Email</span> <a [href]="'mailto:' + contatti().email">{{ contatti().email }}</a></p> }
+        @if (contatti().pec) { <p><span class="etichetta">PEC</span> <a [href]="'mailto:' + contatti().pec">{{ contatti().pec }}</a></p> }
+        @if (contatti().telefono) { <p><span class="etichetta">Telefono</span> <a [href]="'tel:' + soloCifre(contatti().telefono)">{{ contatti().telefono }}</a></p> }
+        @if (contatti().whatsapp) { <p><span class="etichetta">WhatsApp</span> <a [href]="'https://wa.me/' + soloCifre(contatti().whatsapp)" target="_blank" rel="noopener">{{ contatti().whatsapp }}</a></p> }
+        @if (contatti().orari) { <p class="orari">{{ contatti().orari }}</p> }
       </address>
     </div>
+    }
 
     <nav class="piede-col" aria-label="Collegamenti utili">
       <h2>Per i soci</h2>
@@ -51,7 +60,7 @@
 
   <div class="container">
     <div class="piede-fondo">
-      <p>© {{ anno }} {{ brand.nome }}</p>
+      <p>© {{ anno }} {{ identita().nome }}</p>
       <a href="/" (click)="naviga('inizio', $event)">Torna su</a>
     </div>
   </div>

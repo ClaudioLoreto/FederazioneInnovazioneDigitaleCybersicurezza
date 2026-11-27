@@ -9,7 +9,7 @@
     </a>
 
     <nav class="nav-desktop" aria-label="Sezioni del sito">
-      @for (v of menu; track v.label) {
+      @for (v of menu(); track v.label) {
         <a [href]="'/#' + v.ancora" (click)="naviga(v.ancora!, $event)"
            [class.attiva]="attiva === v.ancora"
            [attr.aria-current]="attiva === v.ancora ? 'location' : null">{{ v.label }}</a>
@@ -41,7 +41,7 @@
       </button>
     </div>
     <ul>
-      @for (v of menu; track v.label; let i = $index) {
+      @for (v of menu(); track v.label; let i = $index) {
         <li [style.--i]="i">
           <a [href]="'/#' + v.ancora" (click)="naviga(v.ancora!, $event)" [tabindex]="menuAperto() ? 0 : -1">
             {{ v.label }}

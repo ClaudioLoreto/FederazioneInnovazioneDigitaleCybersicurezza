@@ -90,6 +90,11 @@ Il frontend è pronto e oggi ricava i permessi dal ruolo storico. Il contratto
 completo (login, `PUT /utenti/{id}/permessi`, stati dei contenuti, `approva`,
 `rimanda`, migrazione dei dati) è in `docs/PERMESSI.md`.
 
+### 5.2 Contenuti del sito sul server
+`GET/PUT /api/contenuti` e tabella `ImpostazioniSito`: contratto in `docs/CONTENUTI.md`.
+Finché manca, il sito usa i testi di partenza e il salvataggio dal backoffice dà errore
+(l'anteprima funziona).
+
 ## Fatto
 
 | Data | Intervento | Dove |
@@ -139,3 +144,6 @@ completo (login, `PUT /utenti/{id}/permessi`, stati dei contenuti, `approva`,
 | 2026-11-27 | Matrice dei permessi al posto dei ruoli fissi (Socio, Redazione, Direzione) con modelli rapidi | `permessi-admin`, `shared/permessi.ts` |
 | 2026-11-27 | Flusso di revisione su news, eventi e documenti: bozza, invio, approvazione, rimando con nota | `shared/flusso.ts`, `*-admin` |
 | 2026-11-27 | Pannello: "da approvare" e "rimandati" in testa; azioni e riquadri secondo i permessi | `dashboard-home` |
+| 2026-11-27 | Contenuti del sito modificabili dal backoffice, con anteprima e salvataggio in blocco | `contenuti-admin`, `ContenutiService` |
+| 2026-11-27 | Tolti i dati inventati (eventi/news di riserva, numeri, governance, progetti, recapiti); sezioni vuote nascoste | `home-content.ts`, `VetrinaService`, `DataSeeder` |
+| 2026-11-27 | Eventi imminenti in evidenza da soli; annuncio con scadenza; news ed evento in evidenza a scelta | `landing`, `VetrinaService` |

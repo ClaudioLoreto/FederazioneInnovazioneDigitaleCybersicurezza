@@ -264,6 +264,7 @@ export class AdminShellComponent {
     { label: 'Documenti', rotta: '/admin/documenti', serve: permessiArea('documenti'), icona: 'M4 7h6l2 2h8v10H4zM12 12v5M9.5 14.5L12 17l2.5-2.5' },
     { label: 'Account', rotta: '/admin/utenti', serve: ['utenti.gestire'], gruppo: 'Amministrazione', icona: 'M9 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM3 20c0-3.3 2.7-6 6-6s6 2.7 6 6M16 4.5a3.5 3.5 0 0 1 0 6.5M18 14c2 .8 3 3 3 6' },
     { label: 'Newsletter', rotta: '/admin/newsletter', serve: ['newsletter.gestire'], icona: 'M3 6h18v12H3zM3 7l9 6 9-6' },
+    { label: 'Contenuti del sito', rotta: '/admin/contenuti', serve: ['sito.contenuti'], icona: 'M4 4h16v6H4zM4 14h7v6H4zM14 14h6M14 17h6M14 20h4' },
     { label: 'Aspetto del sito', rotta: '/admin/impostazioni', serve: ['sito.aspetto'], icona: 'M12 3a9 9 0 1 0 0 18c1.1 0 1.5-.8 1.5-1.6 0-1.2-1-1.6-1-2.6 0-.9.7-1.5 1.6-1.5H17a4 4 0 0 0 4-4c0-4.6-4-8.3-9-8.3zM7.5 12.5h.01M9.5 8h.01M14.5 8h.01' },
     { label: 'Permessi', rotta: '/admin/permessi', soloDirezione: true, icona: 'M12 3l7 3v5c0 4.6-3 8.4-7 10-4-1.6-7-5.4-7-10V6zM9 12l2 2 4-4' }
   ];
@@ -274,7 +275,7 @@ export class AdminShellComponent {
     const visibili = this.voci.filter((v) =>
       v.soloDirezione ? direzione : !v.serve || this.auth.puoUno(v.serve));
     // L'intestazione del gruppo va sulla prima voce visibile del gruppo.
-    const ammin = visibili.findIndex((v) => ['/admin/utenti', '/admin/newsletter', '/admin/impostazioni', '/admin/permessi'].includes(v.rotta));
+    const ammin = visibili.findIndex((v) => ['/admin/utenti', '/admin/newsletter', '/admin/contenuti', '/admin/impostazioni', '/admin/permessi'].includes(v.rotta));
     return visibili.map((v, i) => ({ ...v, gruppo: i === ammin ? 'Amministrazione' : undefined }));
   });
 

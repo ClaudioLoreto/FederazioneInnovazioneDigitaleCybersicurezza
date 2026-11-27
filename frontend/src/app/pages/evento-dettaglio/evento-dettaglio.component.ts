@@ -22,7 +22,7 @@ import { TestataPubblicaComponent } from '../../shared/pubblico/testata-pubblica
 import { PiedePubblicoComponent } from '../../shared/pubblico/piede-pubblico.component';
 import { IllustrazioneComponent, ScenaIllustrazione } from '../../shared/illustrazioni/illustrazione.component';
 import { etichettaPilastro } from '../../shared/opzioni';
-import { eventiDiRiserva } from '../../content/home-content';
+import { VetrinaService } from '../../services/vetrina.service';
 
 type StatoIscrizione = 'libero' | 'invio' | 'iscritto' | 'annullamento' | 'errore';
 
@@ -43,9 +43,15 @@ type StatoIscrizione = 'libero' | 'invio' | 'iscritto' | 'annullamento' | 'error
       </div></section>
     } @else if (!evento()) {
       <section class="tone-dark"><div class="container stato-pagina">
-        <h1>Questo evento non è disponibile</h1>
-        <p>Potrebbe essere stato rimosso o non essere ancora pubblicato. Guarda gli altri eventi in programma.</p>
-        <a class="btn-primary" routerLink="/" fragment="eventi">Vedi il calendario</a>
+        @if (irraggiungibile()) {
+          <h1>Non riusciamo a caricare l'evento</h1>
+          <p>Il servizio non risponde in questo momento. Riprova tra qualche minuto.</p>
+          <a class="btn-primary" routerLink="/">Torna alla home</a>
+        } @else {
+          <h1>Questo evento non è disponibile</h1>
+          <p>Potrebbe essere stato rimosso o non essere ancora pubblicato. Guarda gli altri eventi in programma.</p>
+          <a class="btn-primary" routerLink="/" fragment="eventi">Vedi il calendario</a>
+        }
       </div></section>
     } @else { @if (evento(); as e) {
       <section class="tone-dark apertura">
@@ -188,7 +194,11 @@ export class EventoDettaglioComponent implements OnInit, OnDestroy {
   readonly auth = inject(AuthService);
 
   readonly evento = signal<Evento | null>(null);
-  readonly tutti = signal<Evento[]>([]);
+  private readonly vetrina = inject(VetrinaService);
+  /** Tutti gli eventi pubblicati (per "altri eventi"). */
+  readonly tutti = computed(() => this.vetrina.eventi() ?? []);
+  /** Il server non ha risposto (diverso da "evento inesistente"). */
+  readonly irraggiungibile = signal(false);
   readonly caricamento = signal(true);
   readonly stato = signal<StatoIscrizione>('libero');
   readonly messaggio = signal('');
@@ -227,10 +237,7 @@ export class EventoDettaglioComponent implements OnInit, OnDestroy {
     // La pagina resta montata passando da un evento all'altro: si ricarica a
     // ogni cambio di parametro.
     this.route.paramMap.subscribe((p: ParamMap) => this.carica(Number(p.get('id'))));
-    this.api.getEventi().subscribe({
-      next: (l) => this.tutti.set(l.length ? l : eventiDiRiserva()),
-      error: () => this.tutti.set(eventiDiRiserva())
-    });
+    this.vetrina.carica();
   }
 
   ngOnDestroy(): void { this.osservatore?.disconnect(); }
@@ -239,7 +246,6 @@ export class EventoDettaglioComponent implements OnInit, OnDestroy {
     this.caricamento.set(true);
     this.stato.set('libero');
     this.messaggio.set('');
-    const riserva = () => eventiDiRiserva().find((e) => e.id === id) ?? null;
     const imposta = (e: Evento | null) => {
       this.evento.set(e);
       this.caricamento.set(false);
@@ -249,10 +255,9 @@ export class EventoDettaglioComponent implements OnInit, OnDestroy {
         this.meta.updateTag({ property: 'og:title', content: e.titolo });
       }
     };
-    if (id < 0) { imposta(riserva()); return; }
     this.api.getEvento(id).subscribe({
       next: imposta,
-      error: (err: HttpErrorResponse) => imposta(err.status === 404 ? null : riserva())
+      error: (err: HttpErrorResponse) => { imposta(null); this.irraggiungibile.set(err.status !== 404); }
     });
   }
 

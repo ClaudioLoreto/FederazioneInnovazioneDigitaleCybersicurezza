@@ -74,6 +74,9 @@ p  { text-wrap: pretty; }
 // Fuoco portato dal codice (titolo dopo un cambio pagina, inizio contenuto):
 // serve ai lettori di schermo, non va mostrato come un bordo.
 [tabindex='-1']:focus:not(:focus-visible) { outline: none; }
+// Titoli che ricevono il fuoco al cambio di pagina (per i lettori di schermo):
+// non sono comandi, quindi nessun riquadro anche se il cambio è partito da tastiera.
+h1[tabindex='-1']:focus { outline: none; }
 
 // Salto al contenuto per chi naviga da tastiera.
 .skip-link {

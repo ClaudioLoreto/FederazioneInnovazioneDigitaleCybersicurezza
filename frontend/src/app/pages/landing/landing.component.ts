@@ -15,24 +15,24 @@
 // =============================================================================
 
 import {
-  AfterViewInit, Component, ElementRef, NgZone, OnDestroy, OnInit, ViewChild, inject, signal
+  AfterViewInit, Component, ElementRef, Injector, NgZone, OnDestroy, OnInit, ViewChild,
+  afterNextRender, computed, effect, inject, signal
 } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
-import { EmblemaTemaComponent, TemaEmblema } from '../../shared/emblemi/emblema-tema.component';
+import { EmblemaTemaComponent } from '../../shared/emblemi/emblema-tema.component';
 import { IllustrazioneComponent, ScenaIllustrazione } from '../../shared/illustrazioni/illustrazione.component';
 import { EmblemaComponent } from '../../shared/emblema/emblema.component';
 import { TestataPubblicaComponent } from '../../shared/pubblico/testata-pubblica.component';
 import { PiedePubblicoComponent } from '../../shared/pubblico/piede-pubblico.component';
 import { RevealDirective, ConteggioDirective } from '../../shared/motion/reveal.directive';
 import { etichettaPilastro } from '../../shared/opzioni';
-import {
-  CHI_SIAMO, GOVERNANCE, HERO, MISSIONE, NEWSLETTER, PILASTRI, PROGETTI,
-  Pilastro as PilastroHome, eventiDiRiserva, newsDiRiserva
-} from '../../content/home-content';
-import { Evento, FidcApiService, News } from '../../services/fidc-api.service';
+import { ChiavePilastro } from '../../content/home-content';
+import { Evento, FidcApiService } from '../../services/fidc-api.service';
+import { ContenutiService } from '../../services/contenuti.service';
+import { VetrinaService, etichettaImminenza, imminente } from '../../services/vetrina.service';
 
 /**
  * Caratteri usati durante la "decrittazione" dello slogan. Minuscole e cifre
@@ -60,26 +60,25 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
   private readonly api = inject(FidcApiService);
   private readonly zone = inject(NgZone);
   private readonly route = inject(ActivatedRoute);
+  private readonly injector = inject(Injector);
 
   @ViewChild('slogan', { static: true }) private sloganRef!: ElementRef<HTMLElement>;
   @ViewChild('orologio', { static: true }) private orologioRef!: ElementRef<HTMLElement>;
 
   // --- contenuto ---------------------------------------------------------------
-  readonly hero = HERO;
-  readonly pilastri = PILASTRI;
-  readonly chiSiamo = CHI_SIAMO;
-  readonly missione = MISSIONE;
-  readonly governance = GOVERNANCE;
-  readonly progetti = PROGETTI;
-  readonly nl = NEWSLETTER;
+  private readonly servizioContenuti = inject(ContenutiService);
+  private readonly vetrina = inject(VetrinaService);
 
-  /** Dove porta il collegamento in fondo a ogni pilastro aperto. */
-  /** Emblema di ogni pilastro: stessa famiglia dello scudo, un simbolo per tema. */
-  readonly sigilli: Record<PilastroHome['chiave'], TemaEmblema> = {
-    attivita: 'rete', eventi: 'calendario', formazione: 'libro', ricerca: 'grafico'
-  };
+  /** Contenuti da mostrare: quelli pubblicati, o la bozza in anteprima. */
+  readonly c = this.servizioContenuti.attuali;
+  readonly hero = computed(() => this.c().apertura);
+  readonly inAnteprima = computed(() => this.servizioContenuti.anteprima() !== null);
 
-  readonly collegamenti: Record<PilastroHome['chiave'], { ancora: string; label: string }> = {
+  /** Quali sezioni hanno contenuti. */
+  readonly sezioni = this.vetrina.sezioni;
+
+  /** Dove porta il collegamento in fondo a ogni pilastro aperto (solo verso sezioni presenti). */
+  readonly collegamenti: Record<ChiavePilastro, { ancora: string; label: string }> = {
     attivita: { ancora: 'progetti', label: 'Guarda i progetti in corso' },
     eventi: { ancora: 'eventi', label: 'Vedi il calendario degli eventi' },
     formazione: { ancora: 'eventi', label: 'Scopri i prossimi corsi' },
@@ -90,7 +89,8 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
    * Lo slogan diviso nelle sue frasi: su schermo largo stanno su una riga,
    * su schermo medio una frase per riga, su telefono vanno a capo liberamente.
    */
-  readonly righeSlogan = HERO.titolo.split(/(?<=\.)\s+/);
+  readonly righeSlogan = computed(() => this.hero().slogan.map((r) => r.trim()).filter(Boolean));
+  readonly sloganIntero = computed(() => this.righeSlogan().join(' '));
 
   /** Tacche della ghiera strumentale attorno all'emblema (ogni 10°). */
   readonly tacche = Array.from({ length: 36 }, (_, i) => i * 10);
@@ -99,9 +99,53 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
   readonly sezioneAttiva = signal<string | null>(null);
   readonly pilastroAperto = signal<string | null>(null);
 
-  readonly eventi = signal<Evento[]>([]);
-  readonly news = signal<News[]>([]);
-  readonly caricamento = signal(true);
+  /** Fino a quattro prossimi eventi e quattro news (quella in evidenza per prima). */
+  readonly eventi = computed(() => this.vetrina.prossimi().slice(0, 4));
+  readonly news = computed(() => this.vetrina.ultime().slice(0, 4));
+  readonly caricamento = computed(() => this.vetrina.eventi() === null || this.vetrina.news() === null);
+
+  /**
+   * Fascia sotto l'apertura: annuncio attivo e non scaduto, altrimenti un
+   * evento entro una settimana, altrimenti l'ultima news. Nulla se non c'è niente.
+   */
+  readonly fascia = computed(() => {
+    const a = this.c().annuncio;
+    const oggi = new Date().toISOString().slice(0, 10);
+    if (a.attivo && a.testo.trim() && (!a.scadenza || a.scadenza >= oggi)) {
+      const link = a.collegamento.trim();
+      const esterno = /^https?:\/\//.test(link);
+      return { tipo: 'annuncio', etichetta: 'Annuncio', titolo: a.testo.trim(), quando: '',
+               link, interno: !esterno, azione: link ? (a.etichettaCollegamento || 'Leggi') : '' };
+    }
+    const e = this.eventi()[0];
+    if (e && imminente(e)) {
+      return { tipo: 'evento', etichetta: 'Prossimo evento', titolo: e.titolo, quando: etichettaImminenza(e.dataInizio) ?? '',
+               link: '/eventi/' + e.id, interno: true, azione: 'Iscriviti' };
+    }
+    const n = this.news()[0];
+    if (n) {
+      const quando = n.dataPubblicazione ? new Date(n.dataPubblicazione).toLocaleDateString('it-IT', { day: 'numeric', month: 'long' }) : '';
+      return { tipo: 'news', etichetta: 'Ultima notizia', titolo: n.titolo, quando, link: '/news/' + n.id, interno: true, azione: 'Leggi' };
+    }
+    return null;
+  });
+
+  /**
+   * Tono delle sezioni facoltative: alternato fra quelle presenti, a partire
+   * dallo scuro, così due fasce dello stesso colore non si toccano mai.
+   */
+  tono(id: 'progetti' | 'eventi' | 'news'): string {
+    const s = this.sezioni();
+    const caricando = this.caricamento();
+    const presenti = (['progetti', 'eventi', 'news'] as const)
+      .filter((x) => x === 'progetti' ? s.progetti : caricando || s[x]);
+    return presenti.indexOf(id) % 2 === 0 ? 'tone-dark' : 'tone-light precision-grid';
+  }
+
+  /** Etichetta "Oggi / Domani / Tra N giorni" per gli eventi entro due settimane. */
+  imminenza(e: Evento): string | null { return etichettaImminenza(e.dataInizio); }
+  /** Il primo evento diventa una scheda in evidenza se comincia entro una settimana o è stato scelto. */
+  evidenzia(e: Evento): boolean { return imminente(e) || this.c().evidenza.eventoId === e.id; }
 
   nlEmail = '';
   readonly nlStato = signal<'idle' | 'invio' | 'ok' | 'errore'>('idle');
@@ -111,34 +155,9 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
   private spia?: IntersectionObserver;
   private timerOra?: ReturnType<typeof setInterval>;
   private rafSlogan = 0;
-  private attese = 2;
 
   ngOnInit(): void {
-    // Eventi: solo i prossimi, dal più vicino. Se l'API non risponde o non ha
-    // nulla in programma, si mostrano quelli di riserva (stessi del seeder).
-    this.api.getEventi().subscribe({
-      next: (lista) => {
-        const ora = Date.now();
-        const prossimi = lista
-          .filter((e) => e.pubblicato !== false && new Date(e.dataInizio).getTime() >= ora)
-          .sort((a, b) => +new Date(a.dataInizio) - +new Date(b.dataInizio))
-          .slice(0, 4);
-        this.eventi.set(prossimi.length ? prossimi : eventiDiRiserva());
-        this.fineCaricamento();
-      },
-      error: () => { this.eventi.set(eventiDiRiserva()); this.fineCaricamento(); }
-    });
-
-    this.api.getNews().subscribe({
-      next: (lista) => {
-        const ordinate = [...lista]
-          .sort((a, b) => +new Date(b.dataPubblicazione ?? 0) - +new Date(a.dataPubblicazione ?? 0))
-          .slice(0, 4);
-        this.news.set(ordinate.length ? ordinate : newsDiRiserva());
-        this.fineCaricamento();
-      },
-      error: () => { this.news.set(newsDiRiserva()); this.fineCaricamento(); }
-    });
+    this.vetrina.carica();
   }
 
   ngAfterViewInit(): void {
@@ -161,10 +180,18 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
         .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
       if (visibile) this.sezioneAttiva.set(visibile.target.id);
     }, { rootMargin: '-35% 0px -55% 0px', threshold: [0, .25, .5] });
-    for (const id of SEZIONI) {
-      const el = document.getElementById(id);
-      if (el) this.spia.observe(el);
-    }
+    // Le sezioni facoltative compaiono quando arrivano i dati: a ogni cambio si
+    // ricomincia a osservare quelle presenti, dopo che sono state disegnate.
+    effect(() => {
+      this.sezioni(); this.caricamento();
+      afterNextRender(() => {
+        this.spia?.disconnect();
+        for (const id of SEZIONI) {
+          const el = document.getElementById(id);
+          if (el) this.spia?.observe(el);
+        }
+      }, { injector: this.injector });
+    }, { injector: this.injector });
 
     // Arrivando da una pagina interna con un'ancora (/#eventi), si scorre lì.
     // Il ritardo lascia ai contenuti dell'API il tempo di occupare il loro spazio.
@@ -246,10 +273,6 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   // --- privati ------------------------------------------------------------------
-
-  private fineCaricamento(): void {
-    if (--this.attese <= 0) this.caricamento.set(false);
-  }
 
   /**
    * Lo slogan parte cifrato e si rivela da sinistra a destra in circa 1,2 s.
