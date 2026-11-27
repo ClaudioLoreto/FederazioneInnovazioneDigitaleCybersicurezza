@@ -25,3 +25,8 @@ export const VISIBILITA_DOCUMENTO: OpzioneSelezione[] = [
   { valore: 'Pubblico', etichetta: 'Pubblico — visibile a chiunque' },
   { valore: 'Riservato', etichetta: 'Riservato — solo utenti registrati' }
 ];
+
+/** Etichetta leggibile di un pilastro a partire dal valore tecnico. */
+export function etichettaPilastro(valore: string): string {
+  return PILASTRI.find((p) => p.valore === valore)?.etichetta ?? valore;
+}

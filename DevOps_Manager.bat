@@ -55,7 +55,7 @@ if errorlevel 1 (
   echo      Puoi comunque usare SQL Server locale impostando Database:Provider.
 )
 
-echo  [2/3] Avvio backend .NET (FIDC.Api su https://localhost:5001)...
+echo  [2/3] Avvio backend .NET (FIDC.Api su http://localhost:5000)...
 start "FIDC API" cmd /k "cd /d "%API_DIR%" && set ASPNETCORE_ENVIRONMENT=Development && dotnet run"
 
 echo  [3/3] Avvio frontend Angular (http://localhost:4200)...
@@ -63,7 +63,7 @@ start "FIDC Frontend" cmd /k "cd /d "%WEB_DIR%" && npm start"
 
 echo.
 echo  [OK] Ambiente avviato in finestre dedicate:
-echo       - API + Swagger : https://localhost:5001/swagger
+echo       - API + Swagger : http://localhost:5000/swagger
 echo       - Frontend      : http://localhost:4200
 echo.
 pause

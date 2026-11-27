@@ -146,7 +146,22 @@ if (app.Environment.IsDevelopment())
     // EnsureCreated(), così NON servono migration provider-specifiche e il demo
     // parte sempre, anche senza Docker. Per SQL Server/Postgres si usano le migration.
     if (provider.Equals("Sqlite", StringComparison.OrdinalIgnoreCase))
+    {
         db.Database.EnsureCreated();
+
+        // EnsureCreated non aggiorna un database già esistente. Le colonne
+        // aggiunte dopo la creazione del file fidc_dev.db vanno quindi aggiunte
+        // a mano: se esistono già, SQLite risponde con un errore che ignoriamo.
+        try
+        {
+            db.Database.ExecuteSqlRaw(
+                "ALTER TABLE ImpostazioniTema ADD COLUMN EmblemaHero TEXT NOT NULL DEFAULT 'cassaforte'");
+        }
+        catch (Exception ex) when (ex.Message.Contains("duplicate column", StringComparison.OrdinalIgnoreCase))
+        {
+            // Colonna già presente: nessuna azione.
+        }
+    }
     else
         db.Database.Migrate();
 

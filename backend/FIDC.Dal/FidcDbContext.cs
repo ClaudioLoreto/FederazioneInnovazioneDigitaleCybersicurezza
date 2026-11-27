@@ -150,6 +150,7 @@ public class FidcDbContext : DbContext
             e.Property(t => t.ColoreTesto).HasMaxLength(9).IsRequired();
             e.Property(t => t.StileRaggio).HasMaxLength(20).IsRequired();
             e.Property(t => t.AbbinamentoFont).HasMaxLength(20).IsRequired();
+            e.Property(t => t.EmblemaHero).HasMaxLength(20).IsRequired();
             e.HasQueryFilter(t => !t.IsDeleted);
         });
     }

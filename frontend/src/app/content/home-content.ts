@@ -1,10 +1,13 @@
 // =============================================================================
 //  frontend/src/app/content/home-content.ts
 //  COPYWRITING REALE (italiano, tono istituzionale FIDC). Nessun Lorem Ipsum.
-//  Condiviso dai 3 layout: il contenuto è identico, cambia solo la presentazione.
+//  Condiviso dai 3 veli: il contenuto è identico, cambia solo la presentazione.
+//  Brand e contatti stanno qui (BRAND, CONTATTI): per un nuovo committente si
+//  cambia questo file, non i componenti.
 // =============================================================================
 
 import type { ScenaIllustrazione } from '../shared/illustrazioni/illustrazione.component';
+import type { Evento, News } from '../services/fidc-api.service';
 
 /** Modello di un pilastro istituzionale. */
 export interface Pilastro {
@@ -98,31 +101,6 @@ export const CHI_SIAMO = {
   ]
 };
 
-/** News reali di esempio (copy istituzionale). */
-export const NEWS = [
-  {
-    pilastro: 'Ricerca',
-    titolo: 'Osservatorio Cybersicurezza 2026: il 68% delle PMI italiane resta vulnerabile',
-    sommario:
-      'Il nuovo report FIDC fotografa lo stato della sicurezza informatica nelle piccole e medie imprese ' +
-      'e indica le tre priorità d’azione per i prossimi dodici mesi.'
-  },
-  {
-    pilastro: 'Formazione',
-    titolo: 'Al via la FIDC Academy: 1.000 borse di studio per le competenze digitali',
-    sommario:
-      'Un programma nazionale di reskilling gratuito dedicato a giovani e lavoratori, con certificazioni ' +
-      'riconosciute su cybersicurezza, dato e intelligenza artificiale.'
-  },
-  {
-    pilastro: 'Eventi',
-    titolo: 'Cyber Resilience Summit: a Roma i protagonisti della sicurezza europea',
-    sommario:
-      'Due giornate di confronto tra istituzioni, industria e ricerca per definire l’agenda della ' +
-      'resilienza digitale del continente.'
-  }
-];
-
 /** Modello di un progetto istituzionale in evidenza. */
 export interface Progetto {
   codice: string;
@@ -200,3 +178,142 @@ export const GOVERNANCE: MembroGovernance[] = [
   { nome: 'Tavolo Formazione', ruolo: 'Coordinamento', area: 'Academy & competenze', iniziali: 'TF' },
   { nome: 'Collegio dei Garanti', ruolo: 'Vigilanza', area: 'Etica & conformità', iniziali: 'CG' }
 ];
+
+// =============================================================================
+//  IDENTITÀ, NAVIGAZIONE E CONTATTI
+// =============================================================================
+
+/**
+ * Nome dell'ente. Il marchio (simbolo + nome) legge da qui: per adattare il
+ * portale a un altro committente basta cambiare queste righe.
+ */
+export const BRAND = {
+  nome: 'Federazione Innovazione, Digitale e Cybersicurezza',
+  sigla: 'FIDC',
+  righeMarchio: ['Federazione', 'Innovazione, Digitale', 'e Cybersicurezza']
+};
+
+/** Voce del menu: un'ancora della home (id) oppure una rotta dell'app. */
+export interface VoceMenu { label: string; ancora?: string; rotta?: string; }
+
+/** Menu principale. Ogni voce porta a una sezione reale della pagina. */
+export const MENU: VoceMenu[] = [
+  { label: 'Associazione', ancora: 'associazione' },
+  { label: 'Attività', ancora: 'pilastro-attivita' },
+  { label: 'Eventi', ancora: 'eventi' },
+  { label: 'Formazione', ancora: 'pilastro-formazione' },
+  { label: 'Ricerca', ancora: 'pilastro-ricerca' },
+  { label: 'Progetti', ancora: 'progetti' },
+  { label: 'News', ancora: 'news' },
+  { label: 'Contatti', ancora: 'contatti' }
+];
+
+/** Missione: tre impegni, non una sequenza (quindi niente numerazione). */
+export const MISSIONE = {
+  titolo: 'La nostra missione',
+  impegni: [
+    {
+      titolo: 'Mettere in rete',
+      testo: 'Facciamo lavorare insieme imprese, pubbliche amministrazioni, università e professionisti, ' +
+        'perché nessuno affronti da solo la trasformazione digitale.'
+    },
+    {
+      titolo: 'Proteggere',
+      testo: 'Diffondiamo pratiche di sicurezza applicabili davvero, dalla micro impresa al grande ente, ' +
+        'con strumenti gratuiti e affiancamento di esperti.'
+    },
+    {
+      titolo: 'Rendere accessibile',
+      testo: 'Formiamo persone e organizzazioni perché l\u2019innovazione sia un\u2019opportunità per tutti, ' +
+        'non un privilegio di chi ha già le competenze.'
+    }
+  ]
+};
+
+/**
+ * Recapiti istituzionali. Sono SEGNAPOSTO da sostituire con quelli reali
+ * dell'ente prima della messa in produzione.
+ */
+export const CONTATTI = {
+  sede: 'Via della Conciliazione 1, 00193 Roma',
+  email: 'segreteria@fidc.it',
+  pec: 'fidc@pec.it',
+  telefono: '+39 06 0000 0000',
+  whatsapp: '+39 300 000 0000',
+  orari: 'Segreteria: dal lunedì al venerdì, 9:30–17:30',
+  social: [
+    { rete: 'LinkedIn', url: 'https://www.linkedin.com/' },
+    { rete: 'Facebook', url: 'https://www.facebook.com/' },
+    { rete: 'Instagram', url: 'https://www.instagram.com/' }
+  ]
+};
+
+// =============================================================================
+//  CONTENUTI DI RISERVA
+//  Gli stessi eventi e le stesse news che il DataSeeder del backend scrive nel
+//  database. Si mostrano SOLO se l'API non risponde o non ha nulla da mostrare,
+//  così la home non appare mai vuota durante una demo o un disservizio.
+// =============================================================================
+
+/** Data ISO spostata di n giorni rispetto a oggi. */
+function traGiorni(n: number): string {
+  const d = new Date();
+  d.setDate(d.getDate() + n);
+  d.setHours(9, 30, 0, 0);
+  return d.toISOString();
+}
+
+/** Eventi di riserva, specchio del DataSeeder (date relative a oggi). */
+export function eventiDiRiserva(): Evento[] {
+  const base = { pubblicato: true, relatoreId: 0, dataFine: null };
+  return [
+    {
+      ...base, id: -1, pilastro: 'Formazione', postiTotali: 120, dataInizio: traGiorni(21),
+      titolo: 'AI Governance Workshop: regole, etica e responsabilità',
+      sottotitolo: 'Tradurre l\u2019AI Act in pratiche operative per imprese e PA',
+      descrizione: 'Un laboratorio intensivo dedicato all\u2019applicazione concreta del Regolamento europeo sull\u2019intelligenza artificiale.',
+      luogo: 'Milano — Talent Garden Calabiana'
+    },
+    {
+      ...base, id: -2, pilastro: 'Attivita', postiTotali: 200, dataInizio: traGiorni(40),
+      titolo: 'Hackathon Cyber Defenders: difendere le infrastrutture critiche',
+      sottotitolo: '48 ore per costruire soluzioni di difesa di nuova generazione',
+      descrizione: 'Una maratona di progettazione per prototipare strumenti di rilevamento e risposta alle minacce.',
+      luogo: 'Torino — OGR Tech'
+    },
+    {
+      ...base, id: -3, pilastro: 'Eventi', postiTotali: 400, dataInizio: traGiorni(61),
+      titolo: 'Cyber Resilience Summit 2026',
+      sottotitolo: 'La resilienza digitale dell\u2019Europa: strategie, alleanze, tecnologie',
+      descrizione: 'Due giornate di confronto tra istituzioni, industria e ricerca su NIS2 e infrastrutture critiche.',
+      luogo: 'Roma — Auditorium della Tecnica'
+    }
+  ];
+}
+
+/** News di riserva, specchio del DataSeeder. */
+export function newsDiRiserva(): News[] {
+  const base = { pubblicato: true, autoreId: 0, immagineCopertina: null, contenuto: '' };
+  return [
+    {
+      ...base, id: -1, pilastro: 'Ricerca', dataPubblicazione: traGiorni(-2), slug: 'osservatorio-cybersicurezza-2026',
+      titolo: 'Osservatorio Cybersicurezza 2026: il 68% delle PMI italiane resta vulnerabile',
+      sommario: 'Il nuovo report FIDC fotografa lo stato della sicurezza informatica nelle piccole e medie imprese e indica le tre priorità d\u2019azione per i prossimi dodici mesi.'
+    },
+    {
+      ...base, id: -2, pilastro: 'Formazione', dataPubblicazione: traGiorni(-7), slug: 'fidc-academy-borse-di-studio',
+      titolo: 'Al via la FIDC Academy: 1.000 borse di studio per le competenze digitali',
+      sommario: 'Un programma nazionale di reskilling gratuito con certificazioni riconosciute su cybersicurezza, dato e intelligenza artificiale.'
+    },
+    {
+      ...base, id: -3, pilastro: 'Eventi', dataPubblicazione: traGiorni(-10), slug: 'cyber-resilience-summit-roma',
+      titolo: 'Cyber Resilience Summit: a Roma i protagonisti della sicurezza europea',
+      sommario: 'Due giornate di confronto tra istituzioni, industria e ricerca per definire l\u2019agenda della resilienza digitale del continente.'
+    },
+    {
+      ...base, id: -4, pilastro: 'Attivita', dataPubblicazione: traGiorni(-18), slug: 'linee-guida-ai-pubblica-amministrazione',
+      titolo: 'Intelligenza artificiale e PA: pubblicate le linee guida FIDC per un\u2019adozione responsabile',
+      sommario: 'Un documento operativo per accompagnare le amministrazioni nell\u2019introduzione di sistemi di AI affidabili e conformi all\u2019AI Act.'
+    }
+  ];
+}

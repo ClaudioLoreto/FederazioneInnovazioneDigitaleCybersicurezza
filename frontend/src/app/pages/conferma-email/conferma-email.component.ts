@@ -30,7 +30,7 @@ type Stato = 'attesa' | 'ok' | 'errore';
             <div class="check">✓</div>
             <h1>Email confermata!</h1>
             <p>{{ messaggio() }}</p>
-            <a href="/" class="cta">Vai alla piattaforma →</a>
+            <a href="/login" class="cta">Accedi all'area riservata</a>
           }
           @case ('errore') {
             <div class="cross">!</div>
@@ -52,15 +52,14 @@ type Stato = 'attesa' | 'ok' | 'errore';
       border: 1px solid var(--surface-border);
       backdrop-filter: blur(var(--surface-blur));
       padding:48px; max-width:520px; text-align:center; box-shadow: var(--glow-deep);
-      clip-path: polygon(0 0, calc(100% - 28px) 0, 100% 28px, 100% 100%, 22px 100%, 0 calc(100% - 22px));
+      border-radius: var(--radius);
     }
     h1 { margin:18px 0 10px; font-size:1.6rem; font-family: var(--font-display); }
     p { color: var(--text-soft); line-height:1.6; }
     .cta {
       display:inline-block; margin-top:24px;
       background: var(--accent); color: var(--on-accent);
-      padding:14px 28px; font-weight:800;
-      clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+      padding:14px 28px; font-weight:600; border-radius: max(var(--radius), 3px);
     }
     .cta:hover { filter: brightness(1.06); }
     .check, .cross { width:72px; height:72px; margin:0 auto; border-radius:50%; display:grid;

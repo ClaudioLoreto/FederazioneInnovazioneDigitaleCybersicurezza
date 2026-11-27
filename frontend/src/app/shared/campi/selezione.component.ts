@@ -85,7 +85,6 @@ export interface OpzioneSelezione {
       background: var(--surface-strong);
       border: 1px solid var(--surface-border);
       border-radius: var(--radius);
-      clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
       transition: border-color .24s, box-shadow .24s;
     }
     .testa:hover:not(:disabled) { border-color: var(--line-strong); }

@@ -3,7 +3,7 @@ REM ===========================================================================
 REM  start_local_dev.bat
 REM  Avvia l'ambiente di sviluppo completo FIDC:
 REM   1) Postgres in Docker (porta 5433)
-REM   2) Backend .NET API (FIDC.Api) su https://localhost:5001
+REM   2) Backend .NET API (FIDC.Api) su http://localhost:5000
 REM   3) Frontend Angular su http://localhost:4200
 REM  Ogni servizio parte in una finestra dedicata, cosi i log restano separati.
 REM ===========================================================================
@@ -30,7 +30,7 @@ start "FIDC Frontend" cmd /k "cd /d %ROOT%\frontend && npm start"
 
 echo.
 echo [FIDC] Ambiente avviato.
-echo   - API      : https://localhost:5001/swagger
+echo   - API      : http://localhost:5000/swagger
 echo   - Frontend : http://localhost:4200
 echo.
 endlocal

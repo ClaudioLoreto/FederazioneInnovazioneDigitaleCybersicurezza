@@ -25,7 +25,18 @@
             "tsConfig": "tsconfig.app.json",
             "inlineStyleLanguage": "scss",
             "assets": ["src/assets"],
-            "styles": ["src/styles.scss"],
+            "styles": [
+              "node_modules/@fontsource/chakra-petch/latin-500.css",
+              "node_modules/@fontsource/chakra-petch/latin-600.css",
+              "node_modules/@fontsource/chakra-petch/latin-700.css",
+              "node_modules/@fontsource/ibm-plex-sans/latin-400.css",
+              "node_modules/@fontsource/ibm-plex-sans/latin-500.css",
+              "node_modules/@fontsource/ibm-plex-sans/latin-600.css",
+              "node_modules/@fontsource/ibm-plex-sans/latin-400-italic.css",
+              "node_modules/@fontsource-variable/sora/index.css",
+              "node_modules/@fontsource-variable/source-serif-4/index.css",
+              "src/styles.scss"
+            ],
             "scripts": []
           },
           "configurations": {
@@ -37,7 +48,6 @@
                   "maximumError": "2.5mb"
                 }
               ],
-              "allowedCommonJsDependencies": ["three"]
               "outputHashing": "all",
               "fileReplacements": [
                 {

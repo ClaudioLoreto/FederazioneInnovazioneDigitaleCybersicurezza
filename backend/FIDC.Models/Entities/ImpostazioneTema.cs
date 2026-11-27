@@ -56,4 +56,10 @@ public class ImpostazioneTema : BaseEntity
 
     /// <summary>Abbinamento tipografico: "cyber" · "moderno" · "classico".</summary>
     public string AbbinamentoFont { get; set; } = "cyber";
+
+    /// <summary>
+    /// Figura mostrata nell'hero della home: "cassaforte" (predefinita),
+    /// "scudo" o "nucleo". Scelta dalla Direzione nel Theme Builder.
+    /// </summary>
+    public string EmblemaHero { get; set; } = "cassaforte";
 }

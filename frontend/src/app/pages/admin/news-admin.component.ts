@@ -7,12 +7,13 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { NgFor, NgIf, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { trigger, transition, style, animate } from '@angular/animations';
 import { FidcApiService, News, Pilastro } from '../../services/fidc-api.service';
 import { DialogoService } from '../../shared/dialogo/dialogo.service';
 import { SelezioneComponent } from '../../shared/campi/selezione.component';
 import { EditorTestoComponent } from '../../shared/campi/editor-testo.component';
-import { PILASTRI } from '../../shared/opzioni';
+import { PILASTRI, etichettaPilastro } from '../../shared/opzioni';
 import { AuthService } from '../../services/auth.service';
 
 /** Modello del form news. */
@@ -57,7 +58,7 @@ const VUOTO: NewsForm = {
         <h1>News</h1>
         <p class="scope">{{ auth.isSuperUser() ? 'Tutte le news della Federazione' : 'Le tue news' }}</p>
       </div>
-      <button class="primary" (click)="nuovo()" *ngIf="!form()">+ Nuova news</button>
+      <button class="primary" (click)="nuovo()" *ngIf="!form()">Nuova news</button>
     </header>
 
     <!-- FORM -->
@@ -105,7 +106,7 @@ const VUOTO: NewsForm = {
 
     <!-- TABELLA -->
     <section class="table-wrap hud-panel">
-      <p class="empty" *ngIf="!caricamento() && news().length === 0">Nessuna news. Creane una con “+ Nuova news”.</p>
+      <p class="empty" *ngIf="!caricamento() && news().length === 0">Nessuna news. Creane una con “Nuova news”.</p>
 
       <table *ngIf="news().length > 0">
         <thead>
@@ -117,7 +118,7 @@ const VUOTO: NewsForm = {
         <tbody>
           <tr *ngFor="let n of news()">
             <td class="t">{{ n.titolo }}</td>
-            <td><span class="tag">{{ n.pilastro }}</span></td>
+            <td><span class="tag">{{ etichetta(n.pilastro) }}</span></td>
             <td>{{ n.dataPubblicazione ? (n.dataPubblicazione | date:'dd/MM/yyyy') : '—' }}</td>
             <td>
               <span class="state" [class.on]="n.pubblicato">{{ n.pubblicato ? 'Pubblicata' : 'Bozza' }}</span>
@@ -148,7 +149,13 @@ export class NewsAdminComponent implements OnInit {
   readonly errore = signal<string | null>(null);
   readonly form = signal<NewsForm | null>(null);
 
-  ngOnInit(): void { this.carica(); }
+  private readonly route = inject(ActivatedRoute);
+
+  ngOnInit(): void {
+    this.carica();
+    // Arrivando dalle azioni rapide del pannello (?nuovo=1) il modulo è già aperto.
+    if (this.route.snapshot.queryParamMap.get('nuovo') === '1') this.nuovo();
+  }
 
   /** (Ri)carica la lista gestibile. */
   private carica(): void {
@@ -161,6 +168,8 @@ export class NewsAdminComponent implements OnInit {
   }
 
   /** Apre il form vuoto. */
+  etichetta(v: string): string { return etichettaPilastro(v); }
+
   nuovo(): void { this.errore.set(null); this.form.set({ ...VUOTO }); }
 
   /** Apre il form precompilato per la modifica. */

@@ -1,90 +1,119 @@
 // =============================================================================
 //  frontend/src/app/pages/admin-login/admin-login.component.ts
-//  BACKOFFICE — Gate di accesso istituzionale (/admin/login e /login).
-//  Form "smart": card cream ad alto contrasto, floating label, glow al focus.
-//  Sviluppo in HTTP (http://localhost:5000): nessun avviso certificato.
-//  Stile condiviso in shared/auth/auth-form.scss. Solo palette FIDC.
+//  ACCESSO all'area riservata (/login e /admin/login).
+//
+//  Schermo diviso (AuthShellComponent): vetrina blu a sinistra, modulo crema a
+//  destra. Etichette flottanti leggibili anche con la compilazione automatica,
+//  mostra/nascondi password, errori distinti per causa (credenziali, rete,
+//  server), indicatore di caricamento nel bottone.
+//
+//  In sviluppo l'API gira in HTTP (http://localhost:5000/api): nessun avviso sui
+//  certificati. Stili in shared/auth/auth-form.scss.
 // =============================================================================
 
 import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute, RouterLink } from '@angular/router';
-import { NgIf, NgFor } from '@angular/common';
-import { trigger, transition, style, animate } from '@angular/animations';
 import { AuthService } from '../../services/auth.service';
-import { AnimatedLogoComponent } from '../../shared/animated-logo/animated-logo.component';
+import { AuthShellComponent } from '../../shared/auth/auth-shell.component';
 import { environment } from '../../../environments/environment';
 import type { ProfiloDiProva } from '../../../environments/tipi';
 
-/**
- * Pagina di login del backoffice. Form controllato (email + password), stato di
- * caricamento/errore, redirect post-login e helper di sblocco certificato HTTPS.
- */
+type ErroreAccesso = ReturnType<AuthService['classificaErrore']>;
+
 @Component({
   selector: 'fidc-admin-login',
   standalone: true,
-  imports: [FormsModule, NgIf, NgFor, RouterLink, AnimatedLogoComponent],
-  styleUrls: ['../../shared/auth/auth-form.scss'],
-  animations: [
-    trigger('enter', [
-      transition(':enter', [
-        style({ opacity: 0, transform: 'translateY(24px) scale(.97)' }),
-        animate('560ms cubic-bezier(.2,.9,.3,1)', style({ opacity: 1, transform: 'none' }))
-      ])
-    ])
-  ],
+  imports: [FormsModule, RouterLink, AuthShellComponent],
+  styleUrl: '../../shared/auth/auth-form.scss',
   template: `
-  <main class="gate">
-    <!-- aloni luminosi di sfondo -->
-    <div class="orb orb-a"></div>
-    <div class="orb orb-b"></div>
+  <fidc-auth-shell
+    titolo="Area riservata della Federazione"
+    testo="Lo spazio di lavoro di soci, redazione e direzione."
+    [punti]="['Pubblica eventi e news della Federazione', 'Scarica i documenti riservati ai soci', 'Segui iscrizioni e newsletter']">
 
-    <section class="panel" [class.shattering]="shatter()" @enter>
-      <div class="brand"><fidc-animated-logo></fidc-animated-logo></div>
+    <div class="cascata">
+      <header class="intestazione">
+        <h1>Accedi</h1>
+        <p>Usa l'email e la password con cui ti sei registrato.</p>
+      </header>
 
-      <p class="kicker">Area riservata</p>
-      <h1>Accesso al backoffice</h1>
-      <p class="lead">Inserisci le tue credenziali istituzionali per gestire eventi, news e iscrizioni.</p>
-
-      <form (ngSubmit)="accedi()" #f="ngForm" autocomplete="off" [class.shattering]="shatter()">
-        <div class="fld">
-          <input id="email" type="email" name="email" [(ngModel)]="email" required
-                 placeholder=" " [disabled]="caricamento()" autocomplete="username" />
-          <label for="email">Email istituzionale</label>
+      <form (ngSubmit)="accedi(f.invalid)" #f="ngForm" novalidate>
+        <div class="campo" [class.errato]="emailM.invalid && (emailM.touched || inviato())">
+          <input id="email" type="email" name="email" [(ngModel)]="email" #emailM="ngModel"
+                 required email placeholder=" " autocomplete="username"
+                 [attr.aria-invalid]="emailM.invalid && (emailM.touched || inviato())"
+                 aria-describedby="email-msg" />
+          <label for="email">Email</label>
+          @if (emailM.invalid && (emailM.touched || inviato())) {
+            <p class="msg-campo" id="email-msg">
+              {{ emailM.errors?.['required'] ? 'Scrivi la tua email.' : 'Questo indirizzo non sembra valido.' }}
+            </p>
+          }
         </div>
 
-        <div class="fld">
-          <input id="password" type="password" name="password" [(ngModel)]="password" required
-                 placeholder=" " [disabled]="caricamento()" autocomplete="current-password" />
+        <div class="campo con-azione" [class.errato]="pwdM.invalid && (pwdM.touched || inviato())">
+          <input id="password" [type]="mostraPwd() ? 'text' : 'password'" name="password"
+                 [(ngModel)]="password" #pwdM="ngModel" required placeholder=" "
+                 autocomplete="current-password" aria-describedby="pwd-msg" />
           <label for="password">Password</label>
+          <button type="button" class="occhio" (click)="mostraPwd.set(!mostraPwd())"
+                  [attr.aria-pressed]="mostraPwd()"
+                  [attr.aria-label]="mostraPwd() ? 'Nascondi la password' : 'Mostra la password'">
+            @if (mostraPwd()) {
+              <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M3 3l18 18M10.6 6.1A9.8 9.8 0 0 1 12 6c5 0 8.5 4 9.5 6-.4.8-1.2 2-2.4 3.2M6.2 7.6C4.4 8.9 3.1 10.6 2.5 12c1 2 4.5 6 9.5 6 1.6 0 3-.4 4.2-1" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            } @else {
+              <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M2.5 12C3.5 10 7 6 12 6s8.5 4 9.5 6c-1 2-4.5 6-9.5 6s-8.5-4-9.5-6z" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>
+            }
+          </button>
+          @if (pwdM.invalid && (pwdM.touched || inviato())) {
+            <p class="msg-campo" id="pwd-msg">Scrivi la password.</p>
+          }
         </div>
 
-        <p class="error" *ngIf="errore()">{{ errore() }}</p>
+        @if (errore(); as e) {
+          <div class="avviso" [class.rete]="e.tipo === 'rete'" role="alert">
+            <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+              @if (e.tipo === 'rete') {
+                <path d="M2 8.5a15 15 0 0 1 20 0M5.5 12a10 10 0 0 1 13 0M9 15.5a5 5 0 0 1 6 0M3 3l18 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+              } @else {
+                <path d="M12 3l9 16H3z M12 10v4 M12 17v.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>
+              }
+            </svg>
+            <strong>{{ e.titolo }}</strong>
+            <p>{{ e.dettaglio }}</p>
+          </div>
+        }
 
-        <button type="submit" class="enter" [disabled]="caricamento() || f.invalid || shatter()">
-          <span *ngIf="!caricamento()">Accedi in sicurezza →</span>
-          <span *ngIf="caricamento()" class="loading"><i class="dot"></i> Verifica in corso…</span>
+        <button type="submit" class="btn-primary invia" [disabled]="caricamento()">
+          @if (caricamento()) { <span class="spinner" aria-hidden="true"></span> Verifica in corso }
+          @else { Accedi }
         </button>
       </form>
 
-      <!-- Accesso rapido alle utenze di prova. Esiste solo in sviluppo:
-           in produzione l'elenco è vuoto e questo blocco non viene disegnato. -->
-      <section class="dev-access" *ngIf="profili.length">
-        <p class="dev-titolo">Utenze di prova <span>ambiente di sviluppo</span></p>
-        <p class="dev-nota">Password comune a tutte: <code>{{ profili[0].password }}</code></p>
-        <button *ngFor="let p of profili" type="button" class="dev-profilo"
-                [disabled]="caricamento() || shatter()" (click)="accediCome(p)">
-          <span class="dev-ruolo">{{ p.ruolo }}</span>
-          <span class="dev-persona">{{ p.nome }}</span>
-          <span class="dev-mail">{{ p.email }}</span>
-          <span class="dev-ambito">{{ p.ambito }}</span>
-        </button>
-      </section>
+      <p class="alt">Non hai ancora un account? <a routerLink="/registrati">Unisciti alla Federazione</a></p>
 
-      <p class="alt">Non hai un account? <a routerLink="/registrati">Registrati</a></p>
-      <p class="footnote"><i class="lock">⛨</i> Accesso protetto · Accesso tracciato</p>
-    </section>
-  </main>
+      <!-- Accesso rapido alle utenze di prova: esiste solo in sviluppo,
+           in produzione l'elenco è vuoto e il blocco non viene disegnato. -->
+      @if (profili.length) {
+        <section class="prova" aria-labelledby="t-prova">
+          <h2 id="t-prova">Utenze di prova</h2>
+          <p>Solo in sviluppo. Password per tutte: <code>{{ profili[0].password }}</code></p>
+          <ul>
+            @for (p of profili; track p.email) {
+              <li>
+                <button type="button" class="prova-utenza" [disabled]="caricamento()" (click)="accediCome(p)">
+                  <span class="ruolo">{{ p.ruolo }}</span>
+                  <span class="persona">{{ p.nome }}</span>
+                  <span class="dettaglio">{{ p.ambito }}</span>
+                </button>
+              </li>
+            }
+          </ul>
+        </section>
+      }
+    </div>
+  </fidc-auth-shell>
   `
 })
 export class AdminLoginComponent {
@@ -92,59 +121,42 @@ export class AdminLoginComponent {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
 
-  /** Campi del form (two-way binding). */
   email = '';
   password = '';
 
-  /**
-   * Utenze di prova del seeder. In produzione l'elenco è vuoto, quindi il
-   * riquadro di accesso rapido semplicemente non esiste.
-   */
+  /** Utenze di prova del seeder (vuoto in produzione). */
   readonly profili = environment.profiliDiProva;
 
-  /** Stato UI. */
   readonly caricamento = signal(false);
-  readonly errore = signal<string | null>(null);
-  /** Scomposizione HUD del form dopo login riuscito. */
-  readonly shatter = signal(false);
+  readonly inviato = signal(false);
+  readonly mostraPwd = signal(false);
+  readonly errore = signal<ErroreAccesso | null>(null);
 
-  /**
-   * Compila il modulo con l'utenza di prova scelta ed entra.
-   * Serve a collaudare i due livelli di permessi senza riscrivere ogni volta
-   * le credenziali. Disponibile solo in sviluppo.
-   */
+  /** Compila il modulo con un'utenza di prova ed entra (solo sviluppo). */
   accediCome(profilo: ProfiloDiProva): void {
-    if (this.caricamento() || this.shatter()) return;
     this.email = profilo.email;
     this.password = profilo.password;
     this.accedi();
   }
 
-  /** Esegue il login; in caso di successo scompone il form e redirige. */
-  accedi(): void {
-    if (this.caricamento() || this.shatter()) return;
+  /** @param nonValido true se il modulo ha campi da correggere: si mostrano i messaggi e ci si ferma. */
+  accedi(nonValido: boolean | null = false): void {
+    if (this.caricamento()) return;
+    this.inviato.set(true);
     this.errore.set(null);
-    this.caricamento.set(true);
+    if (nonValido || !this.email.trim() || !this.password) return;
 
+    this.caricamento.set(true);
     this.auth.login(this.email.trim(), this.password).subscribe({
       next: () => {
         this.caricamento.set(false);
         const redirect = this.route.snapshot.queryParamMap.get('redirect') || '/admin';
-        this.dopoShatter(() => this.router.navigateByUrl(redirect));
+        this.router.navigateByUrl(redirect);
       },
       error: (err: unknown) => {
         this.caricamento.set(false);
-        this.errore.set(this.auth.descriviErroreLogin(err));
+        this.errore.set(this.auth.classificaErrore(err));
       }
     });
-  }
-
-  /** Rispetta prefers-reduced-motion: niente shatter, navigazione immediata. */
-  private dopoShatter(azione: () => void): void {
-    const riduci = typeof window !== 'undefined'
-      && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (riduci) { azione(); return; }
-    this.shatter.set(true);
-    setTimeout(azione, 640);
   }
 }

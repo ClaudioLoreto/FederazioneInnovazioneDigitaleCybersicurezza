@@ -54,8 +54,9 @@ Il progetto implementa **esattamente** le feature descritte in
 
 - **`ThemeService`** (`shared/theme/theme.service.ts`): unica regia del tema attivo
   (signal, persistito in `localStorage`, scrive `data-theme` su `document.documentElement`).
-- **`styles/_themes.scss`**: per ogni `[data-theme="n"]` ridefinisce SOLO le CSS variables
-  (sfondi/accenti) **dentro i 4 colori della palette**. La struttura HTML non cambia.
+- **`styles/_themes.scss`**: per ogni `[data-theme="n"]` ridefinisce i token (colori,
+  raggi, densità, intensità del movimento) **dentro i 4 colori della palette**. L'HTML
+  non cambia; la geometria delle sezioni cambia via `:host-context([data-theme])` (§4-bis).
 - **Theme 1 = estetica istituzionale Cyber APPROVATA** (default).
 - La **Direzione** (ruolo tecnico `SuperUser`) cambia il velo attivo da `Backoffice → Impostazioni → Tema`
   (dal "Theme Builder": scelta di un velo base **oppure** composizione di un velo
@@ -82,6 +83,63 @@ Fonte unica: `frontend/src/styles/_palette.scss`. I temi rimescolano SOLO questi
 - **Bottoni**: sempre ben contrastati (accent peach/purple, mai uguali allo sfondo).
 - **Mobile**: menu dedicato impeccabile + stacking a blocchi su smartphone.
 - **A11y**: rispettare `prefers-reduced-motion`, focus-visible.
+
+## 4-bis. UI v2 — REGOLE BLOCCATE (redesign novembre 2026, branch `redesign/ui-v2`)
+
+> Queste regole valgono per OGNI sessione futura. Una modifica che ne viola una è
+> una regressione, anche se "sembra più bella".
+
+**Palette e contrasto**
+- Solo `#333D6D` `#723EC3` `#FFCF95` `#FFF0D9` (+ alpha). Nei componenti si usano i
+  token; gli hex compaiono in `styles/_palette.scss`, `theme.service.ts` (PALETTE),
+  negli SVG degli emblemi e come valori di riserva del canvas.
+  Verifica: `grep -rnoE '#[0-9A-Fa-f]{3,8}\b' frontend/src | grep -viE '333D6D|723EC3|FFCF95|FFF0D9'`
+  deve trovare solo le password di prova (`Fidc#2026!`).
+- Ogni `var(--x)` usato deve essere definito: un token inesistente diventa nero
+  (è successo con `--surface-2` e `--bordo` nelle illustrazioni).
+- Coppie testo/fondo ammesse: crema/blu (9.3:1), blu/crema, blu/pesca (7.2:1),
+  pesca/blu, crema/viola (5.9:1), viola/crema. VIETATE: viola/blu, pesca/crema,
+  blu/viola. Il Theme Builder blocca le coppie vietate.
+- Mai una card/form viola su fondo viola. Sulla fascia viola le card sono crema.
+- Bottoni sempre pieni e leggibili a riposo (`.btn-primary`, `.btn-accent`,
+  `.btn-outline`, `.btn-ghost`): niente bottoni che compaiono solo all'hover,
+  niente `<button>` nudi. Testo dei bottoni in sentence case, senza frecce.
+- `:-webkit-autofill` sovrascritto in `styles.scss`: testo e label sempre leggibili.
+
+**Ingresso e veli**
+- `/` = landing pubblica, sempre. Login solo da "Area riservata", registrazione da
+  "Unisciti alla Federazione". Nessuno switcher di tema pubblico.
+- Contenuto UNA volta (`home-content.ts` + API). I 3 veli cambiano geometria,
+  densità, superfici, cornice dell'hero e intensità del movimento, non solo colori:
+  1 *Istituzionale* (default: fasce alterne blu/crema/viola) · 2 *Centro di comando*
+  (tutto scuro, griglia visibile, angoli vivi, pannelli a riga) · 3 *Comunità*
+  (chiaro, arrotondato, arioso). Le differenze strutturali stanno nei componenti
+  sotto `:host-context([data-theme='n'])`, i colori nei token di `_themes.scss`.
+- Theme Builder in `/admin/impostazioni` (alias `/admin/impostazioni-tema`):
+  velo base, velo personalizzato entro i 4 colori con controllo di contrasto,
+  angoli, tipografia, **emblema dell'hero** (cassaforte · scudo · nucleo).
+
+**Hero**
+- Cassaforte digitale (`fidc-safe-logo`) a destra dell'hero su desktop, sopra il
+  testo su mobile. Il suo SVG e le sue animazioni non si toccano.
+- Slogan: max 50 caratteri, Chakra Petch 700, una riga dal contenitore ≥ 880px
+  (dimensione in `cqi`, misurata: lo slogan è 24,6em), a capo bilanciato sotto.
+  Zero overflow orizzontale da 360px a 1920px+.
+- Rivelazione "decrittazione" dello slogan: è l'UNICO momento animato al caricamento.
+
+**Movimento**
+- Sfondo: rete 2D su canvas (griglia di precisione, nodi, pacchetti sugli archi,
+  colonne binarie tenui). Niente Three.js. Si ferma fuori schermo, a scheda nascosta
+  e con `prefers-reduced-motion`.
+- VIETATE: le 4 linee orizzontali con blocchi che scorrono ("corde di chitarra"),
+  il pallino viola orbitante nel logo, entrate fade-up su ogni sezione.
+- Ammesse: rivelazioni all'ingresso nel viewport (`fidcReveal`), contatori KPI,
+  risposte alle azioni dell'utente (espandi, invia, conferma).
+
+**Font**: self-hosted da `@fontsource` (niente Google Fonts: GDPR e build offline).
+Chakra Petch (titoli) + IBM Plex Sans (testo). Alternative del builder: Sora, Source Serif 4.
+
+---
 
 ## 5. RBAC — MATRICE PERMESSI
 | Sezione backoffice | SuperUser | Relatore |

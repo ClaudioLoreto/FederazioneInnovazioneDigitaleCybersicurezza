@@ -38,6 +38,10 @@ public class TemaController : ControllerBase
 
     private static readonly HashSet<string> TemiBaseAmmessi = new() { "1", "2", "3" };
 
+    /// <summary>Figure ammesse per l'hero della home.</summary>
+    private static readonly HashSet<string> EmblemiAmmessi = new(StringComparer.OrdinalIgnoreCase)
+    { "cassaforte", "scudo", "nucleo" };
+
     /// <summary>Inietta il repository delle impostazioni tema.</summary>
     public TemaController(IGenericRepository<ImpostazioneTema> temi) => _temi = temi;
 
@@ -84,6 +88,10 @@ public class TemaController : ControllerBase
             return BadRequest(new { messaggio = "Stile raggio non valido (sharp | soft | rounded)." });
         if (!FontAmmessi.Contains(dto.AbbinamentoFont))
             return BadRequest(new { messaggio = "Abbinamento font non valido (cyber | moderno | classico)." });
+        // Il campo è facoltativo per compatibilità con client precedenti.
+        var emblema = string.IsNullOrWhiteSpace(dto.EmblemaHero) ? "cassaforte" : dto.EmblemaHero;
+        if (!EmblemiAmmessi.Contains(emblema))
+            return BadRequest(new { messaggio = "Emblema non valido (cassaforte | scudo | nucleo)." });
 
         // --- Upsert della riga attiva (una sola configurazione applicata) ------
         var attivo = (await _temi.FindAsync(t => t.Attivo, ct)).FirstOrDefault();
@@ -101,6 +109,7 @@ public class TemaController : ControllerBase
         attivo.ColoreTesto = dto.ColoreTesto.ToUpperInvariant();
         attivo.StileRaggio = dto.StileRaggio.ToLowerInvariant();
         attivo.AbbinamentoFont = dto.AbbinamentoFont.ToLowerInvariant();
+        attivo.EmblemaHero = emblema.ToLowerInvariant();
 
         _temi.Update(attivo);
         await _temi.SaveChangesAsync(ct);
@@ -114,9 +123,9 @@ public class TemaController : ControllerBase
     private static TemaConfigDto ToDto(ImpostazioneTema t) => new(
         t.TemaBase, t.Personalizzato,
         t.ColorePrimario, t.ColoreAccento, t.ColoreSfondo, t.ColoreTesto,
-        t.StileRaggio, t.AbbinamentoFont);
+        t.StileRaggio, t.AbbinamentoFont, t.EmblemaHero);
 
     /// <summary>Default coerente col Tema 1 istituzionale approvato.</summary>
     private static TemaConfigDto Default() => new(
-        "1", false, "#723EC3", "#FFCF95", "#FFF0D9", "#333D6D", "soft", "cyber");
+        "1", false, "#723EC3", "#FFCF95", "#FFF0D9", "#333D6D", "soft", "cyber", "cassaforte");
 }

@@ -7,12 +7,13 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { NgFor, NgIf, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { trigger, transition, style, animate } from '@angular/animations';
 import { FidcApiService, Evento, Pilastro } from '../../services/fidc-api.service';
 import { DialogoService } from '../../shared/dialogo/dialogo.service';
 import { SelezioneComponent } from '../../shared/campi/selezione.component';
 import { EditorTestoComponent } from '../../shared/campi/editor-testo.component';
-import { PILASTRI } from '../../shared/opzioni';
+import { PILASTRI, etichettaPilastro } from '../../shared/opzioni';
 import { AuthService } from '../../services/auth.service';
 
 /** Modello del form (date come stringhe per gli <input datetime-local>). */
@@ -58,7 +59,7 @@ const VUOTO: EventoForm = {
         <h1>Eventi</h1>
         <p class="scope">{{ auth.isSuperUser() ? 'Tutti gli eventi della Federazione' : 'I tuoi eventi' }}</p>
       </div>
-      <button class="primary" (click)="nuovo()" *ngIf="!form()">+ Nuovo evento</button>
+      <button class="primary" (click)="nuovo()" *ngIf="!form()">Nuovo evento</button>
     </header>
 
     <!-- FORM -->
@@ -111,7 +112,7 @@ const VUOTO: EventoForm = {
 
     <!-- TABELLA -->
     <section class="table-wrap hud-panel">
-      <p class="empty" *ngIf="!caricamento() && eventi().length === 0">Nessun evento. Creane uno con “+ Nuovo evento”.</p>
+      <p class="empty" *ngIf="!caricamento() && eventi().length === 0">Nessun evento. Creane uno con “Nuovo evento”.</p>
 
       <table *ngIf="eventi().length > 0">
         <thead>
@@ -123,7 +124,7 @@ const VUOTO: EventoForm = {
         <tbody>
           <tr *ngFor="let e of eventi()">
             <td class="t">{{ e.titolo }}</td>
-            <td><span class="tag">{{ e.pilastro }}</span></td>
+            <td><span class="tag">{{ etichetta(e.pilastro) }}</span></td>
             <td>{{ e.dataInizio | date:'dd/MM/yyyy HH:mm' }}</td>
             <td>{{ e.luogo }}</td>
             <td>{{ e.postiTotali }}</td>
@@ -157,7 +158,13 @@ export class EventiAdminComponent implements OnInit {
   /** Form attivo (null = nessun editor aperto). */
   readonly form = signal<EventoForm | null>(null);
 
-  ngOnInit(): void { this.carica(); }
+  private readonly route = inject(ActivatedRoute);
+
+  ngOnInit(): void {
+    this.carica();
+    // Arrivando dalle azioni rapide del pannello (?nuovo=1) il modulo è già aperto.
+    if (this.route.snapshot.queryParamMap.get('nuovo') === '1') this.nuovo();
+  }
 
   /** (Ri)carica la lista gestibile. */
   private carica(): void {
@@ -170,6 +177,8 @@ export class EventiAdminComponent implements OnInit {
   }
 
   /** Apre il form vuoto. */
+  etichetta(v: string): string { return etichettaPilastro(v); }
+
   nuovo(): void { this.errore.set(null); this.form.set({ ...VUOTO }); }
 
   /** Apre il form precompilato per la modifica. */

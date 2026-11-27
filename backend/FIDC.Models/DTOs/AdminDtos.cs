@@ -43,6 +43,7 @@ public record UtenteAdminDto(
 /// <param name="ColoreTesto">Testo principale (hex palette).</param>
 /// <param name="StileRaggio">"sharp" | "soft" | "rounded".</param>
 /// <param name="AbbinamentoFont">"cyber" | "moderno" | "classico".</param>
+/// <param name="EmblemaHero">"cassaforte" | "scudo" | "nucleo" (facoltativo, default "cassaforte").</param>
 public record TemaConfigDto(
     string TemaBase,
     bool Personalizzato,
@@ -51,4 +52,5 @@ public record TemaConfigDto(
     string ColoreSfondo,
     string ColoreTesto,
     string StileRaggio,
-    string AbbinamentoFont);
+    string AbbinamentoFont,
+    string EmblemaHero = "cassaforte");

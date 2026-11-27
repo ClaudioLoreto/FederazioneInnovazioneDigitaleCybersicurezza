@@ -36,7 +36,7 @@ accanto, `aria-hidden="true"` perché sono decorative, colori solo dai token del
 
 ## Priorità 2 — Movimento e transizioni
 
-### 2.1 Lo sfondo 3D stanca
+### 2.1 Lo sfondo 3D stanca — *chiuso il 2026-11-27, vedi Fatto*
 Il tunnel di nodi è sempre uguale e dopo un po' diventa rumore visivo. Vanno aggiunte
 variazioni lente e piccoli dettagli che ripaghino l'attenzione, senza rubare la scena
 al contenuto.
@@ -51,7 +51,7 @@ Il sito è un unico foglio da scorrere. Le sezioni dovrebbero entrare e uscire c
 pannelli che ruotano nello spazio, sia tra le voci di menu sia tra le schermate del
 backoffice, mantenendo fissi lo sfondo e la navigazione.
 
-### 2.4 Animazioni fuori dal campo visivo
+### 2.4 Animazioni fuori dal campo visivo — *chiuso il 2026-11-27 (fidcReveal)*
 Alcuni movimenti avvengono dove l'utente non sta guardando, o addirittura oltre il bordo
 dello schermo. Un'animazione che nessuno vede è tempo di calcolo sprecato: vanno legate
 alla comparsa dell'elemento nella finestra.
@@ -77,7 +77,7 @@ sezione con una prova sistematica, non a campione.
 
 ## Priorità 4 — Efficienza d'uso del backoffice
 
-### 4.1 Meno clic per fare la stessa cosa
+### 4.1 Meno clic per fare la stessa cosa — *in parte: azioni rapide dal pannello*
 Le operazioni frequenti — pubblicare, modificare, eliminare — devono essere raggiungibili
 subito, senza passaggi intermedi inutili.
 
@@ -104,3 +104,13 @@ subito, senza passaggi intermedi inutili.
 | 2026-09-03 | Menu su smartphone con fondo pieno: non lascia più trasparire l'animazione | `landing` |
 | 2026-09-03 | Uscita dal backoffice con icona e descrizione accessibile | `admin-shell` |
 | 2026-09-03 | Scelta del ruolo dalla pagina di accesso, con le credenziali di prova in chiaro in sviluppo | `admin-login`, `environments/` |
+| 2026-11-27 | **UI v2** (branch `redesign/ui-v2`): design system a rampe di tono, tre veli strutturalmente diversi | `styles/`, `landing` |
+| 2026-11-27 | Scena di rete 2D al posto di Three.js (risolve 2.1 e 2.4: varia col velo, si ferma fuori vista) | `background-canvas` |
+| 2026-11-27 | Hero: cassaforte a destra, slogan su una riga misurato in `cqi`, rivelazione "decrittazione" | `landing` |
+| 2026-11-27 | Corretto il "pallino ribelle": la rotazione CSS cancellava la traslazione SVG della ghiera del logo | `animated-logo` |
+| 2026-11-27 | Illustrazioni nere: usavano `--surface-2` e `--bordo`, token mai definiti | `illustrazioni` |
+| 2026-11-27 | Accesso e registrazione split-screen: etichette flottanti, autofill leggibile, errori per causa | `shared/auth/` |
+| 2026-11-27 | Theme Builder con miniature strutturali, emblema dell'hero, blocco delle combinazioni illeggibili | `impostazioni-tema` |
+| 2026-11-27 | Backoffice: icone SVG, menu comprimibile, azioni rapide dal pannello (risolve 4.1) | `admin-shell`, `dashboard-home` |
+| 2026-11-27 | Font self-hosted (`@fontsource`), niente più Google Fonts | `angular.json` |
+| 2026-11-27 | Contenuti di riserva per eventi e news se l'API non risponde: la home non è mai vuota | `home-content.ts` |

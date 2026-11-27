@@ -120,7 +120,8 @@ backend/
 ## 6. REGOLE FRONTEND & MOTION
 
 - 3 **veli** grafici intercambiabili (`data-theme="1|2|3"`) applicati a **un unico
-  contenuto**. Implementazione: `styles/_themes.scss` + `shared/theme/theme.service.ts`.
+  contenuto**, strutturalmente diversi (geometria, densità, superfici, movimento):
+  regole bloccate in `CLAUDE.md` §4-bis. Implementazione: `styles/_themes.scss` + `shared/theme/theme.service.ts`.
   Dettagli in `docs/ARCHITETTURA-FRONTEND.md`.
   > Nota storica: fino a giugno 2026 esistevano tre componenti-layout separati
   > (`layout-1-institutional`, `layout-2-tech`, `layout-3-hub`) con i testi duplicati.

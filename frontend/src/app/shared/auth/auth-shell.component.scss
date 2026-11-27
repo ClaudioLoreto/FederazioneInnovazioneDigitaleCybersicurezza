@@ -1,0 +1,81 @@
+// Telaio split-screen delle pagine di accesso. Solo token dei toni fissi X/Y.
+
+:host { display: block; }
+
+.auth {
+  min-height: 100svh;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+}
+
+// ---- Vetrina (sinistra) ---------------------------------------------------------
+.vetrina {
+  position: relative;
+  display: flex; flex-direction: column; gap: 28px;
+  padding: clamp(24px, 4vw, 56px);
+  background: color-mix(in srgb, var(--X-bg) 55%, transparent); // la rete si intravede
+  overflow: hidden;
+
+  // Linea di scansione verticale lungo il bordo destro: separa le due metà.
+  &::after {
+    content: ''; position: absolute; top: 0; right: 0; width: 1px; height: 100%;
+    background: linear-gradient(180deg, transparent, var(--X-signal), transparent);
+    opacity: .6;
+  }
+}
+.torna { display: block; width: 190px; }
+.vetrina-emblema {
+  width: min(300px, 60%);
+  margin: auto auto 0;
+  filter: drop-shadow(0 24px 40px color-mix(in srgb, var(--X-bg) 90%, transparent));
+}
+.vetrina-testo {
+  max-width: 460px; margin-inline: auto; margin-bottom: auto;
+  h2 { font-size: clamp(1.6rem, 1.1rem + 1.4vw, 2.3rem); }
+  p { margin-top: 12px; color: var(--text-soft); line-height: 1.6; }
+  ul { list-style: none; margin-top: 18px; display: grid; gap: 10px; }
+  li {
+    position: relative; padding-left: 26px; color: var(--text);
+    &::before {
+      content: ''; position: absolute; left: 0; top: .45em;
+      width: 12px; height: 7px;
+      border-left: 2px solid var(--signal); border-bottom: 2px solid var(--signal);
+      transform: rotate(-45deg);
+    }
+  }
+}
+.home-link {
+  align-self: flex-start;
+  font-size: .92rem; color: var(--text-soft);
+  text-decoration: underline; text-underline-offset: 4px; text-decoration-color: var(--line-strong);
+  &:hover { color: var(--signal); }
+}
+
+// ---- Modulo (destra) --------------------------------------------------------------
+.modulo {
+  display: grid; place-items: center;
+  padding: clamp(24px, 5vw, 72px) clamp(20px, 5vw, 72px);
+}
+.modulo-inner { width: min(100%, 460px); }
+
+// Entrata della vetrina: l'emblema e il testo arrivano dopo il modulo,
+// che è la cosa da usare per prima.
+@media (prefers-reduced-motion: no-preference) {
+  .vetrina-emblema { animation: sale .8s var(--ease-spatial) .15s both; }
+  .vetrina-testo { animation: sale .8s var(--ease-spatial) .3s both; }
+}
+@keyframes sale { from { opacity: 0; transform: translateY(16px); } }
+
+// ---- Telefono: vetrina compatta in alto, poi il modulo ----------------------------
+@media (max-width: 899px) {
+  .auth { grid-template-columns: minmax(0, 1fr); }
+  .vetrina {
+    display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 12px;
+    padding: 16px 20px;
+    &::after { top: auto; bottom: 0; width: 100%; height: 1px; background: linear-gradient(90deg, transparent, var(--X-signal), transparent); }
+  }
+  .torna { width: 160px; }
+  .vetrina-emblema { width: 64px; margin: 0; }
+  .vetrina-testo, .home-link { display: none; }
+  .modulo { place-items: start center; padding-top: 32px; }
+}

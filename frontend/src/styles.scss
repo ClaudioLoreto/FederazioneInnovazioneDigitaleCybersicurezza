@@ -1,386 +1,337 @@
 // =============================================================================
 //  frontend/src/styles.scss
-//  Design system globale FIDC.
+//  Design system globale FIDC (UI v2).
 //
-//  Qui vivono gli elementi comuni a tutto il sito: superfici di vetro, bottoni,
-//  campi dei moduli. I componenti devono usare queste classi invece di
-//  reinventarle: è ciò che tiene coerente l'aspetto di tutte le pagine.
+//  Qui vivono gli elementi comuni a tutto il sito: tipografia, bottoni, campi,
+//  superfici, griglia di pagina, rivelazioni allo scorrimento. I componenti
+//  usano queste classi invece di reinventarle.
 //
-//  ⚠️ In questo file NON compaiono colori fissi. Si usano solo i token
-//  semantici (--accent, --surface, --text...) definiti in styles/_palette.scss:
-//  è la condizione perché il Theme Builder possa cambiare l'aspetto del sito.
+//  ⚠️ Nessun colore fisso: solo token (vedi styles/_palette.scss e _themes.scss).
+//  I font sono self-hosted (angular.json → styles), niente Google Fonts.
 // =============================================================================
 
 @use 'styles/palette' as *;
 @use 'styles/themes';
 
-// Angolo di rotazione del bordo animato dei bottoni. Dichiararlo come proprietà
-// personalizzata permette di animarlo: un semplice --var non sarebbe animabile.
-@property --hud-angle {
-  syntax: '<angle>';
-  inherits: false;
-  initial-value: 0deg;
-}
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
-* { margin: 0; padding: 0; box-sizing: border-box; }
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-padding-top: calc(var(--header-h) + 16px);
+  background: var(--canvas-bg);
+}
+@media (prefers-reduced-motion: no-preference) {
+  html { scroll-behavior: smooth; }
+}
 
 html, body {
   min-height: 100%;
-  // Colore visibile prima che la scena 3D sia pronta, e sui veli chiari.
-  background: var(--canvas-bg);
   color: var(--text);
   font-family: var(--font-body);
+  font-size: 100%;
+  line-height: 1.55;
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
-// L'interfaccia sta sopra la scena 3D, che è in posizione fissa a z-index -1.
-// Lo sfondo qui è quello del velo: trasparente sui veli scuri (si vede il 3D),
-// pieno sui veli chiari.
+// Nessuno scorrimento orizzontale, mai: è un requisito (360px–1920px+).
+body { overflow-x: clip; }
+
 fidc-root {
   display: block;
   isolation: isolate;
   min-height: 100%;
   position: relative;
-  background: var(--page-bg);
 }
 
-a { text-decoration: none; color: inherit; }
+img, svg { max-width: 100%; }
+a { color: inherit; text-decoration: none; }
+button, input, select, textarea { font: inherit; color: inherit; }
 
 ::selection { background: var(--accent); color: var(--on-accent); }
 
-/* =============================================================================
-   SUPERFICI — i pannelli di vetro che contengono i contenuti
-   ============================================================================= */
+// ---- Tipografia --------------------------------------------------------------
+// Scala modulare 1.25 su base 16px; i titoli di sezione sono fluidi.
+h1, h2, h3, h4 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  line-height: 1.08;
+  letter-spacing: -.01em;
+  text-wrap: balance;
+}
+h2 { font-size: clamp(1.9rem, 1.2rem + 2.4vw, 3rem); }
+h3 { font-size: clamp(1.2rem, 1.05rem + .5vw, 1.45rem); line-height: 1.18; }
+h4 { font-size: 1.1rem; line-height: 1.25; }
+p  { text-wrap: pretty; }
 
-// Differenza fra le due: .glass-card ha gli angoli tagliati in diagonale ed è
-// pensata per le schede di contenuto; .hud-panel è rettangolare e serve per
-// barre e contenitori strutturali, che devono restare allineati ai bordi.
-.glass-card,
-.hud-panel {
-  position: relative;
-  isolation: isolate;
-  background:
-    radial-gradient(
-      420px circle at var(--spot-x, 50%) var(--spot-y, 30%),
-      var(--surface-spot),
-      transparent 46%
-    ),
-    var(--surface);
-  border: 1px solid var(--surface-border);
-  border-radius: var(--radius);
-  backdrop-filter: blur(var(--surface-blur));
-  -webkit-backdrop-filter: blur(var(--surface-blur));
-  box-shadow: var(--glow-deep);
-  color: var(--text);
-  transition:
-    border-color .35s var(--ease-spatial),
-    box-shadow .35s var(--ease-spatial);
+// ---- Focus visibile ovunque ---------------------------------------------------
+:focus-visible {
+  outline: 2px solid var(--signal);
+  outline-offset: 3px;
 }
 
-.glass-card {
-  clip-path: polygon(0 0, calc(100% - 18px) 0, 100% 18px, 100% 100%, 14px 100%, 0 calc(100% - 14px));
+// Salto al contenuto per chi naviga da tastiera.
+.skip-link {
+  position: absolute; left: 12px; top: -60px; z-index: 100;
+  padding: 10px 16px; background: var(--c-peach); color: var(--c-deep-blue);
+  font-weight: 600; border-radius: var(--radius);
+  transition: top .2s;
+  &:focus { top: 12px; }
 }
 
-.glass-card:hover,
-.hud-panel:hover {
-  border-color: var(--line-strong);
-  box-shadow: var(--glow-neon);
+// Testo solo per i lettori di schermo.
+.sr-only {
+  position: absolute; width: 1px; height: 1px; overflow: hidden;
+  clip: rect(0 0 0 0); white-space: nowrap;
+}
+
+// ---- Griglia di pagina --------------------------------------------------------
+.container {
+  width: 100%;
+  max-width: 1320px;
+  margin-inline: auto;
+  padding-inline: clamp(18px, 4.5vw, 56px);
 }
 
 /* =============================================================================
    BOTTONI
-   Angoli tagliati, bordo animato, mirino agli angoli al passaggio del mouse.
-   Le varianti cambiano solo la coppia sfondo/testo: la forma resta identica.
+   Quattro varianti, una sola forma. Pieni e leggibili a riposo: l'hover
+   aggiunge, non rivela. Sentence case, niente frecce nel testo.
    ============================================================================= */
-
-button { font-family: inherit; }
-
 .btn,
-button.btn,
 .btn-primary,
 .btn-accent,
-.btn-gradient,
 .btn-outline,
-.btn-ghost,
-button:not([class]) {
+.btn-ghost {
   --_bg: var(--accent);
   --_fg: var(--on-accent);
-  --hud-angle: 0deg;
+  --_bd: var(--btn-edge, transparent);
 
   position: relative;
+  isolation: isolate;
   overflow: hidden;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
-  padding: 13px 26px;
-  border: 1.5px solid transparent;
-  border-radius: var(--radius);
-  clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
-  // Doppio sfondo: il colore pieno riempie l'interno, la sfumatura conica
-  // colora il solo bordo. È il modo per avere un bordo animato senza aggiungere
-  // un elemento in più.
-  background:
-    linear-gradient(var(--_bg), var(--_bg)) padding-box,
-    conic-gradient(
-      from var(--hud-angle),
-      var(--accent-2), var(--accent), var(--accent-2), var(--accent), var(--accent-2)
-    ) border-box;
+  min-height: 48px;                 // area di tocco comoda anche col pollice
+  padding: 12px 24px;
+  border: 1.5px solid var(--_bd);
+  // Nessun taglio diagonale sui bottoni: col bordo visibile, il taglio
+  // lascerebbe gli angoli senza contorno. Il taglio resta su card e pannelli.
+  border-radius: max(var(--radius), 3px);
+  background: var(--_bg);
   color: var(--_fg);
-  font: inherit;
-  font-weight: 800;
-  letter-spacing: .04em;
-  text-transform: uppercase;
-  font-size: .82rem;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 1rem;
+  line-height: 1.2;
+  letter-spacing: .005em;
+  white-space: nowrap;
   cursor: pointer;
   text-decoration: none;
-  isolation: isolate;
-  animation: hud-border-spin 3.2s linear infinite;
-  transition: filter .18s ease;
+  transition:
+    transform .25s var(--ease-spatial),
+    box-shadow .25s var(--ease-spatial),
+    background-color .2s, color .2s, border-color .2s;
+
+  // Riempimento che sale dal basso all'hover: un segnale di "attivazione".
+  &::before {
+    content: '';
+    position: absolute; inset: 0; z-index: -1;
+    background: var(--_fill, transparent);
+    transform: translateY(101%);
+    transition: transform .32s var(--ease-spatial);
+  }
+
+  &:hover { transform: translateY(-2px); box-shadow: var(--glow-accent); }
+  &:hover::before { transform: translateY(0); }
+  &:active { transform: translateY(0); }
+  &:focus-visible { outline: none; box-shadow: var(--glow-focus); }
+
+  &:disabled, &[aria-disabled='true'] {
+    opacity: .55; cursor: not-allowed; transform: none; box-shadow: none;
+    &::before { transform: translateY(101%); }
+  }
 }
 
-@keyframes hud-border-spin {
-  to { --hud-angle: 360deg; }
-}
+// Azione principale della sezione: colore d'azione del tono.
+.btn-primary { --_bg: var(--accent); --_fg: var(--on-accent); }
 
-// Lampo luminoso che attraversa il bottone al passaggio del mouse.
-.btn::after,
-button.btn::after,
-.btn-primary::after,
-.btn-accent::after,
-.btn-gradient::after,
-.btn-outline::after,
-.btn-ghost::after,
-button:not([class])::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  transform: translateX(-120%) skewX(-18deg);
-  background: linear-gradient(90deg, transparent, var(--accent-soft), transparent);
-  pointer-events: none;
-  z-index: 1;
-}
-
-// Mirino agli angoli: quattro coppie di trattini, uno per ogni vertice.
-.btn::before,
-button.btn::before,
-.btn-primary::before,
-.btn-accent::before,
-.btn-gradient::before,
-.btn-outline::before,
-.btn-ghost::before,
-button:not([class])::before {
-  content: '';
-  position: absolute;
-  inset: 5px;
-  pointer-events: none;
-  z-index: 2;
-  opacity: 0;
-  background:
-    linear-gradient(var(--accent), var(--accent)) left top / 12px 2px no-repeat,
-    linear-gradient(var(--accent), var(--accent)) left top / 2px 12px no-repeat,
-    linear-gradient(var(--accent), var(--accent)) right top / 12px 2px no-repeat,
-    linear-gradient(var(--accent), var(--accent)) right top / 2px 12px no-repeat,
-    linear-gradient(var(--accent), var(--accent)) left bottom / 12px 2px no-repeat,
-    linear-gradient(var(--accent), var(--accent)) left bottom / 2px 12px no-repeat,
-    linear-gradient(var(--accent), var(--accent)) right bottom / 12px 2px no-repeat,
-    linear-gradient(var(--accent), var(--accent)) right bottom / 2px 12px no-repeat;
-  transition: opacity .12s linear;
-}
-
-.btn:hover::before,
-button.btn:hover::before,
-.btn-primary:hover::before,
-.btn-accent:hover::before,
-.btn-gradient:hover::before,
-.btn-outline:hover::before,
-.btn-ghost:hover::before,
-button:not([class]):hover::before,
-.btn:focus-visible::before,
-button.btn:focus-visible::before,
-.btn-primary:focus-visible::before,
-.btn-accent:focus-visible::before,
-.btn-gradient:focus-visible::before,
-.btn-outline:focus-visible::before,
-.btn-ghost:focus-visible::before,
-button:not([class]):focus-visible::before {
-  opacity: 1;
-}
-
-.btn:hover::after,
-button.btn:hover::after,
-.btn-primary:hover::after,
-.btn-accent:hover::after,
-.btn-gradient:hover::after,
-.btn-outline:hover::after,
-.btn-ghost:hover::after,
-button:not([class]):hover::after {
-  animation: btn-sweep .55s var(--ease-spatial);
-}
-
-@keyframes btn-sweep {
-  from { transform: translateX(-120%) skewX(-18deg); }
-  to   { transform: translateX(180%) skewX(-18deg); }
-}
-
-.btn:hover,
-button.btn:hover,
-.btn-primary:hover,
-.btn-accent:hover,
-.btn-gradient:hover,
-.btn-outline:hover,
-.btn-ghost:hover,
-button:not([class]):hover {
-  filter: brightness(1.08);
-  box-shadow: var(--glow-neon);
-  transform: translateY(-2px);
-}
-
-.btn:active,
-button.btn:active,
-.btn-primary:active,
-.btn-accent:active,
-.btn-gradient:active,
-.btn-outline:active,
-.btn-ghost:active,
-button:not([class]):active { transform: translateY(0); }
-
-.btn:focus-visible,
-button.btn:focus-visible,
-.btn-primary:focus-visible,
-.btn-accent:focus-visible,
-.btn-gradient:focus-visible,
-.btn-outline:focus-visible,
-.btn-ghost:focus-visible,
-button:not([class]):focus-visible {
-  outline: none;
-  box-shadow: var(--glow-focus);
-}
-
-.btn:disabled,
-button.btn:disabled,
-.btn-primary:disabled,
-.btn-accent:disabled,
-.btn-gradient:disabled,
-.btn-outline:disabled,
-.btn-ghost:disabled,
-button:not([class]):disabled {
-  opacity: .5;
-  cursor: not-allowed;
-  transform: none;
-  filter: none;
-  animation: none;
-}
-
-// Azione principale della pagina: massimo contrasto.
-.btn-primary {
-  --_bg: var(--accent);
-  --_fg: var(--on-accent);
-  box-shadow: var(--glow-accent);
-}
-
-// Azione secondaria, o principale su fondo già chiaro.
+// Azione alternativa: secondo accento del tono, pieno.
 .btn-accent {
-  --_bg: var(--accent-2);
-  --_fg: var(--on-accent-2);
-  box-shadow: var(--glow-accent-2);
+  --_bg: var(--accent-2); --_fg: var(--on-accent-2);
+  --_bd: var(--accent-2);
 }
 
-.btn-gradient {
-  --_bg: var(--accent-2);
-  --_fg: var(--on-accent-2);
-  background:
-    linear-gradient(120deg, var(--accent-2), var(--accent)) padding-box,
-    conic-gradient(from var(--hud-angle), var(--accent), var(--accent-2), var(--accent)) border-box;
-  box-shadow: var(--glow-accent-2);
-}
-
-// Azione terziaria: si appoggia alla superficie, non compete con la principale.
+// Azione secondaria: bordo pieno del colore del testo, sempre visibile.
 .btn-outline {
-  --_bg: var(--surface-strong);
-  --_fg: var(--accent);
+  --_bg: transparent; --_fg: var(--text); --_bd: var(--text);
+  --_fill: var(--text);
 }
-.btn-outline:hover { --_bg: var(--accent); --_fg: var(--on-accent); }
+// Il riempimento all'hover usa il colore del testo: il testo deve diventare
+// il colore del fondo del tono. Lo calcoliamo per tono.
+// Il testo dell'outline all'hover è il "contrario" del colore del testo:
+// --on-text lo fornisce ogni tono (crema ↔ blu).
+.btn-outline:hover { color: var(--on-text, var(--c-deep-blue)); }
 
+// Azione di appoggio: superficie leggera con bordo, mai trasparente al 100%.
 .btn-ghost {
-  --_bg: var(--surface);
-  --_fg: var(--text);
+  --_bg: var(--surface-strong); --_fg: var(--text); --_bd: var(--line);
+  --_fill: var(--accent-soft);
 }
-.btn-ghost:hover { --_bg: var(--text); --_fg: var(--canvas-bg); }
+
+// Bottone compatto (tabelle, barre).
+.btn-sm { min-height: 38px; padding: 8px 14px; font-size: .9rem; }
+
+// Spinner di caricamento dentro un bottone.
+.spinner {
+  width: 18px; height: 18px; flex: 0 0 auto;
+  border: 2px solid currentColor; border-right-color: transparent;
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* =============================================================================
+   SUPERFICI
+   .glass-card e .hud-panel sono i contenitori del backoffice e delle pagine
+   interne. Il velo 2 aggiunge i mirini agli angoli (--bracket: 1).
+   ============================================================================= */
+.glass-card,
+.hud-panel {
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--surface-border);
+  border-radius: var(--radius);
+  backdrop-filter: blur(var(--surface-blur));
+  -webkit-backdrop-filter: blur(var(--surface-blur));
+  color: var(--text);
+  transition: border-color .3s var(--ease-spatial), box-shadow .3s var(--ease-spatial);
+}
+.glass-card { @include cut-corners(var(--cut)); }
+
+// Mirini agli angoli: visibili solo dove il velo li accende.
+.brackets {
+  position: relative;
+  &::after {
+    content: '';
+    position: absolute; inset: 0; pointer-events: none;
+    opacity: var(--bracket);
+    background:
+      linear-gradient(var(--signal), var(--signal)) left top / 14px 2px no-repeat,
+      linear-gradient(var(--signal), var(--signal)) left top / 2px 14px no-repeat,
+      linear-gradient(var(--signal), var(--signal)) right top / 14px 2px no-repeat,
+      linear-gradient(var(--signal), var(--signal)) right top / 2px 14px no-repeat,
+      linear-gradient(var(--signal), var(--signal)) left bottom / 14px 2px no-repeat,
+      linear-gradient(var(--signal), var(--signal)) left bottom / 2px 14px no-repeat,
+      linear-gradient(var(--signal), var(--signal)) right bottom / 14px 2px no-repeat,
+      linear-gradient(var(--signal), var(--signal)) right bottom / 2px 14px no-repeat;
+  }
+}
+
+// Griglia di precisione per le fasce chiare, dove la scena di rete non si vede.
+.precision-grid {
+  background-image:
+    linear-gradient(var(--grid-ink) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-ink) 1px, transparent 1px);
+  background-size: 48px 48px;
+  background-position: -1px -1px;
+}
+
+// Etichetta compatta (categoria, stato). Sentence case, non maiuscolo.
+// Solo contorno e testo nel colore di segnale: nitida su ogni fondo.
+.badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 3px 10px;
+  font-size: .8rem; font-weight: 600; line-height: 1.35;
+  border-radius: calc(var(--radius) * .6 + 2px);
+  background: transparent;
+  color: var(--signal);
+  border: 1px solid currentColor;
+  white-space: nowrap;
+}
+.badge-strong { background: var(--accent); color: var(--on-accent); border-color: transparent; }
 
 /* =============================================================================
    CAMPI DEI MODULI
    ============================================================================= */
-input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']):not([type='hidden']),
+// :where() azzera la specificità: i componenti possono personalizzare i campi
+// con un selettore semplice, senza combattere contro questa regola.
+:where(input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']):not([type='hidden']),
 select,
-textarea {
-  font-family: inherit;
+textarea) {
+  width: 100%;
+  min-height: 46px;
+  padding: 11px 14px;
   color: var(--text);
   background: var(--surface-strong);
   border: 1px solid var(--surface-border);
   border-radius: var(--radius);
-  clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
   outline: none;
-  transition:
-    border-color .28s var(--ease-spatial),
-    box-shadow .28s var(--ease-spatial),
-    background .22s ease;
-}
+  font-size: 1rem;
+  transition: border-color .25s var(--ease-spatial), box-shadow .25s var(--ease-spatial);
 
-input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']):not([type='hidden'])::placeholder,
-textarea::placeholder {
-  color: var(--text-muted);
+  &::placeholder { color: var(--text-muted); }
+  &:hover { border-color: var(--line-strong); }
+  &:focus { border-color: var(--signal); box-shadow: var(--glow-focus); }
+  &:disabled { opacity: .6; cursor: not-allowed; }
 }
+textarea { resize: vertical; min-height: 110px; }
 
-input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']):not([type='hidden']):hover,
-select:hover,
-textarea:hover {
-  border-color: var(--line-strong);
+:where(input[type='checkbox'], input[type='radio']) { accent-color: var(--c-purple); width: 18px; height: 18px; }
+
+// Compilazione automatica del browser: Chrome dipinge il campo di giallo/bianco
+// e il testo resta del nostro colore, diventando illeggibile. Si ridipinge il
+// fondo con un'ombra interna e si forza il colore del testo del tono.
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill,
+select:-webkit-autofill {
+  -webkit-text-fill-color: var(--autofill-fg, var(--text));
+  caret-color: var(--autofill-fg, var(--text));
+  -webkit-box-shadow: 0 0 0 1000px var(--autofill-bg, var(--canvas-bg)) inset;
+  box-shadow: 0 0 0 1000px var(--autofill-bg, var(--canvas-bg)) inset;
+  transition: background-color 9999s ease-out 0s;
 }
-
-input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']):not([type='hidden']):focus,
-select:focus,
-textarea:focus {
-  border-color: var(--accent);
-  background: var(--surface-strong);
-  box-shadow: var(--glow-focus);
-  animation: input-flash .38s ease;
+.tone-light, .tone-fixed-light, .tone-signal {
+  --autofill-bg: var(--c-cream);
+  --autofill-fg: var(--c-deep-blue);
 }
-
-// Breve lampo alla presa di fuoco: segnala dove è finito il cursore senza
-// dover guardare la tastiera. Dura poco per non diventare fastidioso.
-@keyframes input-flash {
-  0%   { box-shadow: 0 0 0 0 var(--accent), 0 0 32px var(--accent-soft); }
-  100% { box-shadow: var(--glow-focus); }
+.tone-dark, .tone-fixed-dark, .tone-brand {
+  --autofill-bg: var(--c-deep-blue);
+  --autofill-fg: var(--c-cream);
 }
-
-input[type='checkbox'],
-input[type='radio'] {
-  accent-color: var(--accent-2);
-}
-
-::-webkit-scrollbar { width: 12px; }
-::-webkit-scrollbar-track { background: var(--canvas-bg); }
-::-webkit-scrollbar-thumb { background: var(--accent-2); }
 
 /* =============================================================================
-   ACCESSIBILITÀ
-   Chi ha chiesto al sistema operativo di ridurre i movimenti, spesso per
-   disturbi vestibolari, non deve subire animazioni. Ogni animazione nuova va
-   aggiunta anche qui.
+   RIVELAZIONE ALLO SCORRIMENTO (direttiva fidcReveal)
+   Parte solo quando l'elemento entra nella finestra: nessuna animazione
+   sprecata fuori dal campo visivo. Lo stato iniziale si applica solo se il
+   JavaScript è attivo (classe .reveal-armed), così senza JS tutto è visibile.
+   ============================================================================= */
+.reveal-armed {
+  opacity: 0;
+  transform: translateY(18px);
+  transition:
+    opacity .7s var(--ease-spatial) var(--reveal-delay, 0ms),
+    transform .7s var(--ease-spatial) var(--reveal-delay, 0ms);
+}
+.reveal-armed.is-visible { opacity: 1; transform: none; }
+
+// ---- Barre di scorrimento -----------------------------------------------------
+* { scrollbar-color: var(--c-purple) transparent; scrollbar-width: thin; }
+
+/* =============================================================================
+   ACCESSIBILITÀ — riduzione del movimento
+   Ogni animazione nuova va aggiunta qui.
    ============================================================================= */
 @media (prefers-reduced-motion: reduce) {
-  .btn, button.btn, .btn-primary, .btn-accent, .btn-gradient,
-  .btn-outline, .btn-ghost, button:not([class]) {
-    animation: none !important;
-    transform: none !important;
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
   }
-  .btn::after,
-  button.btn::after,
-  .btn-primary::after,
-  .btn-accent::after,
-  .btn-gradient::after { animation: none !important; display: none; }
-  .glass-card, .hud-panel, input, select, textarea { transition: none; }
-  .glass-card:hover, .hud-panel:hover { transform: none; }
-  input:focus, select:focus, textarea:focus { animation: none; }
+  .reveal-armed { opacity: 1; transform: none; }
+  .btn, .btn-primary, .btn-accent, .btn-outline, .btn-ghost { transform: none !important; }
 }

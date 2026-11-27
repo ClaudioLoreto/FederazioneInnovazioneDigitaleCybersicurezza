@@ -25,10 +25,20 @@ La soluzione adottata si chiama **velo** (*veil*):
    attributo data-theme sul tag <html>
             │
    ┌────────┼────────┐
- tema 1   tema 2   tema 3     →  cambiano SOLO i colori
+ tema 1   tema 2   tema 3     →  cambiano struttura, densità, colori, movimento
 ```
 
-Il tema non aggiunge e non toglie contenuti: ridefinisce un pugno di variabili CSS.
+Il tema non aggiunge e non toglie contenuti. Fa due cose:
+- ridefinisce le **rampe di tono** (`--D-*` scuro, `--L-*` chiaro, `--B-*` fascia viola,
+  `--S-*` fascia di richiamo) e i token di forma (`--radius`, `--cut`, `--density`,
+  `--motion`) in `styles/_themes.scss`;
+- attiva le varianti strutturali scritte nei componenti sotto
+  `:host-context([data-theme='n'])` (griglie, cornice dell'hero, card a riga…).
+
+Ogni sezione della home dichiara il suo tono (`.tone-dark`, `.tone-light`,
+`.tone-brand`, `.tone-signal`): è il velo a decidere cosa significa. Le pagine di
+accesso usano toni fissi (`.tone-fixed-dark`, `.tone-fixed-light`) perché il modulo
+deve restare blu su crema con qualunque velo.
 Cambiarlo è istantaneo e non ricarica la pagina.
 
 **In pratica:**
@@ -137,7 +147,7 @@ frontend/src/app/
    ├─ illustrazioni/             persone stilizzate (una scena per pilastro)
    ├─ safe-logo/                 cassaforte digitale animata
    ├─ svg-motifs/                sfondi decorativi
-   ├─ background-canvas/         scena 3D di sfondo (Three.js)
+   ├─ background-canvas/         scena di rete 2D di sfondo
    ├─ theme/                     gestione del velo attivo
    ├─ dialogo/                   finestre di conferma e avviso interne
    ├─ campi/                     controlli di modulo su misura
@@ -158,24 +168,24 @@ frontend/src/app/
 
 ---
 
-## 4. Lo sfondo 3D
+## 4. La scena di rete (sfondo)
 
-`shared/background-canvas` disegna con Three.js un tunnel di nodi collegati, che
-rappresenta una rete di dati. È montato **una volta sola** in `app.component.ts`, in
-posizione fissa e dietro tutto (`z-index: -1`), quindi accompagna ogni pagina, sito
-pubblico e backoffice compresi.
+`shared/background-canvas` disegna su un canvas 2D una rete: griglia di precisione
+con mirini, nodi che si collegano quando sono vicini, pacchetti che viaggiano sui
+collegamenti, colonne di telemetria binaria quasi invisibili. È montata **una volta
+sola** in `app.component.ts`, fissa e dietro tutto (`z-index: -1`).
 
-Tre scelte importanti, da non rompere:
+Ha sostituito la scena Three.js (novembre 2026): stesso ruolo, circa 4 KB invece di
+700 KB, e un linguaggio visivo più vicino alla strumentazione che alla fantascienza.
 
-1. **Three.js si carica in modo differito** (`import('three')`), così i 700 KB della
-   libreria non pesano sul primo caricamento della pagina.
-2. **L'interfaccia sopra è di vetro** (`.glass-card`, `.hud-panel`): sfondi semi-
-   trasparenti con sfocatura, per lasciar intravedere la scena.
-3. **`prefers-reduced-motion` congela l'animazione.** Chi ha impostato la riduzione dei
-   movimenti nel sistema operativo, spesso per disturbi vestibolari, deve poter usare il
-   sito. Ogni nuova animazione va aggiunta anche alla regola che la disattiva.
+Regole da non rompere:
 
----
+1. **Colori e intensità vengono dal velo** (`--canvas-bg`, `--canvas-ink`,
+   `--canvas-ink-2`, `--canvas-alpha`, `--motion`). Il velo 2 la rende più fitta e
+   veloce, il velo 3 quasi ferma.
+2. **Si ferma** a scheda nascosta e con `prefers-reduced-motion` (un fotogramma fisso).
+3. Le sezioni scure sono trasparenti e la lasciano vedere; quelle chiare la coprono e
+   usano la classe `.precision-grid` per non sembrare piatte.
 
 ## 5. Design system
 

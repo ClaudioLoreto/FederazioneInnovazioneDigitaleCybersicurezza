@@ -11,7 +11,7 @@
 
 | Campo | Valore |
 |-------|--------|
-| Ultimo aggiornamento | 2026-06-15 |
+| Ultimo aggiornamento | 2026-11-27 |
 | Migration corrente | `20260613231714_InitialCreate` |
 | Provider supportati | **SQLite** (dev locale, default · `EnsureCreated`, file `fidc_dev.db`) · SQL Server 2019 (prod, via migration) · PostgreSQL (demo/Railway, via migration) |
 | Sorgente del modello | `backend/FIDC.Dal/FidcDbContext.cs` |
@@ -116,6 +116,7 @@ erDiagram
         string ColoreTesto "hex palette"
         string StileRaggio "sharp | soft | rounded"
         string AbbinamentoFont "cyber | moderno | classico"
+        string EmblemaHero "cassaforte | scudo | nucleo"
         datetime CreatedAt "DEFAULT UtcNow"
         datetime UpdatedAt "NULL"
         bool IsDeleted "soft-delete, DEFAULT 0"
@@ -241,6 +242,7 @@ lato server dal `TemaController`).
 | `ColoreTesto` | `NVARCHAR(9)` | NOT NULL | testo principale (hex palette) |
 | `StileRaggio` | `NVARCHAR(20)` | NOT NULL | `sharp` \| `soft` \| `rounded` |
 | `AbbinamentoFont` | `NVARCHAR(20)` | NOT NULL | `cyber` \| `moderno` \| `classico` |
+| `EmblemaHero` | `NVARCHAR(20)` | NOT NULL, DEFAULT `cassaforte` | figura dell'hero: `cassaforte` \| `scudo` \| `nucleo` (aggiunta 2026-11-27) |
 | *(+ audit/soft-delete)* | | | |
 
 ---
@@ -292,6 +294,13 @@ scripts\db_migrate_update.bat update sqlserver   REM SQL Server (prod)
 | Data | Migration | Modifiche |
 |------|-----------|-----------|
 | 2026-06-13 | `20260613231714_InitialCreate` | Creazione iniziale: `Utenti`, `Eventi`, `News`, `Iscrizioni` con PK/FK/indici e soft-delete. |
+
+| 2026-11-27 | *(nessuna migration EF)* | Aggiunta colonna `ImpostazioniTema.EmblemaHero`. In SQLite (dev) la aggiunge `Program.cs` all'avvio con `ALTER TABLE` se manca. |
+
+> ⚠️ **Debito noto (pre-esistente):** `InitialCreate` non contiene né `ImpostazioniTema` né
+> `Documenti`/`IscrizioniNewsletter`, ed è generata per PostgreSQL. Prima di andare in
+> produzione su SQL Server va generata una migration allineata al modello:
+> `dotnet ef migrations add AllineamentoModello -p FIDC.Dal -s FIDC.Api`.
 
 > ➕ **Ogni nuova migration va aggiunta a questa tabella** e il diagramma ER al §1 va aggiornato di conseguenza.
 

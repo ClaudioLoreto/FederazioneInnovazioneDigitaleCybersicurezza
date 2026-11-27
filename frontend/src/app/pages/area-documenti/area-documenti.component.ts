@@ -7,10 +7,10 @@
 // =============================================================================
 
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
-import { NgFor, NgIf } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FidcApiService, Documento } from '../../services/fidc-api.service';
 import { AuthService } from '../../services/auth.service';
+import { AnimatedLogoComponent } from '../../shared/animated-logo/animated-logo.component';
 import { SafeLogoComponent } from '../../shared/safe-logo/safe-logo.component';
 
 /** Raggruppamento di documenti per categoria (per la resa a sezioni). */
@@ -27,7 +27,7 @@ interface GruppoDocumenti {
 @Component({
   selector: 'fidc-area-documenti',
   standalone: true,
-  imports: [NgFor, NgIf, RouterLink, SafeLogoComponent],
+  imports: [RouterLink, SafeLogoComponent, AnimatedLogoComponent],
   templateUrl: './area-documenti.component.html',
   styleUrl: './area-documenti.component.scss'
 })
@@ -39,12 +39,29 @@ export class AreaDocumentiComponent implements OnInit {
   readonly caricamento = signal(true);
   readonly errore = signal<string | null>(null);
   readonly filtro = signal('');
+  /** Filtro per categoria (null = tutte) e per visibilità. */
+  readonly categoria = signal<string | null>(null);
+  readonly visibilita = signal<'tutti' | 'Pubblico' | 'Riservato'>('tutti');
+
+  /** Categorie presenti, per i filtri rapidi. */
+  readonly categorie = computed(() =>
+    [...new Set(this.documenti().map((d) => d.categoria || 'Altro'))].sort((a, b) => a.localeCompare(b)));
+
+  readonly conteggi = computed(() => ({
+    tutti: this.documenti().length,
+    Pubblico: this.documenti().filter((d) => d.visibilita === 'Pubblico').length,
+    Riservato: this.documenti().filter((d) => d.visibilita === 'Riservato').length
+  }));
 
   /** Documenti filtrati per titolo/descrizione/categoria (case-insensitive). */
   readonly filtrati = computed(() => {
     const q = this.filtro().trim().toLowerCase();
     if (!q) return this.documenti();
+    const cat = this.categoria();
+    const vis = this.visibilita();
     return this.documenti().filter((d) =>
+      (!cat || (d.categoria || 'Altro') === cat) &&
+      (vis === 'tutti' || d.visibilita === vis) &&
       `${d.titolo} ${d.descrizione ?? ''} ${d.categoria}`.toLowerCase().includes(q)
     );
   });
@@ -78,4 +95,8 @@ export class AreaDocumentiComponent implements OnInit {
 
   /** Aggiorna il filtro di ricerca dall'input. */
   onFiltro(v: string): void { this.filtro.set(v); }
+
+  /** Riporta tutti i filtri allo stato iniziale. */
+  azzera(): void { this.filtro.set(''); this.categoria.set(null); this.visibilita.set('tutti'); }
 }
+

@@ -109,7 +109,7 @@ FIDC/
    ├─ services/                  API + autenticazione
    └─ shared/
       ├─ theme/                  velo attivo (data-theme)
-      ├─ background-canvas/      scena 3D (Three.js, una sola, dietro tutto)
+      ├─ background-canvas/      scena di rete 2D (una sola, dietro tutto)
       ├─ illustrazioni/          persone stilizzate per i pilastri
       ├─ animated-logo/          marchio (nome per esteso)
       ├─ safe-logo/              cassaforte (hero, peso minore)

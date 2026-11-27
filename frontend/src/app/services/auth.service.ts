@@ -76,22 +76,35 @@ export class AuthService {
    * @param err Errore catturato dalla sottoscrizione (tipicamente HttpErrorResponse).
    */
   descriviErroreLogin(err: unknown): string {
-    const status = err instanceof HttpErrorResponse ? err.status : (err as { status?: number })?.status;
+    return this.classificaErrore(err).dettaglio;
+  }
 
-    switch (status) {
-      case 0:
-        // Nessuna risposta HTTP: server spento, CORS bloccato o certificato non accettato.
-        return 'Impossibile connettersi al server. Verifica che le API siano in esecuzione e accetta il certificato HTTPS.';
-      case 400:
-      case 401:
-        return 'Credenziali non valide. Riprova.';
-      case 500:
-        return 'Errore interno del server.';
-      default:
-        // 5xx generici → comunque problema lato server; altri casi → fallback prudente.
-        if (typeof status === 'number' && status >= 500) return 'Errore interno del server.';
-        return 'Accesso non riuscito. Riprova tra qualche istante.';
+  /**
+   * Classifica un errore di accesso in tre casi distinti, perché chiedono
+   * azioni diverse: credenziali sbagliate (riprova), server irraggiungibile
+   * (non è colpa tua, riprova più tardi), errore del server (avvisa).
+   */
+  classificaErrore(err: unknown): { tipo: 'credenziali' | 'rete' | 'server'; titolo: string; dettaglio: string } {
+    const status = err instanceof HttpErrorResponse ? err.status : (err as { status?: number })?.status;
+    if (status === 0) {
+      return {
+        tipo: 'rete',
+        titolo: 'Server non raggiungibile',
+        dettaglio: 'Il servizio di accesso non risponde. Controlla la connessione o riprova tra qualche minuto.'
+      };
     }
+    if (status === 400 || status === 401 || status === 403) {
+      return {
+        tipo: 'credenziali',
+        titolo: 'Email o password non corrette',
+        dettaglio: 'Controlla di aver scritto bene l\'indirizzo e la password, poi riprova.'
+      };
+    }
+    return {
+      tipo: 'server',
+      titolo: 'Accesso non riuscito',
+      dettaglio: 'Il server ha avuto un problema imprevisto. Riprova; se succede ancora, scrivi alla segreteria.'
+    };
   }
 
   // --- helpers privati ------------------------------------------------------

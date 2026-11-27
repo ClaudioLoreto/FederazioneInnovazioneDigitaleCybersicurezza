@@ -1,17 +1,29 @@
 <!doctype html>
-<html lang="it">
+<html lang="it" data-theme="1">
 <head>
   <meta charset="utf-8" />
   <title>FIDC — Federazione Innovazione, Digitale e Cybersicurezza</title>
   <base href="/" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="description"
-        content="FIDC — Federazione Innovazione, Digitale e Cybersicurezza. Acceleriamo l'innovazione digitale dell'Italia in sicurezza." />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <!-- Font display "cyber/tech" per lo slogan e i titoli (Chakra Petch). -->
-  <link rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&display=swap" />
+        content="La Federazione Innovazione, Digitale e Cybersicurezza riunisce imprese, istituzioni, università e professionisti per un'Italia digitale più sicura." />
+  <meta name="theme-color" content="#333D6D" />
+  <!--
+    Anti-lampo (FOUC): applica subito il velo ricordato dall'ultima visita,
+    prima che Angular parta. Il colore di fondo è uno dei 4 della palette.
+    I font sono self-hosted (angular.json → styles): nessuna chiamata a Google.
+  -->
+  <script>
+    (function () {
+      try {
+        var c = JSON.parse(localStorage.getItem('fidc.theme.config') || 'null');
+        if (c && c.temaBase) document.documentElement.setAttribute('data-theme', c.temaBase);
+        if (c && c.personalizzato && c.coloreSfondo) document.documentElement.style.background = c.coloreSfondo;
+        else if (c && c.temaBase === '3') document.documentElement.style.background = '#FFF0D9';
+      } catch (e) { /* storage non disponibile: resta il velo 1 */ }
+    })();
+  </script>
+  <style>html { background: #333D6D; }</style>
 </head>
 <body>
   <fidc-root></fidc-root>

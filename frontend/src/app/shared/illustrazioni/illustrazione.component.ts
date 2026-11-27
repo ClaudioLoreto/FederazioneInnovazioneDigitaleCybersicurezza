@@ -207,11 +207,13 @@ export type ScenaIllustrazione =
     .testa   { fill: var(--accent-2); }
     .scuro, .scura { opacity: .55; }
 
-    .piano   { fill: var(--surface-2); }
-    .schermo { fill: var(--surface-2); }
-    .contorno{ stroke: var(--bordo); stroke-width: 1.6; stroke-linecap: round; }
+    /* Arredi e schermi nel colore del testo della card: si staccano sempre dal
+       fondo. (Prima usavano --surface-2 e --bordo, mai definiti: diventavano neri.) */
+    .piano   { fill: var(--card-text, var(--text)); opacity: .9; }
+    .schermo { fill: var(--card-text, var(--text)); }
+    .contorno{ stroke: var(--card-soft, var(--text-soft)); stroke-width: 1.6; stroke-linecap: round; }
     .arto    { stroke: var(--accent); stroke-width: 4; stroke-linecap: round; }
-    .riga    { stroke: var(--text-soft); stroke-width: 2; stroke-linecap: round; opacity: .5; }
+    .riga    { stroke: var(--card-bg, var(--surface)); stroke-width: 2; stroke-linecap: round; opacity: .5; }
     .riga.viva { stroke: var(--accent-2); opacity: 1; }
     .dato    { fill: var(--accent-2); }
     .dato.tenue { opacity: .5; }

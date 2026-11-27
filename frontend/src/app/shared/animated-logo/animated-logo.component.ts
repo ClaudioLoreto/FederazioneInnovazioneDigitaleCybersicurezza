@@ -27,6 +27,7 @@
 
 import { Component, HostListener, Input, signal } from '@angular/core';
 import { NgIf } from '@angular/common';
+import { BRAND } from '../../content/home-content';
 
 @Component({
   selector: 'fidc-animated-logo',
@@ -40,7 +41,7 @@ import { NgIf } from '@angular/common';
          [style.transform]="tilt()"
          xmlns="http://www.w3.org/2000/svg"
          role="img"
-         aria-label="Federazione Innovazione, Digitale e Cybersicurezza">
+         [attr.aria-label]="nome">
 
       <!-- ============ SIMBOLO: porta blindata ============ -->
       <g class="mark" transform="translate(14, 14)">
@@ -56,7 +57,10 @@ import { NgIf } from '@angular/common';
               fill-opacity=".22" stroke-width="1.4"/>
 
         <!-- Ghiera della combinazione: ruota lentamente, come una serratura -->
-        <g class="ghiera" transform="translate(86,86)">
+        <!-- La traslazione sta su un gruppo esterno: se stesse sul gruppo animato,
+             la rotazione CSS la cancellerebbe e la ghiera finirebbe nell'angolo
+             in alto a sinistra (il vecchio "pallino ribelle"). -->
+        <g transform="translate(86,86)"><g class="ghiera">
           <circle r="42" fill="none" stroke-width="1.6" class="ghiera-cerchio"/>
           <line x1="0" y1="-42" x2="0" y2="-32" stroke-width="3" class="tacca"/>
           <line x1="42" y1="0" x2="32" y2="0" stroke-width="2" class="tacca"/>
@@ -64,7 +68,7 @@ import { NgIf } from '@angular/common';
           <line x1="-42" y1="0" x2="-32" y2="0" stroke-width="2" class="tacca"/>
           <line x1="-29.7" y1="-29.7" x2="-22.6" y2="-22.6" stroke-width="1.4" class="tacca"/>
           <line x1="29.7" y1="29.7" x2="22.6" y2="22.6" stroke-width="1.4" class="tacca"/>
-        </g>
+        </g></g>
 
         <!-- Chiavistelli: i quattro punti in cui l'anta si aggancia al telaio -->
         <rect class="chiavistello" x="78" y="12" width="16" height="10"/>
@@ -81,9 +85,9 @@ import { NgIf } from '@angular/common';
       <!-- Tre righe invece di una: alla larghezza a cui il marchio viene usato
            davvero, una riga sola costringerebbe a caratteri illeggibili. -->
       <g class="nome" *ngIf="!soloSimbolo" transform="translate(212, 0)">
-        <text class="riga-1" x="0" y="72">Federazione</text>
-        <text class="riga-2" x="0" y="112">Innovazione, Digitale</text>
-        <text class="riga-2" x="0" y="148">e Cybersicurezza</text>
+        <text class="riga-1" x="0" y="72">{{ righe[0] }}</text>
+        <text class="riga-2" x="0" y="112">{{ righe[1] }}</text>
+        <text class="riga-2" x="0" y="148">{{ righe[2] }}</text>
         <line class="filo" x1="0" y1="164" x2="300" y2="164" stroke-width="2"/>
       </g>
     </svg>
@@ -96,14 +100,14 @@ import { NgIf } from '@angular/common';
     }
 
     /* I colori arrivano dal tema: il marchio cambia insieme al resto del sito. */
-    .telaio { stroke: var(--accent); }
+    .telaio { stroke: var(--signal, var(--accent)); }
     .anta { fill: var(--accent-2); stroke: var(--accent-2); }
-    .ghiera-cerchio { stroke: var(--accent-2); }
-    .tacca { stroke: var(--accent); }
-    .chiavistello { fill: var(--accent); }
-    .nucleo { fill: var(--accent); }
-    .nucleo-onda { stroke: var(--accent); }
-    .filo { stroke: var(--accent); opacity: .55; }
+    .ghiera-cerchio { stroke: var(--signal, var(--accent)); opacity: .8; }
+    .tacca { stroke: var(--signal, var(--accent)); }
+    .chiavistello { fill: var(--signal, var(--accent)); }
+    .nucleo { fill: var(--signal, var(--accent)); }
+    .nucleo-onda { stroke: var(--signal, var(--accent)); }
+    .filo { stroke: var(--signal, var(--accent)); opacity: .55; }
 
     .riga-1 {
       font-family: var(--font-display);
@@ -165,6 +169,10 @@ export class AnimatedLogoComponent {
    * in tutti gli altri casi il nome per esteso deve restare visibile.
    */
   @Input() soloSimbolo = false;
+
+  /** Nome per esteso, su tre righe: arriva da BRAND per poterlo sostituire. */
+  readonly righe = BRAND.righeMarchio;
+  readonly nome = BRAND.nome;
 
   readonly tilt = signal('perspective(800px) rotateX(0deg) rotateY(0deg)');
 

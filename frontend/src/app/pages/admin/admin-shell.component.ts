@@ -6,8 +6,7 @@
 //  Accessibile solo dietro l'AuthGuard.
 // =============================================================================
 
-import { Component, computed, inject, signal } from '@angular/core';
-import { NgIf } from '@angular/common';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive, Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { AnimatedLogoComponent } from '../../shared/animated-logo/animated-logo.component';
@@ -16,12 +15,11 @@ import { descriviRuolo } from '../../shared/ruoli';
 @Component({
   selector: 'fidc-admin-shell',
   standalone: true,
-  imports: [NgIf, RouterOutlet, RouterLink, RouterLinkActive, AnimatedLogoComponent],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, AnimatedLogoComponent],
   template: `
-  <div class="shell" [class.menu-aperto]="menuAperto()">
+  <div class="shell" [class.menu-aperto]="menuAperto()" [class.compatto]="compatto()">
 
-    <!-- Comando del menu su schermo stretto. Su schermo largo il menu è sempre
-         visibile e questo bottone non serve, quindi viene nascosto. -->
+    <!-- Comando del menu su schermo stretto. -->
     <button type="button" class="menu-toggle" (click)="menuAperto.set(!menuAperto())"
             [attr.aria-expanded]="menuAperto()" aria-controls="menu-backoffice"
             [attr.aria-label]="menuAperto() ? 'Chiudi il menu' : 'Apri il menu'">
@@ -29,239 +27,217 @@ import { descriviRuolo } from '../../shared/ruoli';
     </button>
 
     <!-- MENU LATERALE -->
-    <aside class="sidebar hud-panel" id="menu-backoffice">
-      <div class="brand"><fidc-animated-logo></fidc-animated-logo></div>
+    <aside class="sidebar" id="menu-backoffice">
+      <div class="brand">
+        <a routerLink="/" aria-label="Vai al sito pubblico">
+          <fidc-animated-logo [soloSimbolo]="compatto()" [interactive]="false"></fidc-animated-logo>
+        </a>
+      </div>
 
-      <nav (click)="menuAperto.set(false)">
-        <a routerLink="/admin/dashboard" routerLinkActive="active"
-           [routerLinkActiveOptions]="{ exact: true }">
-          <span class="ico" aria-hidden="true">▦</span> Pannello
-        </a>
-        <a routerLink="/admin/eventi" routerLinkActive="active">
-          <span class="ico" aria-hidden="true">◆</span> Eventi
-        </a>
-        <a routerLink="/admin/news" routerLinkActive="active">
-          <span class="ico" aria-hidden="true">✎</span> News
-        </a>
-        <a routerLink="/admin/documenti" routerLinkActive="active">
-          <span class="ico" aria-hidden="true">▤</span> Documenti
-        </a>
-
-        <!-- Sezioni riservate alla Direzione. Nasconderle è una comodità:
-             la protezione vera è sugli endpoint del server. -->
-        <ng-container *ngIf="auth.isSuperUser()">
-          <span class="nav-sep">Amministrazione</span>
-          <a routerLink="/admin/utenti" routerLinkActive="active">
-            <span class="ico" aria-hidden="true">◉</span> Utenti
+      <nav (click)="menuAperto.set(false)" aria-label="Sezioni del backoffice">
+        @for (v of vociVisibili(); track v.rotta) {
+          @if (v.gruppo) { <span class="nav-sep">{{ v.gruppo }}</span> }
+          <a [routerLink]="v.rotta" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: v.esatta ?? false }"
+             [attr.title]="compatto() ? v.label : null">
+            <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path [attr.d]="v.icona"/></svg>
+            <span class="lbl">{{ v.label }}</span>
           </a>
-          <a routerLink="/admin/newsletter" routerLinkActive="active">
-            <span class="ico" aria-hidden="true">✉</span> Newsletter
-          </a>
-          <a routerLink="/admin/impostazioni" routerLinkActive="active">
-            <span class="ico" aria-hidden="true">⚙</span> Aspetto del sito
-          </a>
-        </ng-container>
+        }
       </nav>
 
-      <div class="role-card" *ngIf="auth.utente()">
-        <span class="role-label">Profilo attivo</span>
-        <strong>{{ ruolo().etichetta }}</strong>
-        <small>{{ ruolo().ambito }}</small>
+      <div class="sidebar-piede">
+        @if (auth.utente()) {
+          <div class="role-card">
+            <strong>{{ ruolo().etichetta }}</strong>
+            <small>{{ ruolo().ambito }}</small>
+          </div>
+        }
+        <button type="button" class="comprimi" (click)="compatto.set(!compatto())"
+                [attr.aria-label]="compatto() ? 'Espandi il menu' : 'Comprimi il menu'"
+                [attr.aria-pressed]="compatto()">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>
+          <span class="lbl">Comprimi</span>
+        </button>
       </div>
     </aside>
 
     <!-- AREA CONTENUTI -->
     <div class="main">
-      <header class="topbar hud-panel" *ngIf="auth.utente() as u">
-        <div class="who">
-          <span class="hello">Bentornato,</span>
-          <strong>{{ u.nomeCompleto }}</strong>
-          <span class="badge">{{ ruolo().etichetta }}</span>
-        </div>
-
-        <!-- Uscita: icona con etichetta accessibile. Il simbolo è comprensibile
-             a colpo d'occhio e non occupa spazio nella barra. -->
-        <button type="button" class="logout" (click)="logout()"
-                aria-label="Esci dall'area riservata" title="Esci dall'area riservata">
-          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false">
-            <path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3"
-                  fill="none" stroke="currentColor" stroke-width="2"
-                  stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M10 8l-4 4 4 4M6 12h9"
-                  fill="none" stroke="currentColor" stroke-width="2"
-                  stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </button>
-      </header>
+      @if (auth.utente(); as u) {
+        <header class="topbar">
+          <div class="who">
+            <span class="avatar" aria-hidden="true">{{ iniziali(u.nomeCompleto) }}</span>
+            <div>
+              <strong>{{ u.nomeCompleto }}</strong>
+              <span class="ruolo-badge">{{ ruolo().etichetta }}</span>
+            </div>
+          </div>
+          <div class="topbar-azioni">
+            <a routerLink="/" class="sito">Vedi il sito</a>
+            <button type="button" class="logout" (click)="logout()">
+              <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+                <path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 8l-4 4 4 4M6 12h9"/>
+              </svg>
+              Esci
+            </button>
+          </div>
+        </header>
+      }
 
       <section class="content">
         <router-outlet></router-outlet>
       </section>
     </div>
 
-    <!-- Velo che chiude il menu toccando fuori, su schermo stretto. -->
     <div class="scrim" (click)="menuAperto.set(false)" aria-hidden="true"></div>
   </div>
   `,
   styles: [`
-    :host { display:block; }
+    :host { display: block; }
 
     .shell {
-      display:grid; grid-template-columns: 248px 1fr; min-height:100vh;
-      gap:10px; padding:10px;
-      font-family: var(--font-body);
-      background: transparent; color: var(--text);
+      --side: 264px;
+      display: grid; grid-template-columns: var(--side) minmax(0, 1fr);
+      min-height: 100vh;
+      font-family: var(--font-body); color: var(--text);
+      transition: grid-template-columns .35s var(--ease-spatial);
     }
+    .shell.compatto { --side: 84px; }
 
     /* ---- Menu laterale ---- */
     .sidebar {
-      color: var(--text);
-      display:flex; flex-direction:column; gap:8px; padding:22px 16px;
-      position:sticky; top:10px; height:calc(100vh - 20px);
-      border-radius: var(--radius);
-      clip-path: polygon(0 0, calc(100% - 22px) 0, 100% 22px, 100% 100%, 0 100%);
+      position: sticky; top: 0; height: 100vh;
+      display: flex; flex-direction: column; gap: 8px;
+      padding: 20px 14px;
+      background: color-mix(in srgb, var(--canvas-bg) 88%, transparent);
+      backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+      border-right: 1px solid var(--line);
+      overflow-y: auto; overflow-x: hidden;
     }
-    .sidebar.hud-panel:hover { transform:none; }
-    .brand {
-      display:flex; justify-content:center; padding:8px 0 22px;
-      border-bottom:1px solid var(--line); margin-bottom:14px;
-    }
+    .brand { padding: 4px 6px 20px; margin-bottom: 8px; border-bottom: 1px solid var(--line); }
+    .brand a { display: block; width: 100%; max-width: 200px; }
+    .compatto .brand a { width: 44px; margin-inline: auto; }
 
-    nav { display:flex; flex-direction:column; gap:6px; }
+    nav { display: flex; flex-direction: column; gap: 4px; }
+    .nav-sep { display: block; margin: 18px 12px 6px; font-size: .82rem; font-weight: 600; color: var(--text-muted); white-space: nowrap; }
+    .compatto .nav-sep { visibility: hidden; height: 1px; margin: 12px 0; border-top: 1px solid var(--line); }
     nav a {
-      display:flex; align-items:center; gap:12px; cursor:pointer;
-      padding:13px 15px; color: var(--text-soft);
-      font-weight:600; font-size:.95rem; text-decoration:none;
-      border:1px solid transparent;
-      clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
-      transition: background .28s var(--ease-spatial), color .2s,
-                  transform .28s var(--ease-spatial), border-color .28s;
+      position: relative;
+      display: flex; align-items: center; gap: 12px;
+      min-height: 46px; padding: 10px 12px;
+      border-radius: var(--radius);
+      color: var(--text-soft); font-weight: 500;
+      transition: background .2s, color .2s;
+      white-space: nowrap;
     }
-    nav a .ico { color: var(--accent); font-size:1rem; width:18px; text-align:center; }
-    .nav-sep {
-      display:block; margin:14px 6px 4px; font-size:.66rem; font-weight:800;
-      text-transform:uppercase; letter-spacing:.14em; color: var(--text-muted);
+    .ico { width: 22px; height: 22px; flex: 0 0 auto; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+    nav a:hover { background: var(--accent-soft); color: var(--text); }
+    /* Voce attiva: barra di segnale a sinistra, testo pieno, fondo tenue. */
+    nav a.active { background: var(--accent-soft); color: var(--text); font-weight: 600; }
+    nav a.active::before {
+      content: ''; position: absolute; left: -14px; top: 8px; bottom: 8px; width: 4px;
+      background: var(--signal); border-radius: 0 3px 3px 0;
     }
-    nav a:hover {
-      background: var(--accent-2-soft); color: var(--text);
-      transform: translateX(4px); border-color: var(--line-strong);
-    }
-    /* La voce attiva è piena e ad alto contrasto: si deve capire dove si è
-       senza dover leggere, anche con la coda dell'occhio. */
-    nav a.active {
-      background: var(--accent); color: var(--on-accent);
-      border-color: var(--accent); font-weight:800;
-    }
-    nav a.active .ico { color: var(--on-accent); }
-    nav a:focus-visible { outline:none; box-shadow: var(--glow-focus); }
+    nav a.active .ico { color: var(--signal); }
+    .compatto nav a { justify-content: center; }
+    .compatto .lbl { display: none; }
 
+    .sidebar-piede { margin-top: auto; display: grid; gap: 10px; padding-top: 16px; }
     .role-card {
-      margin-top:auto; display:flex; flex-direction:column; gap:2px;
-      background: var(--surface); border:1px solid var(--surface-border);
-      clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
-      padding:14px 16px; backdrop-filter: blur(12px);
+      display: grid; gap: 2px; padding: 12px 14px;
+      border: 1px solid var(--line); border-radius: var(--radius);
+      strong { color: var(--text); }
+      small { color: var(--text-muted); font-size: .82rem; line-height: 1.4; }
     }
-    .role-label {
-      font-size:.68rem; text-transform:uppercase; letter-spacing:.14em;
-      color: var(--accent);
+    .compatto .role-card { display: none; }
+    .comprimi {
+      display: flex; align-items: center; gap: 10px; min-height: 42px; padding: 8px 12px;
+      background: transparent; color: var(--text-soft); border: 1px solid var(--line); border-radius: var(--radius);
+      cursor: pointer; font: inherit; font-size: .9rem;
+      svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; transition: transform .3s var(--ease-spatial); }
+      &:hover { color: var(--text); border-color: var(--line-strong); }
     }
-    .role-card strong { font-size:1.05rem; color: var(--text); }
-    .role-card small { color: var(--text-muted); font-size:.76rem; }
+    .compatto .comprimi { justify-content: center; svg { transform: rotate(180deg); } }
 
     /* ---- Barra superiore ---- */
-    .main { background:transparent; color: var(--text); display:flex; flex-direction:column; min-width:0; }
-
+    .main { display: flex; flex-direction: column; min-width: 0; }
     .topbar {
-      display:flex; align-items:center; justify-content:space-between; gap:16px;
-      padding:14px 24px; margin:4px 8px 0; border-radius: var(--radius);
-      clip-path: polygon(16px 0, 100% 0, 100% 100%, 0 100%, 0 16px);
-      position:sticky; top:10px; z-index:5;
+      position: sticky; top: 0; z-index: 5;
+      display: flex; align-items: center; justify-content: space-between; gap: 16px;
+      min-height: 68px; padding: 10px clamp(16px, 3vw, 36px);
+      background: color-mix(in srgb, var(--canvas-bg) 82%, transparent);
+      backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--line);
     }
-    .topbar.hud-panel:hover { transform:none; }
-    .who { display:flex; align-items:center; gap:10px; min-width:0; flex-wrap:wrap; }
-    .who .hello { color: var(--text-muted); font-size:.9rem; }
-    .who strong { font-size:1.05rem; color: var(--text); }
-    .badge {
-      font-size:.72rem; font-weight:800; text-transform:uppercase; letter-spacing:.06em;
-      padding:5px 11px; color: var(--on-accent); background: var(--accent);
-      clip-path: polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px);
+    .who { display: flex; align-items: center; gap: 12px; min-width: 0; }
+    .who strong { display: block; color: var(--text); line-height: 1.2; }
+    .avatar {
+      width: 40px; height: 40px; flex: 0 0 auto; display: grid; place-items: center;
+      font-family: var(--font-display); font-weight: 700;
+      background: var(--B-bg); color: var(--B-text); border-radius: var(--radius);
     }
-
+    .ruolo-badge { font-size: .85rem; color: var(--signal); font-weight: 600; }
+    .topbar-azioni { display: flex; align-items: center; gap: 10px; }
+    .sito { font-size: .92rem; color: var(--text-soft); text-decoration: underline; text-underline-offset: 4px; text-decoration-color: var(--line-strong); }
+    .sito:hover { color: var(--text); }
     .logout {
-      display:grid; place-items:center; flex:none;
-      width:42px; height:42px; padding:0;
-      border:1px solid var(--line-strong); background:transparent; color: var(--accent);
-      cursor:pointer;
-      clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
-      transition: background .24s, color .2s, border-color .24s;
+      display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 8px 14px;
+      background: transparent; color: var(--text); border: 1.5px solid var(--text); border-radius: max(var(--radius), 3px);
+      font: inherit; font-weight: 600; font-size: .92rem; cursor: pointer;
+      svg { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+      &:hover { background: var(--text); color: var(--on-text); }
     }
-    .logout:hover { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
-    .logout:focus-visible { outline:none; box-shadow: var(--glow-focus); }
 
-    .content { padding:32px; flex:1; min-width:0; }
+    .content { padding: clamp(20px, 3vw, 40px) clamp(16px, 3vw, 40px) 64px; flex: 1; min-width: 0; }
 
-    /* ---- Comando menu e velo: servono solo su schermo stretto ---- */
-    .menu-toggle { display:none; }
-    .scrim { display:none; }
+    .menu-toggle, .scrim { display: none; }
 
-    /* =========================================================================
-       SCHERMI STRETTI
-       Il menu diventa un pannello che scorre da sinistra. Non si nasconde
-       nessuna voce: cambia solo il modo di raggiungerla.
-       ========================================================================= */
+    /* ---- Schermi stretti: il menu diventa un pannello da sinistra ---- */
     @media (max-width: 900px) {
-      .shell { grid-template-columns: 1fr; padding:8px; }
+      .shell, .shell.compatto { grid-template-columns: minmax(0, 1fr); --side: 0px; }
+      .compatto .lbl, .compatto .role-card { display: revert; }
+      .comprimi { display: none !important; }
 
       .menu-toggle {
-        display:grid; place-items:center;
-        position:fixed; top:14px; left:14px; z-index:30;
-        width:46px; height:46px; padding:0; cursor:pointer;
-        background: var(--surface-strong); color: var(--accent);
-        border:1px solid var(--surface-border);
-        backdrop-filter: blur(var(--surface-blur));
-        clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+        display: grid; place-items: center;
+        position: fixed; top: 12px; left: 12px; z-index: 30;
+        width: 46px; height: 46px; padding: 0; cursor: pointer;
+        background: var(--surface-strong); color: var(--text);
+        border: 1px solid var(--line-strong); border-radius: var(--radius);
       }
       .hamburger, .hamburger::before, .hamburger::after {
-        display:block; width:20px; height:2px; background: currentColor;
+        display: block; width: 20px; height: 2px; background: currentColor;
         transition: transform .25s var(--ease-spatial), opacity .18s;
       }
-      .hamburger::before, .hamburger::after { content:''; position:absolute; }
+      .hamburger { position: relative; }
+      .hamburger::before, .hamburger::after { content: ''; position: absolute; left: 0; }
       .hamburger::before { transform: translateY(-6px); }
       .hamburger::after  { transform: translateY(6px); }
-      .menu-aperto .hamburger { background:transparent; }
+      .menu-aperto .hamburger { background: transparent; }
       .menu-aperto .hamburger::before { transform: rotate(45deg); }
       .menu-aperto .hamburger::after  { transform: rotate(-45deg); }
 
       .sidebar {
-        position:fixed; inset:0 auto 0 0; z-index:25;
-        width:min(280px, 84vw); height:100vh;
+        position: fixed; inset: 0 auto 0 0; z-index: 25;
+        width: min(290px, 86vw); height: 100vh;
+        padding-top: 72px;
+        background: var(--canvas-bg);    /* pieno: le voci restano leggibili */
+        border-right: 1px solid var(--line-strong);
         transform: translateX(-102%);
-        transition: transform .32s var(--ease-spatial);
-        clip-path:none;
-        /* Fondo pieno: sotto c'è la scena 3D e un pannello semitrasparente
-           renderebbe le voci illeggibili. */
-        background: var(--canvas-bg);
-        border-right:1px solid var(--line-strong);
-        overflow-y:auto;
+        transition: transform .35s var(--ease-spatial);
       }
-      .menu-aperto .sidebar { transform:none; }
+      .menu-aperto .sidebar { transform: none; }
+      .compatto nav a { justify-content: flex-start; }
+      .compatto .brand a { width: 100%; }
 
       .scrim {
-        display:block; position:fixed; inset:0; z-index:20;
-        background: var(--canvas-bg); opacity:0; pointer-events:none;
-        transition: opacity .3s ease;
+        display: block; position: fixed; inset: 0; z-index: 20;
+        background: var(--canvas-bg); opacity: 0; pointer-events: none; transition: opacity .3s;
       }
-      .menu-aperto .scrim { opacity:.72; pointer-events:auto; }
+      .menu-aperto .scrim { opacity: .72; pointer-events: auto; }
 
-      .topbar { margin:0 0 0 62px; padding:12px 16px; }
-      .who .hello { display:none; }
-      .content { padding:20px 14px; }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      nav a, .sidebar, .scrim, .hamburger,
-      .hamburger::before, .hamburger::after { transition:none; }
-      nav a:hover { transform:none; }
+      .topbar { padding-left: 70px; }
+      .sito { display: none; }
     }
   `]
 })
@@ -272,8 +248,46 @@ export class AdminShellComponent {
   /** Stato del menu su schermo stretto. Su schermo largo è irrilevante. */
   readonly menuAperto = signal(false);
 
+  /** Menu ridotto alle sole icone (schermo largo), ricordato fra le visite. */
+  readonly compatto = signal(this.leggiCompatto());
+
+  /**
+   * Voci del menu. Quelle con soloDirezione compaiono solo al ruolo SuperUser:
+   * nasconderle è una comodità, la protezione vera è sugli endpoint del server.
+   * Le icone sono tracciati SVG 24×24 a linea.
+   */
+  private readonly voci: { label: string; rotta: string; icona: string; esatta?: boolean; soloDirezione?: boolean; gruppo?: string }[] = [
+    { label: 'Pannello', rotta: '/admin/dashboard', esatta: true, icona: 'M4 4h7v7H4zM13 4h7v4h-7zM13 10h7v10h-7zM4 13h7v7H4z' },
+    { label: 'Eventi', rotta: '/admin/eventi', icona: 'M4 6h16v14H4zM4 10h16M9 3v5M15 3v5' },
+    { label: 'News', rotta: '/admin/news', icona: 'M5 4h11l3 3v13H5zM8 9h8M8 13h8M8 17h5' },
+    { label: 'Documenti', rotta: '/admin/documenti', icona: 'M4 7h6l2 2h8v10H4zM12 12v5M9.5 14.5L12 17l2.5-2.5' },
+    { label: 'Utenti', rotta: '/admin/utenti', soloDirezione: true, gruppo: 'Amministrazione', icona: 'M9 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM3 20c0-3.3 2.7-6 6-6s6 2.7 6 6M16 4.5a3.5 3.5 0 0 1 0 6.5M18 14c2 .8 3 3 3 6' },
+    { label: 'Newsletter', rotta: '/admin/newsletter', soloDirezione: true, icona: 'M3 6h18v12H3zM3 7l9 6 9-6' },
+    { label: 'Aspetto del sito', rotta: '/admin/impostazioni', soloDirezione: true, icona: 'M12 3a9 9 0 1 0 0 18c1.1 0 1.5-.8 1.5-1.6 0-1.2-1-1.6-1-2.6 0-.9.7-1.5 1.6-1.5H17a4 4 0 0 0 4-4c0-4.6-4-8.3-9-8.3zM7.5 12.5h.01M9.5 8h.01M14.5 8h.01' }
+  ];
+
+  readonly vociVisibili = computed(() => {
+    const direzione = this.auth.isSuperUser();
+    return this.voci.filter((v) => !v.soloDirezione || direzione);
+  });
+
+  iniziali(nome: string): string {
+    return nome.split(/\s+/).filter(Boolean).slice(0, 2).map((p) => p[0]?.toUpperCase()).join('');
+  }
+
   /** Denominazione ufficiale e ambito del ruolo dell'utente collegato. */
   readonly ruolo = computed(() => descriviRuolo(this.auth.utente()?.ruolo));
+
+  private leggiCompatto(): boolean {
+    try { return localStorage.getItem('fidc.admin.compatto') === '1'; } catch { return false; }
+  }
+
+  constructor() {
+    effect(() => {
+      const c = this.compatto();
+      try { localStorage.setItem('fidc.admin.compatto', c ? '1' : '0'); } catch { /* nessuno storage */ }
+    });
+  }
 
   /** Chiude la sessione e riporta alla pagina di accesso. */
   logout(): void {

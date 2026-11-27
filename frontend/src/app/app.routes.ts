@@ -2,7 +2,7 @@
 //  frontend/src/app/app.routes.ts
 //  ROUTING. Architettura "Veil": ESISTE UNA SOLA pagina di contenuto pubblico
 //  (LandingComponent). I temi (veli 1/2/3) NON sono rotte: sono skin applicate
-//  da ThemeService. Il cambio tema avviene dal widget demo e dal Backoffice.
+//  da ThemeService. Il velo si sceglie SOLO dal Backoffice (Aspetto del sito).
 // =============================================================================
 
 import { Routes } from '@angular/router';
@@ -112,6 +112,8 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./pages/admin/newsletter-admin.component').then((m) => m.NewsletterAdminComponent)
       },
+      // Alias richiesto dalla specifica: stesso Theme Builder.
+      { path: 'impostazioni-tema', pathMatch: 'full', redirectTo: 'impostazioni' },
       {
         path: 'impostazioni',
         canActivate: [superUserGuard],

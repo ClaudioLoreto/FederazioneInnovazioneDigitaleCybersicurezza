@@ -87,11 +87,9 @@ import { DialogoService } from './dialogo.service';
     .azioni { display: flex; justify-content: flex-end; gap: 12px; margin-top: 26px; flex-wrap: wrap; }
 
     .azioni button {
-      font: inherit; font-weight: 800; font-size: .84rem;
-      letter-spacing: .04em; text-transform: uppercase;
-      padding: 11px 20px; cursor: pointer;
-      border-radius: var(--radius);
-      clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+      font: inherit; font-weight: 600; font-size: .98rem;
+      min-height: 46px; padding: 11px 20px; cursor: pointer;
+      border-radius: max(var(--radius), 3px);
       transition: background .2s, color .18s, border-color .2s;
     }
     .azioni button:focus-visible { outline: none; box-shadow: var(--glow-focus); }

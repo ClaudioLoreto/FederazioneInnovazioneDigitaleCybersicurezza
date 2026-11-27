@@ -2,25 +2,27 @@
 //  frontend/src/styles/_palette.scss
 //  UNICA fonte dei colori del frontend FIDC.
 //
-//  COME LEGGERE QUESTO FILE — ci sono due livelli, e la distinzione è il motivo
-//  per cui il Theme Builder funziona:
+//  TRE LIVELLI, dal più rigido al più flessibile:
 //
-//   1. PALETTE (--c-*): i 4 colori istituzionali. Sono FISSI e non cambiano mai,
-//      qualunque tema sia attivo. Vanno usati solo qui dentro e nelle anteprime
-//      che devono mostrare il colore in quanto tale (es. gli swatch del builder).
+//   1. PALETTE (--c-*): i 4 colori istituzionali. Fissi, non cambiano mai.
 //
-//   2. TOKEN SEMANTICI (--surface, --accent, --text...): dicono a COSA serve un
-//      colore, non quale sia. I componenti usano SOLO questi. Cambiando tema si
-//      riassegnano i token ai 4 colori di sopra, e tutto il sito si adegua.
+//   2. RAMPE DI TONO (--D-*, --L-*, --B-*): ogni velo definisce tre "toni" di
+//      sezione — scuro (D), chiaro (L), di marca (B, la fascia viola). Una
+//      sezione della home dichiara il suo tono con la classe .tone-dark,
+//      .tone-light o .tone-brand; il velo decide cosa significa quel tono.
+//      È così che lo stesso HTML diventa "fasce alterne" nel velo 1, "tutto
+//      console scura" nel velo 2 e "tutto chiaro e arioso" nel velo 3.
 //
-//  ⚠️ Se in un componente scrivi var(--c-purple) stai bloccando quel pezzo di
-//  interfaccia su un colore: il tema non potrà più cambiarlo. Usa --accent.
+//   3. TOKEN SEMANTICI (--text, --accent, --surface...): ciò che i componenti
+//      usano davvero. Le classi .tone-* li riassegnano alla rampa del tono.
+//
+//  ⚠️ Nei componenti NON si scrive mai var(--c-purple): si usa --accent.
 // =============================================================================
 
-$c-deep-blue: #333D6D;   // sfondo scuro primario / testo su chiaro
-$c-purple:    #723EC3;   // accento profondo
-$c-peach:     #FFCF95;   // accento luminoso / highlight
-$c-cream:     #FFF0D9;   // sfondo chiaro / testo su scuro
+$c-deep-blue: #333D6D;   // blu profondo: fondi scuri, testo su chiaro
+$c-purple:    #723EC3;   // viola: superfici di marca, azione su chiaro
+$c-peach:     #FFCF95;   // pesca: azione su scuro, segnali luminosi
+$c-cream:     #FFF0D9;   // crema: fondi chiari, testo su scuro
 
 :root {
   // ---- LIVELLO 1: palette istituzionale (immutabile) -----------------------
@@ -29,83 +31,30 @@ $c-cream:     #FFF0D9;   // sfondo chiaro / testo su scuro
   --c-peach:     #{$c-peach};
   --c-cream:     #{$c-cream};
 
-  // ---- LIVELLO 2: token semantici -----------------------------------------
-  // Questi valori sono i predefiniti; ogni velo in _themes.scss li ridefinisce,
-  // e il Theme Builder può sovrascriverli a runtime.
-
-  // Sfondo della pagina. Trasparente perché sotto c'è la scena 3D.
-  --page-bg:       transparent;
-  // Colore da cui parte la scena 3D e che si vede dietro a tutto.
-  --canvas-bg:     #{$c-deep-blue};
-  // Quanto è visibile la scena 3D (si abbassa sui veli chiari).
-  --canvas-alpha:  1;
-
-  // Superfici: i pannelli di vetro che contengono i contenuti.
-  --surface:        #{rgba($c-deep-blue, .30)};
-  --surface-strong: #{rgba($c-deep-blue, .46)};
-  --surface-border: #{rgba($c-cream, .22)};
-  --surface-blur:   20px;
-  // Alone che segue il cursore sopra i pannelli.
-  --surface-spot:   #{rgba($c-purple, .20)};
-
-  // Testo.
-  --text:        #{$c-cream};
-  --text-soft:   #{rgba($c-cream, .78)};
-  --text-muted:  #{rgba($c-cream, .55)};
-
-  // Accenti. --accent è il colore d'azione (bottoni, link, dati in evidenza),
-  // --accent-2 il richiamo secondario. --on-* è il testo leggibile sopra.
-  --accent:        #{$c-peach};
-  --on-accent:     #{$c-deep-blue};
-  --accent-2:      #{$c-purple};
-  --on-accent-2:   #{$c-cream};
-  // Versioni tenui, per fondi di etichette e stati passivi.
-  --accent-soft:   #{rgba($c-peach, .16)};
-  --accent-2-soft: #{rgba($c-purple, .24)};
-
-  // Linee di separazione.
-  --line:        #{rgba($c-cream, .16)};
-  --line-strong: #{rgba($c-peach, .45)};
-
-  // Bagliori. Sono ombre a più raggi costruite sugli accenti del tema.
-  --glow-accent:   0 10px 32px #{rgba($c-peach, .34)};
-  --glow-accent-2: 0 12px 40px #{rgba($c-purple, .40)};
-  --glow-deep:     0 18px 50px #{rgba($c-deep-blue, .55)};
-  --glow-neon:
-    0 0 12px #{rgba($c-peach, .45)},
-    0 0 26px #{rgba($c-purple, .34)},
-    0 16px 44px #{rgba($c-deep-blue, .45)};
-  --glow-focus:
-    0 0 0 2px #{rgba($c-peach, .85)},
-    0 0 18px #{rgba($c-peach, .40)};
-
-  // Sezioni chiare: il tema può renderle piene invece che trasparenti.
-  --hero-bg:   transparent;
-  --hero-text: #{$c-cream};
-  --bg-elev:   #{rgba($c-deep-blue, .28)};
-
-  // Forma e tipografia.
-  --radius:       0px;
-  --ease-spatial: cubic-bezier(0.25, 1, 0.5, 1);
-  --font-display: 'Chakra Petch', 'Segoe UI', system-ui, sans-serif;
-  --font-body:    system-ui, 'Segoe UI', Roboto, sans-serif;
-
-  // ---- ALIAS STORICI -------------------------------------------------------
-  // Nomi usati prima dell'introduzione dei token semantici. Restano validi
-  // perché puntano ai nuovi: il codice non ancora convertito continua a
-  // funzionare E segue il tema, dato che le variabili si risolvono all'uso.
-  // Non usarli in codice nuovo.
-  --bg:           var(--page-bg);
-  --glass-bg:     var(--surface);
-  --glass-bg-2:   var(--surface-strong);
-  --glass-border: var(--surface-border);
-  --glass-blur:   var(--surface-blur);
-  --glow-purple:  var(--glow-accent-2);
-  --glow-peach:   var(--glow-accent);
-  --grad-accent:  linear-gradient(135deg, var(--accent-2), var(--accent));
+  // ---- Forma, ritmo, tipografia (i veli li ridefiniscono) -----------------
+  --radius:        4px;     // raggio degli elementi
+  --cut:           12px;    // taglio diagonale degli angoli (0 = nessun taglio)
+  --density:       1;       // moltiplicatore degli spazi verticali
+  --motion:        1;       // intensità della scena di sfondo (0..1.5)
+  --bracket:       0;       // 1 = mirini agli angoli dei pannelli (velo 2)
+  --ease-spatial:  cubic-bezier(.22, 1, .36, 1);
+  --font-display:  'Chakra Petch', 'Segoe UI', system-ui, sans-serif;
+  --font-body:     'IBM Plex Sans', system-ui, 'Segoe UI', Roboto, sans-serif;
+  --surface-blur:  14px;
+  --header-h:      76px;
 }
 
-// Mixin per una superficie di vetro standard.
+// Taglio diagonale coerente con il marchio (angoli della porta blindata).
+// Con --cut: 0 diventa un rettangolo normale, quindi i veli lo spengono.
+@mixin cut-corners($size: var(--cut)) {
+  clip-path: polygon(
+    #{$size} 0, 100% 0,
+    100% calc(100% - #{$size}), calc(100% - #{$size}) 100%,
+    0 100%, 0 #{$size}
+  );
+}
+
+// Superficie di vetro standard (backoffice e pannelli sopra la scena).
 @mixin glass-hud {
   background: var(--surface);
   border: 1px solid var(--surface-border);
@@ -113,6 +62,50 @@ $c-cream:     #FFF0D9;   // sfondo chiaro / testo su scuro
   -webkit-backdrop-filter: blur(var(--surface-blur));
 }
 
-@mixin glass-cream {
-  @include glass-hud;
+// Applica una rampa di tono: fondo, colore del testo e token semantici.
+@mixin tone($t) {
+  background: var(--#{$t}-bg);
+  color: var(--#{$t}-text);
+  @include tone-tokens($t);
+}
+
+// Solo i token semantici di una rampa ($t = D, L, B, X, Y), senza fondo.
+@mixin tone-tokens($t) {
+  --text:           var(--#{$t}-text);
+  --on-text:        var(--#{$t}-on-text);
+  --text-soft:      var(--#{$t}-soft);
+  --text-muted:     var(--#{$t}-muted);
+  --surface:        var(--#{$t}-surface);
+  --surface-strong: var(--#{$t}-surface-strong);
+  --surface-border: var(--#{$t}-border);
+  --line:           var(--#{$t}-line);
+  --line-strong:    var(--#{$t}-line-strong);
+  --accent:         var(--#{$t}-accent);
+  --on-accent:      var(--#{$t}-on-accent);
+  --accent-2:       var(--#{$t}-accent-2);
+  --on-accent-2:    var(--#{$t}-on-accent-2);
+  --accent-soft:    var(--#{$t}-accent-soft);
+  --signal:         var(--#{$t}-signal);
+  --card-bg:        var(--#{$t}-card-bg);
+  --card-text:      var(--#{$t}-card-text);
+  --card-soft:      var(--#{$t}-card-soft);
+  --card-border:    var(--#{$t}-card-border);
+  --grid-ink:       var(--#{$t}-grid);
+  --btn-edge:       var(--#{$t}-btn-edge);
+
+  // Ombre e bagliori costruiti sugli accenti della rampa.
+  --glow-focus:  0 0 0 2px var(--#{$t}-signal), 0 0 0 6px var(--#{$t}-accent-soft);
+  --glow-accent: 0 10px 28px -8px var(--#{$t}-accent);
+  --shadow-card: 0 1px 0 var(--#{$t}-card-border), 0 18px 40px -24px #{rgba($c-deep-blue, .55)};
+
+  // Alias storici, usati da componenti non ancora convertiti. Non usarli.
+  --glass-bg:      var(--#{$t}-surface);
+  --glass-border:  var(--#{$t}-border);
+  --surface-spot:  var(--#{$t}-accent-soft);
+  --accent-2-soft: var(--#{$t}-accent-soft);
+  --glow-deep:     var(--shadow-card);
+  --glow-neon:     var(--glow-accent);
+  --glow-accent-2: var(--glow-accent);
+  --hero-text:     var(--#{$t}-text);
+  --bg-elev:       var(--#{$t}-surface-strong);
 }

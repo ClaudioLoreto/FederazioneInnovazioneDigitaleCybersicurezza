@@ -1,0 +1,385 @@
+<a class="skip-link" href="#contenuto">Vai al contenuto</a>
+
+<!-- ============================ INTESTAZIONE ============================ -->
+<header class="testata" #testata>
+  <div class="testata-inner">
+    <a class="marchio" routerLink="/" (click)="vaiA('inizio', $event)" aria-label="Torna all'inizio">
+      <fidc-animated-logo [interactive]="false"></fidc-animated-logo>
+    </a>
+
+    <nav class="nav-desktop" aria-label="Sezioni del sito">
+      @for (v of menu; track v.label) {
+        <a [href]="'#' + v.ancora" (click)="vaiA(v.ancora!, $event)"
+           [class.attiva]="sezioneAttiva() === v.ancora"
+           [attr.aria-current]="sezioneAttiva() === v.ancora ? 'location' : null">{{ v.label }}</a>
+      }
+    </nav>
+
+    <div class="testata-azioni">
+      <a class="btn-outline btn-sm unisciti" routerLink="/registrati">Unisciti</a>
+      <a class="btn-primary btn-sm" routerLink="/login">Area riservata</a>
+      <button type="button" class="burger" (click)="apriMenu(!menuAperto())"
+              [attr.aria-expanded]="menuAperto()" aria-controls="menu-mobile"
+              [attr.aria-label]="menuAperto() ? 'Chiudi il menu' : 'Apri il menu'">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- Menu su schermo stretto: pannello opaco che entra da destra. -->
+<div class="drawer" id="menu-mobile" [class.aperto]="menuAperto()" [attr.aria-hidden]="!menuAperto()"
+     (keydown.escape)="apriMenu(false)">
+  <div class="drawer-velo" (click)="apriMenu(false)"></div>
+  <nav class="drawer-pannello" aria-label="Menu principale">
+    <div class="drawer-testa">
+      <span class="drawer-titolo">Menu</span>
+      <button type="button" class="drawer-chiudi" (click)="apriMenu(false)" aria-label="Chiudi il menu"
+              [tabindex]="menuAperto() ? 0 : -1">
+        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <ul>
+      @for (v of menu; track v.label; let i = $index) {
+        <li [style.--i]="i">
+          <a [href]="'#' + v.ancora" (click)="vaiA(v.ancora!, $event)" [tabindex]="menuAperto() ? 0 : -1">
+            {{ v.label }}
+          </a>
+        </li>
+      }
+    </ul>
+    <div class="drawer-cta">
+      <a class="btn-primary" routerLink="/registrati" [tabindex]="menuAperto() ? 0 : -1">Unisciti alla Federazione</a>
+      <a class="btn-outline" routerLink="/login" [tabindex]="menuAperto() ? 0 : -1">Area riservata</a>
+    </div>
+  </nav>
+</div>
+
+<main id="contenuto" class="pagina">
+
+  <!-- =============================== HERO =============================== -->
+  <section class="hero tone-dark" id="inizio" aria-labelledby="slogan">
+    <div class="container hero-inner brackets">
+      <p class="hero-stato" aria-hidden="true">
+        <span class="led"></span> Rete della Federazione operativa
+        <span class="ora" #orologio></span>
+      </p>
+
+      <h1 class="slogan" id="slogan" [attr.aria-label]="hero.titolo">
+        <span class="slogan-testo" #slogan aria-hidden="true">@for (r of righeSlogan; track $index) {<span class="riga">{{ r }}</span>@if (!$last) {<span class="spazio">{{ ' ' }}</span>}}</span><span class="cursore" aria-hidden="true"></span>
+      </h1>
+
+      <div class="hero-copia">
+        <p class="hero-sub">{{ hero.sottotitolo }}</p>
+        <div class="hero-cta">
+          <a class="btn-primary" routerLink="/registrati">{{ hero.ctaPrimaria }}</a>
+          <a class="btn-outline" href="#pilastri" (click)="vaiA('pilastri', $event)">{{ hero.ctaSecondaria }}</a>
+        </div>
+      </div>
+
+      <div class="hero-emblema">
+        <svg class="strumento" viewBox="0 0 400 400" aria-hidden="true">
+          <circle cx="200" cy="200" r="196" class="anello"/>
+          <circle cx="200" cy="200" r="168" class="anello tratteggio"/>
+          <g class="tacche">
+            @for (t of tacche; track t) {
+              <line x1="200" y1="4" x2="200" [attr.y2]="t % 30 === 0 ? 20 : 12" [attr.transform]="'rotate(' + t + ' 200 200)'"/>
+            }
+          </g>
+          <line x1="0" y1="200" x2="400" y2="200" class="mirino"/>
+          <line x1="200" y1="0" x2="200" y2="400" class="mirino"/>
+        </svg>
+        <div class="emblema-box"><fidc-emblema></fidc-emblema></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================= PILASTRI ============================= -->
+  <section class="sezione tone-light precision-grid" id="pilastri" aria-labelledby="t-pilastri">
+    <div class="container">
+      <header class="sezione-testa" fidcReveal>
+        <h2 id="t-pilastri">Quattro pilastri, una sola direzione</h2>
+        <p>Ogni iniziativa della Federazione nasce da uno di questi ambiti e li attraversa tutti:
+           si progetta insieme, ci si incontra, si impara, si misura.</p>
+      </header>
+
+      <div class="pilastri">
+        @for (p of pilastri; track p.chiave; let i = $index) {
+          <article class="pilastro brackets" [id]="'pilastro-' + p.chiave" [fidcReveal]="i * 90"
+                   [class.aperto]="pilastroAperto() === p.chiave">
+            <div class="pilastro-ill"><fidc-illustrazione [scena]="p.scena"></fidc-illustrazione></div>
+            <h3>{{ p.titolo }}</h3>
+            <p class="pilastro-claim">{{ p.claim }}</p>
+            <div class="pilastro-extra" [attr.aria-hidden]="pilastroAperto() !== p.chiave">
+              <div>
+                <p>{{ p.descrizione }}</p>
+                <a class="link-freccia" [href]="'#' + collegamenti[p.chiave].ancora"
+                   (click)="vaiA(collegamenti[p.chiave].ancora, $event)"
+                   [tabindex]="pilastroAperto() === p.chiave ? 0 : -1">{{ collegamenti[p.chiave].label }}</a>
+              </div>
+            </div>
+            <button type="button" class="btn-outline btn-sm pilastro-toggle"
+                    [attr.aria-expanded]="pilastroAperto() === p.chiave"
+                    (click)="togglePilastro(p.chiave)">
+              {{ pilastroAperto() === p.chiave ? 'Chiudi' : 'Approfondisci' }}
+              <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M3 6l5 5 5-5" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+            </button>
+          </article>
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ ASSOCIAZIONE ========================== -->
+  <section class="sezione tone-brand associazione" id="associazione" aria-labelledby="t-chi">
+    <div class="container">
+      <div class="chi">
+        <div class="chi-testo" fidcReveal>
+          <h2 id="t-chi">{{ chiSiamo.titolo }}</h2>
+          <p>{{ chiSiamo.testo }}</p>
+        </div>
+        <div class="chi-scudo" aria-hidden="true"><fidc-cyber-shield></fidc-cyber-shield></div>
+      </div>
+
+      <dl class="numeri">
+        @for (n of chiSiamo.numeri; track n.label; let i = $index) {
+          <div class="numero" [fidcReveal]="i * 80">
+            <dt>{{ n.label }}</dt>
+            <dd [fidcConteggio]="n.valore">{{ n.valore }}</dd>
+          </div>
+        }
+      </dl>
+
+      <div class="missione">
+        <h3>{{ missione.titolo }}</h3>
+        <ul>
+          @for (m of missione.impegni; track m.titolo; let i = $index) {
+            <li [fidcReveal]="i * 90">
+              <h4>{{ m.titolo }}</h4>
+              <p>{{ m.testo }}</p>
+            </li>
+          }
+        </ul>
+      </div>
+
+      <div class="governance" id="governance">
+        <div class="gov-testa" fidcReveal>
+          <h3>Governance e fondatori</h3>
+          <p>Gli organi che indirizzano e vigilano sulle attività della Federazione,
+             a garanzia di indipendenza, competenza e trasparenza.</p>
+        </div>
+        <ul class="gov-griglia">
+          @for (m of governance; track m.nome; let i = $index) {
+            <li class="gov-card" [fidcReveal]="i * 60">
+              <span class="gov-sigla" aria-hidden="true">{{ m.iniziali }}</span>
+              <div>
+                <h4>{{ m.nome }}</h4>
+                <p>{{ m.ruolo }}<br><span>{{ m.area }}</span></p>
+              </div>
+            </li>
+          }
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================== PROGETTI ============================= -->
+  <section class="sezione tone-dark" id="progetti" aria-labelledby="t-progetti">
+    <div class="container">
+      <header class="sezione-testa" fidcReveal>
+        <h2 id="t-progetti">Progetti in evidenza</h2>
+        <p>Programmi concreti con cui la visione diventa impatto misurabile per imprese,
+           istituzioni e cittadini.</p>
+      </header>
+
+      <div class="progetti">
+        @for (p of progetti; track p.codice; let i = $index) {
+          <article class="progetto brackets" [fidcReveal]="i * 90">
+            @if (i === 0) { <span class="progetto-codice" aria-hidden="true">{{ p.codice }}</span> }
+            <div class="progetto-meta">
+              <span class="badge" [class.badge-strong]="p.stato === 'In corso'">{{ p.stato }}</span>
+              <span class="progetto-cat">{{ p.categoria }}</span>
+            </div>
+            <h3>{{ p.titolo }}</h3>
+            <p class="progetto-desc">{{ p.descrizione }}</p>
+            <p class="progetto-impatto">{{ p.impatto }}</p>
+          </article>
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- =============================== EVENTI ============================== -->
+  <section class="sezione tone-light precision-grid" id="eventi" aria-labelledby="t-eventi" aria-live="polite">
+    <div class="container">
+      <header class="sezione-testa sezione-testa-riga" fidcReveal>
+        <div>
+          <h2 id="t-eventi">Prossimi eventi</h2>
+          <p>Summit, laboratori e giornate formative in tutta Italia. L'iscrizione è riservata
+             a chi ha un account della Federazione.</p>
+        </div>
+        <a class="btn-primary" routerLink="/registrati">Crea il tuo account</a>
+      </header>
+
+      @if (caricamento()) {
+        <ul class="eventi" aria-busy="true" aria-label="Caricamento eventi">
+          @for (s of [1, 2, 3]; track s) { <li class="evento scheletro"><span></span><span></span></li> }
+        </ul>
+      } @else {
+        <ul class="eventi">
+          @for (e of eventi(); track e.id; let i = $index) {
+            <li class="evento brackets" [fidcReveal]="i * 80">
+              <time class="evento-data" [attr.datetime]="e.dataInizio">
+                <span class="giorno">{{ e.dataInizio | date:'dd' }}</span>
+                <span class="mese">{{ e.dataInizio | date:'MMM yyyy' }}</span>
+              </time>
+              <div class="evento-corpo">
+                <span class="badge">{{ etichetta(e.pilastro) }}</span>
+                <h3>{{ e.titolo }}</h3>
+                <p>{{ e.sottotitolo || e.descrizione }}</p>
+              </div>
+              <div class="evento-luogo">
+                <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 22s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12z" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="10" r="2.5" fill="currentColor"/></svg>
+                <span>{{ e.luogo }}</span>
+              </div>
+            </li>
+          }
+        </ul>
+      }
+    </div>
+  </section>
+
+  <!-- ================================ NEWS =============================== -->
+  <section class="sezione tone-dark" id="news" aria-labelledby="t-news">
+    <div class="container">
+      <header class="sezione-testa" fidcReveal>
+        <h2 id="t-news">Dalla Federazione</h2>
+        <p>Ricerche, programmi e posizioni pubbliche, raccontati da chi ci lavora.</p>
+      </header>
+
+      @if (caricamento()) {
+        <div class="magazine"><div class="articolo scheletro"></div><div class="articolo scheletro"></div></div>
+      } @else {
+        <div class="magazine">
+          @for (n of news(); track n.id; let i = $index) {
+            <article class="articolo brackets" [class.apertura]="i === 0" [fidcReveal]="i * 80">
+              @if (i === 0) {
+                <div class="copertina" [attr.data-pilastro]="n.pilastro" aria-hidden="true">
+                  <fidc-illustrazione [scena]="scenaPer(n.pilastro)"></fidc-illustrazione>
+                </div>
+              }
+              <div class="articolo-corpo">
+                <p class="articolo-meta">
+                  <span class="badge">{{ etichetta(n.pilastro) }}</span>
+                  @if (n.dataPubblicazione) {
+                    <time [attr.datetime]="n.dataPubblicazione">{{ n.dataPubblicazione | date:'d MMMM yyyy' }}</time>
+                  }
+                </p>
+                <h3>{{ n.titolo }}</h3>
+                <p class="articolo-sommario">{{ n.sommario }}</p>
+              </div>
+            </article>
+          }
+        </div>
+      }
+    </div>
+  </section>
+
+  <!-- ============================= NEWSLETTER ============================ -->
+  <section class="newsletter tone-signal" id="newsletter" aria-labelledby="t-nl">
+    <div class="container nl-inner">
+      <div class="nl-testo">
+        <h2 id="t-nl">{{ nl.titolo }}</h2>
+        <p>{{ nl.testo }}</p>
+      </div>
+
+      @if (nlStato() === 'ok') {
+        <div class="nl-ok" role="status">
+          <svg viewBox="0 0 52 52" width="52" height="52" aria-hidden="true">
+            <circle cx="26" cy="26" r="24" fill="none" stroke="currentColor" stroke-width="3" class="nl-cerchio"/>
+            <path d="M15 27l7 7 15-16" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" class="nl-spunta"/>
+          </svg>
+          <div>
+            <strong>Iscrizione confermata</strong>
+            <p>Riceverai il prossimo numero a {{ nlEmailInviata() }}.</p>
+          </div>
+        </div>
+      } @else {
+        <form class="nl-form" (ngSubmit)="iscriviNewsletter(nf.invalid)" #nf="ngForm" novalidate>
+          <label class="sr-only" for="nl-email">Indirizzo email</label>
+          <input id="nl-email" type="email" name="nlEmail" [(ngModel)]="nlEmail" required email
+                 placeholder="nome@ente.it" autocomplete="email"
+                 [disabled]="nlStato() === 'invio'" [attr.aria-invalid]="nlStato() === 'errore'"
+                 aria-describedby="nl-nota" />
+          <button class="btn-accent" type="submit" [disabled]="nlStato() === 'invio'">
+            @if (nlStato() === 'invio') { <span class="spinner" aria-hidden="true"></span> Iscrizione in corso }
+            @else { {{ nl.cta }} }
+          </button>
+          <p class="nl-nota" id="nl-nota">
+            @if (nlStato() === 'errore') { <span class="nl-errore" role="alert">{{ nlErrore() }}</span> }
+            @else { Un numero al mese. Puoi cancellarti con un clic da ogni email. }
+          </p>
+        </form>
+      }
+    </div>
+  </section>
+</main>
+
+<!-- ================================ PIEDE ================================ -->
+<footer class="piede tone-dark" id="contatti" aria-labelledby="t-contatti">
+  <div class="container piede-griglia">
+    <div class="piede-marchio">
+      <fidc-animated-logo [interactive]="false"></fidc-animated-logo>
+      <p>Organizzazione indipendente e senza scopo di lucro per un'Italia digitale più sicura,
+         inclusiva e competente.</p>
+      <ul class="social" aria-label="La Federazione sui social">
+        @for (s of contatti.social; track s.rete) {
+          <li>
+            <a [href]="s.url" target="_blank" rel="noopener" [attr.aria-label]="s.rete + ' (si apre in una nuova scheda)'">
+              @switch (s.rete) {
+                @case ('LinkedIn') {
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.98 3.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5zM3 9.5h4V21H3zM9.5 9.5h3.8v1.6h.1c.5-1 1.8-2 3.8-2 4 0 4.8 2.6 4.8 6V21h-4v-5.1c0-1.2 0-2.8-1.7-2.8s-2 1.3-2 2.7V21h-4z" fill="currentColor"/></svg>
+                }
+                @case ('Facebook') {
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 8.5V6.8c0-.8.2-1.3 1.4-1.3H17V2.2c-.3 0-1.3-.2-2.5-.2-2.5 0-4.2 1.5-4.2 4.3v2.2H7.6V12h2.7v10H14V12h2.7l.4-3.5z" fill="currentColor"/></svg>
+                }
+                @default {
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="17.3" cy="6.7" r="1.2" fill="currentColor"/></svg>
+                }
+              }
+            </a>
+          </li>
+        }
+      </ul>
+    </div>
+
+    <div class="piede-col">
+      <h2 id="t-contatti">Contatti</h2>
+      <address>
+        <p>{{ contatti.sede }}</p>
+        <p><span class="etichetta">Email</span> <a [href]="'mailto:' + contatti.email">{{ contatti.email }}</a></p>
+        <p><span class="etichetta">PEC</span> <a [href]="'mailto:' + contatti.pec">{{ contatti.pec }}</a></p>
+        <p><span class="etichetta">Telefono</span> <a [href]="'tel:' + soloCifre(contatti.telefono)">{{ contatti.telefono }}</a></p>
+        <p><span class="etichetta">WhatsApp</span> <a [href]="'https://wa.me/' + soloCifre(contatti.whatsapp)" target="_blank" rel="noopener">{{ contatti.whatsapp }}</a></p>
+        <p class="orari">{{ contatti.orari }}</p>
+      </address>
+    </div>
+
+    <nav class="piede-col" aria-label="Collegamenti utili">
+      <h2>Per i soci</h2>
+      <ul>
+        <li><a routerLink="/area-documenti">Area documenti</a></li>
+        <li><a routerLink="/login">Area riservata</a></li>
+        <li><a routerLink="/registrati">Diventa socio</a></li>
+        <li><a href="#newsletter" (click)="vaiA('newsletter', $event)">Newsletter</a></li>
+      </ul>
+    </nav>
+  </div>
+
+  <div class="container">
+    <div class="piede-fondo">
+      <p>© {{ anno }} {{ brand.nome }}</p>
+      <a href="#inizio" (click)="vaiA('inizio', $event)">Torna su</a>
+    </div>
+  </div>
+</footer>

@@ -1,55 +1,101 @@
 <!-- =============================================================================
-  AREA RISERVATA — Biblioteca documenti dei soci (sola lettura).
-  Struttura: header istituzionale + barra ricerca + gruppi per categoria.
+  AREA DOCUMENTI — il caveau dei soci (sola lettura).
+  Testata essenziale, intestazione con la cassaforte, ricerca + filtri,
+  documenti raggruppati per categoria con badge Pubblico / Riservato.
 ============================================================================= -->
-<main class="area">
-  <!-- Header -->
-  <header class="area-bar">
-    <a routerLink="/" class="brand" aria-label="FIDC — Home">
-      <fidc-safe-logo [interactive]="false"></fidc-safe-logo>
-      <span>Area Riservata</span>
+<header class="barra">
+  <div class="container barra-inner">
+    <a routerLink="/" class="marchio" aria-label="Torna alla home della Federazione">
+      <fidc-animated-logo [interactive]="false"></fidc-animated-logo>
     </a>
-    <div class="who">
-      <span class="hello" *ngIf="auth.utente() as u">Ciao, {{ u.nomeCompleto }}</span>
-      <a routerLink="/" class="btn-min">← Torna al sito</a>
+    <div class="barra-azioni">
+      @if (auth.utente(); as u) { <span class="chi">{{ u.nomeCompleto }}</span> }
+      <a routerLink="/" class="btn-outline btn-sm">Torna al sito</a>
     </div>
-  </header>
+  </div>
+</header>
 
-  <!-- Intestazione sezione -->
-  <section class="intro">
-    <h1>Biblioteca documentale</h1>
-    <p>Consulta e scarica i documenti riservati ai soci della Federazione: report, linee guida,
-       modelli e materiali degli eventi. L'accesso è consentito ai soli utenti registrati.</p>
-    <div class="search" *ngIf="documenti().length > 0">
-      <input type="search" [value]="filtro()" (input)="onFiltro($any($event.target).value)"
-             placeholder="Cerca per titolo, categoria o descrizione…" aria-label="Cerca documenti" />
+<main class="tone-dark">
+  <section class="intro container">
+    <div class="intro-testo">
+      <h1>Area documenti</h1>
+      <p>Report, linee guida, modelli e atti degli eventi della Federazione. I documenti
+         riservati sono consultabili solo dai soci registrati.</p>
     </div>
+    <div class="intro-cassaforte" aria-hidden="true"><fidc-safe-logo [interactive]="false"></fidc-safe-logo></div>
   </section>
 
-  <!-- Stati -->
-  <p class="state-msg" *ngIf="caricamento()">Caricamento documenti…</p>
-  <p class="state-msg err" *ngIf="errore()">{{ errore() }}</p>
-  <p class="state-msg" *ngIf="!caricamento() && !errore() && documenti().length === 0">
-    Nessun documento disponibile al momento.
-  </p>
-  <p class="state-msg" *ngIf="!caricamento() && !errore() && documenti().length > 0 && filtrati().length === 0">
-    Nessun documento corrisponde alla ricerca.
-  </p>
-
-  <!-- Gruppi per categoria -->
-  <section class="group" *ngFor="let g of gruppi()">
-    <h2 class="group-title">{{ g.categoria }}<span class="count">{{ g.documenti.length }}</span></h2>
-    <div class="cards">
-      <article class="doc glass-card" *ngFor="let d of g.documenti">
-        <span class="badge" [class.riservato]="d.visibilita === 'Riservato'">
-          {{ d.visibilita === 'Riservato' ? 'Riservato' : 'Pubblico' }}
-        </span>
-        <h3>{{ d.titolo }}</h3>
-        <p class="desc" *ngIf="d.descrizione">{{ d.descrizione }}</p>
-        <a class="dl" [href]="d.url" target="_blank" rel="noopener">
-          Apri / Scarica <span aria-hidden="true">↓</span>
-        </a>
-      </article>
+  <section class="strumenti container" aria-label="Cerca e filtra">
+    <div class="ricerca">
+      <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="M20 20l-4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <label class="sr-only" for="cerca">Cerca nei documenti</label>
+      <input id="cerca" type="search" [value]="filtro()" (input)="onFiltro($any($event.target).value)"
+             placeholder="Cerca per titolo, categoria o descrizione" />
     </div>
+
+    <div class="filtri" role="group" aria-label="Visibilità">
+      <button type="button" class="filtro" [class.on]="visibilita() === 'tutti'" [attr.aria-pressed]="visibilita() === 'tutti'" (click)="visibilita.set('tutti')">Tutti <span>{{ conteggi().tutti }}</span></button>
+      <button type="button" class="filtro" [class.on]="visibilita() === 'Pubblico'" [attr.aria-pressed]="visibilita() === 'Pubblico'" (click)="visibilita.set('Pubblico')">Pubblici <span>{{ conteggi().Pubblico }}</span></button>
+      <button type="button" class="filtro" [class.on]="visibilita() === 'Riservato'" [attr.aria-pressed]="visibilita() === 'Riservato'" (click)="visibilita.set('Riservato')">Riservati <span>{{ conteggi().Riservato }}</span></button>
+    </div>
+
+    @if (categorie().length > 1) {
+      <div class="filtri" role="group" aria-label="Categoria">
+        <button type="button" class="filtro" [class.on]="!categoria()" [attr.aria-pressed]="!categoria()" (click)="categoria.set(null)">Tutte le categorie</button>
+        @for (c of categorie(); track c) {
+          <button type="button" class="filtro" [class.on]="categoria() === c" [attr.aria-pressed]="categoria() === c" (click)="categoria.set(c)">{{ c }}</button>
+        }
+      </div>
+    }
+  </section>
+
+  <section class="container elenco" aria-live="polite">
+    @if (caricamento()) {
+      <div class="cards">@for (s of [1, 2, 3]; track s) { <div class="doc scheletro"></div> }</div>
+    } @else if (errore()) {
+      <div class="stato">
+        <strong>Non riusciamo a caricare i documenti</strong>
+        <p>{{ errore() }}</p>
+      </div>
+    } @else if (documenti().length === 0) {
+      <div class="stato">
+        <strong>Non ci sono ancora documenti</strong>
+        <p>Quando la redazione ne pubblicherà, li troverai qui.</p>
+      </div>
+    } @else if (filtrati().length === 0) {
+      <div class="stato">
+        <strong>Nessun documento corrisponde alla ricerca</strong>
+        <p>Prova con un'altra parola o togli i filtri.</p>
+        <button type="button" class="btn-outline btn-sm" (click)="azzera()">Mostra tutti i documenti</button>
+      </div>
+    } @else {
+      @for (g of gruppi(); track g.categoria) {
+        <section class="gruppo">
+          <h2>{{ g.categoria }} <span class="conta">{{ g.documenti.length }}</span></h2>
+          <div class="cards">
+            @for (d of g.documenti; track d.id) {
+              <article class="doc" [class.riservato]="d.visibilita === 'Riservato'">
+                <div class="doc-testa">
+                  <svg class="doc-ico" viewBox="0 0 24 24" aria-hidden="true">
+                    @if (d.visibilita === 'Riservato') {
+                      <path d="M6 11h12v9H6zM8.5 11V8a3.5 3.5 0 0 1 7 0v3M12 14.5v2"/>
+                    } @else {
+                      <path d="M6 3h8l4 4v14H6zM14 3v4h4M9 12h6M9 16h6"/>
+                    }
+                  </svg>
+                  <span class="badge" [class.badge-strong]="d.visibilita === 'Riservato'">{{ d.visibilita === 'Riservato' ? 'Riservato' : 'Pubblico' }}</span>
+                </div>
+                <h3>{{ d.titolo }}</h3>
+                @if (d.descrizione) { <p class="desc">{{ d.descrizione }}</p> }
+                <a class="scarica" [href]="d.url" target="_blank" rel="noopener">
+                  <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  Scarica<span class="sr-only"> {{ d.titolo }} (si apre in una nuova scheda)</span>
+                </a>
+              </article>
+            }
+          </div>
+        </section>
+      }
+    }
   </section>
 </main>

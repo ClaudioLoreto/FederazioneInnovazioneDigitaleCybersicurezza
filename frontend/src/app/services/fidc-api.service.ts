@@ -103,11 +103,16 @@ export interface TemaConfig {
   coloreTesto: string;
   stileRaggio: 'sharp' | 'soft' | 'rounded';
   abbinamentoFont: 'cyber' | 'moderno' | 'classico';
+  /**
+   * Figura mostrata nell'hero. Facoltativa: il backend attuale non ha ancora la
+   * colonna, quindi oggi viene ricordata nel browser (vedi ThemeService).
+   */
+  emblemaHero?: 'cassaforte' | 'scudo' | 'nucleo';
 }
 
 /**
  * Wrapper HTTP verso l'API .NET. La base URL è centralizzata in environment.ts
- * (dev: https://localhost:5001/api · prod: /api).
+ * (dev: http://localhost:5000/api · prod: /api).
  */
 @Injectable({ providedIn: 'root' })
 export class FidcApiService {

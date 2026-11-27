@@ -2,119 +2,188 @@
 //  frontend/src/styles/_themes.scss
 //  I TRE VELI GRAFICI.
 //
-//  Un velo non aggiunge e non toglie contenuti: riassegna i token semantici
-//  definiti in _palette.scss ai quattro colori istituzionali. Cambiare velo
-//  significa cambiare l'attributo data-theme sul tag <html>, niente altro.
+//  Ogni velo decide:
+//   - le tre rampe di tono (D scuro, L chiaro, B di marca) → vedi _palette.scss;
+//   - forma (raggio, taglio degli angoli, mirini), densità, intensità del moto;
+//   - i colori della scena di sfondo.
+//  Le differenze di geometria (griglie, cornici dell'hero, disposizione delle
+//  card) stanno nei componenti, sotto :host-context([data-theme='n']).
 //
-//  Regola di dosaggio: il viola è un colore SCURO. Funziona come superficie o
-//  come bagliore, non come fondo di ogni cosa. Il contrasto lo costruiscono il
-//  blu profondo (fondo) e il crema (testo); pesca e viola sono i richiami.
+//  Coppie di contrasto ammesse (WCAG): crema/blu 9.3:1 · blu/pesca 7.2:1 ·
+//  crema/viola 5.9:1. Mai viola su blu, mai pesca su crema come testo.
 // =============================================================================
 
+@use 'sass:map';
 @use 'palette' as *;
 
-// ---- VELO 1 — ISTITUZIONALE (predefinito) -----------------------------------
-// Fondo blu profondo, testo crema, azione in pesca. Il viola resta di supporto:
-// bordi, bagliori, stati secondari. È la combinazione con più contrasto.
+@function a($c, $alpha) { @return rgba($c, $alpha); }
+
+// Scrive una rampa come proprietà --<prefisso>-<chiave>.
+@mixin ramp($p, $m) {
+  @each $k, $v in $m { --#{$p}-#{$k}: #{$v}; }
+}
+
+// ---- Rampe ricorrenti -------------------------------------------------------
+
+// Scuro istituzionale: crema su blu, azione in pesca.
+$dark-peach: (
+  bg: transparent,
+  text: $c-cream, on-text: $c-deep-blue, soft: a($c-cream, .80), muted: a($c-cream, .60),
+  surface: a($c-deep-blue, .55), surface-strong: a($c-deep-blue, .82),
+  border: a($c-cream, .16), line: a($c-cream, .14), line-strong: a($c-peach, .55),
+  accent: $c-peach, on-accent: $c-deep-blue,
+  accent-2: $c-purple, on-accent-2: $c-cream,
+  accent-soft: a($c-peach, .14), signal: $c-peach,
+  card-bg: a($c-deep-blue, .66), card-text: $c-cream, card-soft: a($c-cream, .78),
+  card-border: a($c-cream, .14), grid: a($c-cream, .055), btn-edge: transparent,
+);
+
+// Chiaro istituzionale: blu su crema, azione in viola.
+$light-purple: (
+  bg: $c-cream,
+  text: $c-deep-blue, on-text: $c-cream, soft: a($c-deep-blue, .82), muted: a($c-deep-blue, .64),
+  surface: a($c-deep-blue, .05), surface-strong: a($c-deep-blue, .08),
+  border: a($c-deep-blue, .16), line: a($c-deep-blue, .13), line-strong: a($c-purple, .55),
+  accent: $c-purple, on-accent: $c-cream,
+  accent-2: $c-deep-blue, on-accent-2: $c-cream,
+  accent-soft: a($c-purple, .10), signal: $c-purple,
+  card-bg: a($c-peach, .34), card-text: $c-deep-blue, card-soft: a($c-deep-blue, .80),
+  card-border: a($c-deep-blue, .10), grid: a($c-deep-blue, .06), btn-edge: transparent,
+);
+
+// Fascia di marca: crema su viola; le card sopra sono crema (mai viola su viola).
+$brand-purple: (
+  bg: $c-purple,
+  text: $c-cream, on-text: $c-purple, soft: a($c-cream, .86), muted: a($c-cream, .70),
+  surface: a($c-cream, .10), surface-strong: a($c-cream, .16),
+  border: a($c-cream, .26), line: a($c-cream, .22), line-strong: a($c-peach, .70),
+  accent: $c-peach, on-accent: $c-deep-blue,
+  accent-2: $c-deep-blue, on-accent-2: $c-cream,
+  accent-soft: a($c-peach, .18), signal: $c-peach,
+  card-bg: $c-cream, card-text: $c-deep-blue, card-soft: a($c-deep-blue, .80),
+  card-border: transparent, grid: a($c-cream, .08), btn-edge: transparent,
+);
+
+// Fascia di richiamo (newsletter): blu su pesca, bottone blu pieno.
+$signal-peach: map.merge($light-purple, (
+  bg: $c-peach, soft: a($c-deep-blue, .84), muted: a($c-deep-blue, .7),
+  surface: a($c-cream, .55), surface-strong: $c-cream, border: a($c-deep-blue, .28),
+  line: a($c-deep-blue, .2), line-strong: $c-deep-blue,
+  accent: $c-deep-blue, on-accent: $c-cream, accent-2: $c-deep-blue, on-accent-2: $c-cream,
+  accent-soft: a($c-deep-blue, .12), signal: $c-deep-blue, grid: a($c-deep-blue, .07),
+));
+
+// =============================================================================
+//  :root — valori indipendenti dal velo
+// =============================================================================
+:root {
+  // Toni FISSI per le pagine di accesso: la specifica chiede vetrina blu e
+  // modulo crema qualunque sia il velo, per garantire il contrasto del modulo.
+  @include ramp(X, map.merge($dark-peach, (bg: $c-deep-blue)));
+  @include ramp(Y, $light-purple);
+}
+
+// =============================================================================
+//  VELO 1 — ISTITUZIONALE CYBER (predefinito)
+//  Fasce alterne: scuro sulla scena di rete, crema per leggere, viola per la
+//  Federazione. Angoli tagliati come la porta blindata del marchio.
+// =============================================================================
 :root,
 [data-theme='1'] {
-  --page-bg:       transparent;
-  --canvas-bg:     #{$c-deep-blue};
-  --canvas-alpha:  1;
+  @include ramp(D, $dark-peach);
+  @include ramp(L, $light-purple);
+  @include ramp(B, $brand-purple);
+  @include ramp(S, $signal-peach);
 
-  --surface:        #{rgba($c-deep-blue, .34)};
-  --surface-strong: #{rgba($c-deep-blue, .52)};
-  --surface-border: #{rgba($c-cream, .20)};
-  --surface-spot:   #{rgba($c-purple, .18)};
+  --canvas-bg:    #{$c-deep-blue};
+  --canvas-ink:   #{$c-peach};
+  --canvas-ink-2: #{$c-cream};
+  --canvas-alpha: 1;
 
-  --text:       #{$c-cream};
-  --text-soft:  #{rgba($c-cream, .78)};
-  --text-muted: #{rgba($c-cream, .54)};
-
-  --accent:        #{$c-peach};
-  --on-accent:     #{$c-deep-blue};
-  --accent-2:      #{$c-purple};
-  --on-accent-2:   #{$c-cream};
-  --accent-soft:   #{rgba($c-peach, .14)};
-  --accent-2-soft: #{rgba($c-purple, .26)};
-
-  --line:        #{rgba($c-cream, .15)};
-  --line-strong: #{rgba($c-peach, .45)};
-
-  --glow-accent:   0 10px 30px #{rgba($c-peach, .30)};
-  --glow-accent-2: 0 12px 38px #{rgba($c-purple, .38)};
-
-  --hero-bg:   transparent;
-  --hero-text: #{$c-cream};
-  --bg-elev:   #{rgba($c-deep-blue, .58)};
+  --radius: 4px;
+  --cut: 12px;
+  --bracket: 0;
+  --density: 1;
+  --motion: 1;
+  --surface-blur: 14px;
 }
 
-// ---- VELO 2 — CENTRO DI COMANDO ---------------------------------------------
-// Più tecnico e contrastato: superfici più opache, viola come colore d'azione,
-// pesca sui dettagli. Adatto a chi guarda molti dati.
+// =============================================================================
+//  VELO 2 — CENTRO DI COMANDO
+//  Tutto scuro, come una console: griglia visibile, angoli vivi con mirini,
+//  densità più alta, viola come colore d'azione (bordato di pesca per non
+//  confondersi col fondo blu), scena di rete più fitta e veloce.
+// =============================================================================
 [data-theme='2'] {
-  --page-bg:       transparent;
-  --canvas-bg:     #{$c-deep-blue};
-  --canvas-alpha:  1;
+  $d2: map.merge($dark-peach, (
+    surface: a($c-deep-blue, .74), surface-strong: a($c-deep-blue, .9),
+    border: a($c-peach, .22), line: a($c-peach, .16), line-strong: a($c-peach, .7),
+    accent: $c-purple, on-accent: $c-cream,
+    accent-2: $c-peach, on-accent-2: $c-deep-blue,
+    accent-soft: a($c-purple, .26),
+    card-bg: a($c-deep-blue, .84), card-border: a($c-peach, .22),
+    grid: a($c-peach, .07), btn-edge: $c-peach,
+  ));
+  @include ramp(D, $d2);
+  @include ramp(L, map.merge($d2, (bg: a($c-deep-blue, .88), card-bg: a($c-cream, .045))));
+  @include ramp(B, map.merge($d2, (
+    bg: a($c-purple, .30), surface: a($c-deep-blue, .5),
+    card-bg: a($c-deep-blue, .86), line: a($c-cream, .2),
+  )));
+  @include ramp(S, map.merge($d2, (
+    bg: a($c-peach, .10), border: a($c-peach, .45),
+    accent-2: $c-peach, on-accent-2: $c-deep-blue,
+  )));
 
-  --surface:        #{rgba($c-deep-blue, .52)};
-  --surface-strong: #{rgba($c-deep-blue, .68)};
-  --surface-border: #{rgba($c-peach, .30)};
-  --surface-spot:   #{rgba($c-peach, .14)};
+  --canvas-bg:    #{$c-deep-blue};
+  --canvas-ink:   #{$c-peach};
+  --canvas-ink-2: #{$c-purple};
+  --canvas-alpha: 1;
 
-  --text:       #{$c-cream};
-  --text-soft:  #{rgba($c-cream, .80)};
-  --text-muted: #{rgba($c-cream, .56)};
-
-  --accent:        #{$c-purple};
-  --on-accent:     #{$c-cream};
-  --accent-2:      #{$c-peach};
-  --on-accent-2:   #{$c-deep-blue};
-  --accent-soft:   #{rgba($c-purple, .28)};
-  --accent-2-soft: #{rgba($c-peach, .16)};
-
-  --line:        #{rgba($c-peach, .22)};
-  --line-strong: #{rgba($c-peach, .55)};
-
-  --glow-accent:   0 12px 38px #{rgba($c-purple, .42)};
-  --glow-accent-2: 0 10px 30px #{rgba($c-peach, .30)};
-
-  --hero-bg:   transparent;
-  --hero-text: #{$c-cream};
-  --bg-elev:   #{rgba($c-deep-blue, .72)};
+  --radius: 0px;
+  --cut: 0px;
+  --bracket: 1;
+  --density: .78;
+  --motion: 1.45;
+  --surface-blur: 6px;
 }
 
-// ---- VELO 3 — COMUNITÀ -------------------------------------------------------
-// Più caldo e leggero: vetro meno denso, bordi pesca, scena 3D più presente.
-// Pensato per le pagine dedicate a soci, eventi e formazione.
+// =============================================================================
+//  VELO 3 — COMUNITÀ
+//  Chiaro e accogliente: fondo crema, fasce pesca, angoli arrotondati, spazi
+//  ampi, movimento quasi impercettibile. La fascia viola resta: è la marca.
+// =============================================================================
 [data-theme='3'] {
-  --page-bg:       transparent;
-  --canvas-bg:     #{$c-deep-blue};
-  --canvas-alpha:  1;
+  @include ramp(D, map.merge($light-purple, (card-bg: a($c-peach, .30))));
+  @include ramp(L, map.merge($light-purple, (
+    bg: linear-gradient(#{a($c-peach, .42)}, #{a($c-peach, .42)}) #{$c-cream},
+    card-bg: $c-cream, card-border: a($c-deep-blue, .08),
+  )));
+  @include ramp(B, $brand-purple);
+  @include ramp(S, $signal-peach);
 
-  --surface:        #{rgba($c-cream, .10)};
-  --surface-strong: #{rgba($c-cream, .16)};
-  --surface-border: #{rgba($c-peach, .38)};
-  --surface-spot:   #{rgba($c-peach, .20)};
+  --canvas-bg:    #{$c-cream};
+  --canvas-ink:   #{$c-purple};
+  --canvas-ink-2: #{$c-deep-blue};
+  --canvas-alpha: .5;
 
-  --text:       #{$c-cream};
-  --text-soft:  #{rgba($c-cream, .84)};
-  --text-muted: #{rgba($c-cream, .60)};
-
-  --accent:        #{$c-peach};
-  --on-accent:     #{$c-deep-blue};
-  --accent-2:      #{$c-purple};
-  --on-accent-2:   #{$c-cream};
-  --accent-soft:   #{rgba($c-peach, .20)};
-  --accent-2-soft: #{rgba($c-purple, .22)};
-
-  --line:        #{rgba($c-peach, .26)};
-  --line-strong: #{rgba($c-peach, .50)};
-
-  --glow-accent:   0 10px 34px #{rgba($c-peach, .38)};
-  --glow-accent-2: 0 12px 36px #{rgba($c-purple, .32)};
-
-  --hero-bg:   transparent;
-  --hero-text: #{$c-cream};
-  --bg-elev:   #{rgba($c-deep-blue, .46)};
+  --radius: 18px;
+  --cut: 0px;
+  --bracket: 0;
+  --density: 1.18;
+  --motion: .55;
+  --surface-blur: 18px;
 }
+
+// =============================================================================
+//  CLASSI DI TONO
+//  Il token globale (pagina, backoffice) segue la rampa D del velo attivo.
+// =============================================================================
+:root, [data-theme] { @include tone-tokens(D); }
+
+.tone-dark        { @include tone(D); }
+.tone-light       { @include tone(L); }
+.tone-brand       { @include tone(B); }
+.tone-signal      { @include tone(S); }
+.tone-fixed-dark  { @include tone(X); }
+.tone-fixed-light { @include tone(Y); }

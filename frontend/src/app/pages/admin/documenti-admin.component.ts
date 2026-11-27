@@ -7,6 +7,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { NgFor, NgIf } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { trigger, transition, style, animate } from '@angular/animations';
 import { FidcApiService, Documento, VisibilitaDocumento } from '../../services/fidc-api.service';
 import { DialogoService } from '../../shared/dialogo/dialogo.service';
@@ -51,7 +52,7 @@ const VUOTO: DocumentoForm = {
         <h1>Area Documenti</h1>
         <p class="scope">{{ auth.isSuperUser() ? 'Tutti i documenti della Federazione' : 'I tuoi documenti' }}</p>
       </div>
-      <button class="primary" (click)="nuovo()" *ngIf="!form()">+ Nuovo documento</button>
+      <button class="primary" (click)="nuovo()" *ngIf="!form()">Nuovo documento</button>
     </header>
 
     <section class="editor hud-panel" *ngIf="form() as f" @panel>
@@ -89,7 +90,7 @@ const VUOTO: DocumentoForm = {
 
     <section class="table-wrap hud-panel">
       <p class="empty" *ngIf="!caricamento() && documenti().length === 0">
-        Nessun documento. Caricane uno con “+ Nuovo documento”.
+        Nessun documento. Caricane uno con “Nuovo documento”.
       </p>
       <table *ngIf="documenti().length > 0">
         <thead>
@@ -127,7 +128,13 @@ export class DocumentiAdminComponent implements OnInit {
   readonly errore = signal<string | null>(null);
   readonly form = signal<DocumentoForm | null>(null);
 
-  ngOnInit(): void { this.carica(); }
+  private readonly route = inject(ActivatedRoute);
+
+  ngOnInit(): void {
+    this.carica();
+    // Arrivando dalle azioni rapide del pannello (?nuovo=1) il modulo è già aperto.
+    if (this.route.snapshot.queryParamMap.get('nuovo') === '1') this.nuovo();
+  }
 
   private carica(): void {
     this.caricamento.set(true);
