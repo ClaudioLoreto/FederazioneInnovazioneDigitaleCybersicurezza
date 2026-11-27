@@ -156,7 +156,7 @@ sembri un videogioco, niente immagini di cui ci si chieda "e quello cos'è?".
 **Emblemi tematici** (`shared/emblemi/emblema-tema.component.ts`): una sola famiglia,
 piastra a scudo scura con bordo sfumato viola→pesca e un simbolo al tratto pesca
 (verifica, lucchetto, chiave, impronta, rete, documento, bilancia, libro, grafico,
-chip, calendario, persona, busta). Ogni emblema sta dove il suo simbolo ha senso
+chip, calendario, persona, busta, bussola, monitor). Ogni emblema sta dove il suo simbolo ha senso
 (pilastri, newsletter, accesso, registrazione…). Niente icone di altri stili accanto.
 
 **Riscontro delle azioni**: ogni salvataggio o eliminazione nel backoffice mostra un

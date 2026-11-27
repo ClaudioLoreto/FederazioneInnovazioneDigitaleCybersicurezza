@@ -21,7 +21,7 @@
 //    persona     busto                area personale
 //    busta       busta                newsletter
 //    bussola     bussola              indirizzo, direzione strategica
-//    radar       radar                osservatorio, monitoraggio
+//    monitor     schermo con tracciato  osservatorio, monitoraggio
 //
 //  Movimento: il simbolo si traccia una volta, quando l'emblema entra nella
 //  finestra. Solo gli emblemi protagonisti (`vivo`, es. "Chi siamo" o la
@@ -35,7 +35,7 @@ import { AfterViewInit, Component, ElementRef, OnDestroy, inject, input } from '
 
 export type TemaEmblema =
   | 'verifica' | 'lucchetto' | 'chiave' | 'impronta' | 'rete' | 'documento' | 'bilancia'
-  | 'libro' | 'grafico' | 'chip' | 'calendario' | 'persona' | 'busta' | 'bussola' | 'radar';
+  | 'libro' | 'grafico' | 'chip' | 'calendario' | 'persona' | 'busta' | 'bussola' | 'monitor';
 
 let contatore = 0;
 
@@ -115,11 +115,10 @@ let contatore = 0;
             <path class="tratto-pieno" d="M60 89 L54 70 L60 66 L66 70 Z"/>
             <path pathLength="100" class="fine" d="M60 42 V46 M60 94 V98 M32 70 H36 M84 70 H88"/>
           }
-          @case ('radar') {
-            <circle pathLength="100" cx="60" cy="70" r="24"/>
-            <circle pathLength="100" class="fine" cx="60" cy="70" r="13"/>
-            <path pathLength="100" d="M60 70 L77 53"/>
-            <circle class="pieno" cx="70" cy="80" r="3.6"/><circle class="pieno" cx="48" cy="62" r="2.8"/>
+          @case ('monitor') {
+            <rect pathLength="100" x="35" y="49" width="50" height="35" rx="4"/>
+            <path pathLength="100" class="fine" d="M42 68 H50 L54.5 58 L60.5 77 L65 66 H78"/>
+            <path pathLength="100" d="M60 84 V93 M51 94 H69"/>
           }
           @case ('busta') {
             <rect pathLength="100" x="38" y="54" width="44" height="32" rx="4"/>

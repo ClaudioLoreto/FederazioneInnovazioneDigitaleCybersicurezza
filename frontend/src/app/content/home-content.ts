@@ -183,7 +183,7 @@ export interface MembroGovernance {
 export const GOVERNANCE: MembroGovernance[] = [
   { nome: 'Consiglio Direttivo', ruolo: 'Presidenza', area: 'Indirizzo strategico', emblema: 'bussola' },
   { nome: 'Comitato Scientifico', ruolo: 'Direzione tecnico-scientifica', area: 'Ricerca & standard', emblema: 'grafico' },
-  { nome: 'Osservatorio Cyber', ruolo: 'Coordinamento', area: 'Analisi delle minacce', emblema: 'radar' },
+  { nome: 'Osservatorio Cyber', ruolo: 'Coordinamento', area: 'Analisi delle minacce', emblema: 'monitor' },
   { nome: 'Segreteria Generale', ruolo: 'Direzione operativa', area: 'Attività & soci', emblema: 'documento' },
   { nome: 'Tavolo Formazione', ruolo: 'Coordinamento', area: 'Academy & competenze', emblema: 'libro' },
   { nome: 'Collegio dei Garanti', ruolo: 'Vigilanza', area: 'Etica & conformità', emblema: 'bilancia' }
