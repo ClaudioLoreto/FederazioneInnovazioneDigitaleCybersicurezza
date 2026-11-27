@@ -17,8 +17,12 @@
     </nav>
 
     <div class="testata-azioni">
-      <a class="btn-outline btn-sm unisciti" routerLink="/registrati">Unisciti</a>
-      <a class="btn-primary btn-sm" routerLink="/login">Area riservata</a>
+      @if (!auth.autenticato()) { <a class="btn-outline btn-sm unisciti" routerLink="/registrati">Unisciti</a> }
+      @if (auth.autenticato()) {
+        <a class="btn-primary btn-sm" routerLink="/area-personale">La mia area</a>
+      } @else {
+        <a class="btn-primary btn-sm" routerLink="/login">Area riservata</a>
+      }
       <button type="button" class="burger" (click)="apriMenu(!menuAperto())"
               [attr.aria-expanded]="menuAperto()" aria-controls="menu-mobile"
               [attr.aria-label]="menuAperto() ? 'Chiudi il menu' : 'Apri il menu'">
@@ -50,8 +54,12 @@
       }
     </ul>
     <div class="drawer-cta">
-      <a class="btn-primary" routerLink="/registrati" [tabindex]="menuAperto() ? 0 : -1">Unisciti alla Federazione</a>
-      <a class="btn-outline" routerLink="/login" [tabindex]="menuAperto() ? 0 : -1">Area riservata</a>
+      @if (!auth.autenticato()) { <a class="btn-primary" routerLink="/registrati" [tabindex]="menuAperto() ? 0 : -1">Unisciti alla Federazione</a> }
+      @if (auth.autenticato()) {
+        <a class="btn-outline" routerLink="/area-personale" [tabindex]="menuAperto() ? 0 : -1">La mia area</a>
+      } @else {
+        <a class="btn-outline" routerLink="/login" [tabindex]="menuAperto() ? 0 : -1">Area riservata</a>
+      }
     </div>
   </nav>
 </div>

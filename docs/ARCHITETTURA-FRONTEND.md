@@ -46,7 +46,8 @@ Cambiarlo è istantaneo e non ricarica la pagina.
 | File | Ruolo |
 |---|---|
 | `app/pages/landing/landing.component.ts` | L'unica home. Struttura e testi stanno qui. |
-| `app/content/home-content.ts` | I testi istituzionali fissi, separati dal codice. |
+| `app/content/home-content.ts` | Modello dei contenuti modificabili e testi di partenza (solo istituzionali). Quelli veri arrivano da `ContenutiService`. |
+| `app/services/vetrina.service.ts` | Eventi e news pubblicati, sezioni presenti, regole di imminenza. |
 | `styles/_themes.scss` | Per ogni `[data-theme="n"]`, solo i valori dei colori. |
 | `app/shared/theme/theme.service.ts` | Decide quale velo è attivo e lo applica. |
 
@@ -121,6 +122,11 @@ verso il pesca.
 frontend/src/app/
 ├─ pages/                        una cartella per schermata
 │  ├─ landing/                   home pubblica
+│  ├─ calendario-eventi/         /eventi — calendario mensile ed elenco
+│  ├─ archivio-news/             /news — archivio per mese
+│  ├─ pagina-legale/             /privacy, /cookie, /note-legali, /accessibilita
+│  ├─ area-personale/            /area-personale — la mia area (anche per i soci)
+│  ├─ password/                  /password-dimenticata e /reimposta-password
 │  ├─ evento-dettaglio/          /eventi/:id — biglietto, iscrizione, calendario
 │  ├─ news-dettaglio/            /news/:id — impaginato da articolo
 │  ├─ dettaglio/                 stili condivisi dalle due pagine sopra
@@ -135,13 +141,17 @@ frontend/src/app/
 │     ├─ eventi-admin            gestione eventi
 │     ├─ news-admin              gestione news
 │     ├─ documenti-admin         gestione documenti
-│     ├─ utenti-admin            gestione utenti (solo Direzione)
-│     ├─ newsletter-admin        iscritti (solo Direzione)
+│     ├─ utenti-admin            account (permesso utenti.gestire)
+│     ├─ permessi-admin          matrice dei permessi (solo Direzione)
+│     ├─ contenuti-admin         contenuti del sito, con anteprima
+│     ├─ newsletter-admin        iscritti (permesso newsletter.gestire)
 │     ├─ impostazioni-tema       Theme Builder (solo Direzione)
 │     └─ admin-tables.scss       stili condivisi da tutte le tabelle
 │
 ├─ services/
 │  ├─ fidc-api.service.ts        tutte le chiamate HTTP, in un posto solo
+│  ├─ contenuti.service.ts       testi del sito, bozza e anteprima
+│  ├─ vetrina.service.ts         eventi e news pubblicati, imminenza
 │  ├─ auth.service.ts            login, logout, utente corrente
 │  ├─ auth.interceptor.ts        aggiunge il token a ogni richiesta
 │  └─ auth.guard.ts              blocca le rotte riservate
@@ -160,7 +170,8 @@ frontend/src/app/
    ├─ campi/                     controlli di modulo su misura
    │  ├─ selezione.component     sostituto di <select>
    │  └─ editor-testo.component  editor con barra degli strumenti
-   ├─ ruoli.ts                   da nome tecnico a etichetta ufficiale
+   ├─ permessi.ts                catalogo dei permessi, modelli, livelli
+   ├─ flusso.ts                  flusso di revisione dei contenuti
    ├─ opzioni.ts                 voci condivise degli elenchi a discesa
    └─ auth/auth-form.scss        stili condivisi tra login e registrazione
 ```

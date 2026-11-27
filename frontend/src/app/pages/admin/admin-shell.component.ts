@@ -73,6 +73,7 @@ import { Permesso, permessiArea } from '../../shared/permessi';
             </div>
           </div>
           <div class="topbar-azioni">
+            <a routerLink="/area-personale" class="sito">La mia area</a>
             <a routerLink="/" class="sito">Vedi il sito</a>
             <button type="button" class="logout" (click)="logout()">
               <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">

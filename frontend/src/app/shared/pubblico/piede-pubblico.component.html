@@ -53,8 +53,12 @@
         <li><a routerLink="/eventi">Calendario degli eventi</a></li>
         <li><a routerLink="/news">Notizie</a></li>
         <li><a routerLink="/area-documenti">Area documenti</a></li>
-        <li><a routerLink="/login">Area riservata</a></li>
-        <li><a routerLink="/registrati">Diventa socio</a></li>
+        @if (auth.autenticato()) {
+          <li><a routerLink="/area-personale">La mia area</a></li>
+        } @else {
+          <li><a routerLink="/login">Area riservata</a></li>
+          <li><a routerLink="/registrati">Diventa socio</a></li>
+        }
         <li><a href="/#newsletter" (click)="naviga('newsletter', $event)">Newsletter</a></li>
       </ul>
     </nav>

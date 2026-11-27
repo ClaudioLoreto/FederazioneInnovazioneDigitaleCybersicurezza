@@ -6,7 +6,7 @@
 // =============================================================================
 
 import { Routes } from '@angular/router';
-import { authGuard, permessoGuard, superUserGuard } from './services/auth.guard';
+import { authGuard, backofficeGuard, permessoGuard, superUserGuard } from './services/auth.guard';
 import { permessiArea } from './shared/permessi';
 // Import EAGER del landing pubblico: è l'entry point del portale, nel bundle main.
 import { LandingComponent } from './pages/landing/landing.component';
@@ -102,6 +102,23 @@ export const routes: Routes = [
   },
 
   // Backoffice — gate di accesso (mai come prima pagina).
+  // Area personale di chiunque abbia un account (anche senza permessi).
+  {
+    path: 'area-personale',
+    canActivate: [authGuard],
+    title: 'FIDC — La mia area',
+    loadComponent: () => import('./pages/area-personale/area-personale.component').then((m) => m.AreaPersonaleComponent)
+  },
+  {
+    path: 'password-dimenticata',
+    title: 'FIDC — Recupero della password',
+    loadComponent: () => import('./pages/password/password-dimenticata.component').then((m) => m.PasswordDimenticataComponent)
+  },
+  {
+    path: 'reimposta-password',
+    title: 'FIDC — Nuova password',
+    loadComponent: () => import('./pages/password/password-dimenticata.component').then((m) => m.ReimpostaPasswordComponent)
+  },
   {
     path: 'login',
     title: 'FIDC — Accesso',
@@ -122,7 +139,7 @@ export const routes: Routes = [
   // -------------------------------------------------------------------------
   {
     path: 'admin',
-    canActivate: [authGuard],
+    canActivate: [backofficeGuard],
     loadComponent: () =>
       import('./pages/admin/admin-shell.component').then((m) => m.AdminShellComponent),
     children: [

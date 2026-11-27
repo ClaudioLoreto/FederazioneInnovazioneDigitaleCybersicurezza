@@ -22,7 +22,7 @@ Il progetto implementa **esattamente** le feature descritte in
 | 1 | **CMS** (gestione contenuti dal backoffice) | ✅ frontend · 🟡 `/api/contenuti` da fare | `pages/admin/*` (incl. `contenuti-admin`) + `*Controller.cs` · `docs/CONTENUTI.md` |
 | 2 | **News** (pubblicazione + gestione) | ✅ | `news-admin` · `news-dettaglio` · `NewsController` |
 | 3 | **Eventi** (pubblicazione + iscrizioni) | ✅ | `eventi-admin` (pannello Iscritti + CSV) · `evento-dettaglio` (iscrizione pubblica) · `EventiController` · `IscrizioniController` |
-| 4 | **Registrazione utenti** (con conferma email) | ✅ | `registrazione` · `AuthController` |
+| 4 | **Registrazione utenti** (con conferma email) | ✅ · area personale e recupero password 🟡 backend da fare | `registrazione` · `area-personale` · `password/*` · `AuthController` · `docs/ACCOUNT.md` |
 | 5 | **Newsletter** (iscrizione pubblica + gestione) | ✅ | `NewsletterController` · `newsletter` box landing |
 | 6 | **Area Documenti** (download + gestione, RBAC) | ✅ | `documenti-admin` · `DocumentiController` |
 | 7 | **Gestione Utenti & permessi** (matrice + flusso di revisione) | 🟡 frontend ✅, backend da adeguare | `utenti-admin` · `permessi-admin` · `shared/permessi.ts` · `shared/flusso.ts` · `docs/PERMESSI.md` |
@@ -177,6 +177,11 @@ modulo o in un dialogo, non negli avvisi.
 `/eventi/:id`); `/eventi` è il calendario mensile con elenco, `/news` l'archivio per mese;
 testata e piè di pagina sono componenti condivisi (`shared/pubblico/`);
 gli indirizzi sconosciuti mostrano la pagina 404, non un redirect muto.
+
+**Area personale** (`/area-personale`, `docs/ACCOUNT.md`): per chiunque abbia un account,
+sul sito pubblico (non nel backoffice). Dopo l'accesso un Socio va lì, chi ha permessi al
+backoffice; `/admin` respinge i Soci. Da collegati la testata mostra "La mia area".
+Recupero password: `/password-dimenticata` risponde sempre allo stesso modo.
 
 **Pagine legali e consensi**: `/privacy`, `/cookie`, `/note-legali`, `/accessibilita`
 (un componente, testi da Contenuti del sito → Pagine legali; bozze in

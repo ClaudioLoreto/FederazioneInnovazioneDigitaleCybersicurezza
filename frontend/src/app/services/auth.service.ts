@@ -69,7 +69,12 @@ export class AuthService {
   puo(p: Permesso): boolean { return consente(this.assetto(), p); }
   /** Vero se la persona ha almeno uno dei permessi. */
   puoUno(ps: Permesso[]): boolean { return consenteUno(this.assetto(), ps); }
-  /** Id numerico dell'utente corrente (dal claim "sub" del JWT), 0 se ignoto. */
+  /** Email della persona collegata, se il token la contiene (claim "email"). */
+  readonly email = computed(() => this.leggiClaim(this._token(), ['email', 'unique_name']) ?? '');
+  /** Vero se la persona ha almeno un permesso da backoffice (non è un semplice Socio). */
+  readonly haBackoffice = computed(() => { const a = this.assetto(); return !!a && (a.direzione || a.permessi.length > 0); });
+
+    /** Id numerico dell'utente corrente (dal claim "sub" del JWT), 0 se ignoto. */
   readonly userId = computed(() => this.estraiUserId(this._token()));
 
   /** Esegue il login e persiste token + utente in localStorage. */
@@ -155,6 +160,21 @@ export class AuthService {
     if (!raw) return null;
     try {
       return JSON.parse(raw) as SessioneUtente;
+    } catch {
+      return null;
+    }
+  }
+
+  /** Primo claim presente fra quelli indicati, come testo. */
+  private leggiClaim(token: string | null, nomi: string[]): string | null {
+    if (!token) return null;
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+      for (const n of nomi) {
+        const v = payload?.[n] ?? payload?.[`http://schemas.xmlsoap.org/ws/2005/05/identity/claims/${n === 'email' ? 'emailaddress' : n}`];
+        if (typeof v === 'string' && v) return v;
+      }
+      return null;
     } catch {
       return null;
     }

@@ -1,0 +1,146 @@
+<fidc-testata-pubblica></fidc-testata-pubblica>
+
+<main id="contenuto">
+  <section class="tone-dark apertura">
+    <div class="container apertura-ap">
+      <div>
+        <nav class="briciole" aria-label="Percorso">
+          <a routerLink="/">Home</a><span aria-hidden="true">/</span>
+          <span aria-current="page">La mia area</span>
+        </nav>
+        <h1>{{ nomeMostrato() ? 'Ciao, ' + nomeMostrato() : 'La mia area' }}</h1>
+        <p class="sottotitolo">I tuoi eventi, il profilo, la newsletter e la sicurezza dell'account.</p>
+        <div class="apertura-azioni">
+          @if (auth.haBackoffice()) {
+            <a class="btn-primary" routerLink="/admin">Vai al backoffice</a>
+          }
+          <a class="btn-outline" routerLink="/area-documenti">Area documenti</a>
+          <button type="button" class="btn-ghost" (click)="esci()">Esci</button>
+        </div>
+      </div>
+      <fidc-emblema-tema class="apertura-emblema" tipo="persona" [vivo]="true" aria-hidden="true"></fidc-emblema-tema>
+    </div>
+  </section>
+
+  <section class="tone-light corpo">
+    <div class="container griglia-ap">
+
+      <!-- ================================ EVENTI ================================ -->
+      <section class="riquadro largo" aria-labelledby="t-eventi">
+        <header class="riq-testa">
+          <h2 id="t-eventi">I tuoi eventi</h2>
+          <a class="btn-outline btn-sm" routerLink="/eventi">Calendario degli eventi</a>
+        </header>
+        @if (eventi() === null) {
+          <p class="nota">Caricamento delle iscrizioni…</p>
+        } @else if (!eventiDisponibili()) {
+          <p class="nota">Non riusciamo a caricare le tue iscrizioni in questo momento. Riprova più tardi.</p>
+        } @else {
+          @for (e of prossimi(); track e.id) {
+            <article class="mio-evento">
+              <time class="me-data" [attr.datetime]="e.dataInizio">
+                <span class="g">{{ e.dataInizio | date:'dd' }}</span>
+                <span class="m">{{ e.dataInizio | date:'MMM yyyy' }}</span>
+              </time>
+              <div class="me-corpo">
+                <p class="me-meta">
+                  <span class="badge">{{ etichetta(e.pilastro) }}</span>
+                  @if (imminenza(e); as q) { <span class="badge" [class.badge-strong]="vicino(e)">{{ q }}</span> }
+                </p>
+                <h3><a [routerLink]="['/eventi', e.id]">{{ e.titolo }}</a></h3>
+                <p class="me-luogo">{{ e.dataInizio | date:'EEEE d MMMM, HH:mm' }} · {{ e.luogo }}</p>
+              </div>
+              <button type="button" class="btn-ghost btn-sm" (click)="annullaIscrizione(e)">Annulla l'iscrizione</button>
+            </article>
+          } @empty {
+            <div class="vuoto">
+              <p>Non sei iscritto a nessun evento in programma.</p>
+              <a class="btn-primary btn-sm" routerLink="/eventi">Scegli un evento</a>
+            </div>
+          }
+          @if (passati().length) {
+            <details class="passati">
+              <summary>Eventi a cui hai partecipato ({{ passati().length }})</summary>
+              <ul>
+                @for (e of passati(); track e.id) {
+                  <li><a [routerLink]="['/eventi', e.id]">{{ e.titolo }}</a> <span>{{ e.dataInizio | date:'d MMMM yyyy' }}</span></li>
+                }
+              </ul>
+            </details>
+          }
+        }
+      </section>
+
+      <!-- ================================ PROFILO ================================ -->
+      <section class="riquadro" aria-labelledby="t-profilo">
+        <header class="riq-testa"><h2 id="t-profilo">Profilo</h2></header>
+        <form class="modulo" (ngSubmit)="salvaDatiProfilo(fp.invalid)" #fp="ngForm" novalidate>
+          <label><span>Nome</span><input name="nome" [(ngModel)]="nome" required maxlength="60" autocomplete="given-name" /></label>
+          <label><span>Cognome</span><input name="cognome" [(ngModel)]="cognome" required maxlength="60" autocomplete="family-name" /></label>
+          <label><span>Email</span><input [value]="email()" readonly aria-describedby="nota-email" /></label>
+          <p class="nota" id="nota-email">Per cambiare l'indirizzo email scrivi alla segreteria: serve a proteggere il tuo account.</p>
+          @if (!profiloDisponibile()) { <p class="nota avviso-nota">Il profilo non si può salvare in questo momento.</p> }
+          <button type="submit" class="btn-primary" [disabled]="salvaProfilo() || fp.invalid || !profiloDisponibile()">
+            {{ salvaProfilo() ? 'Salvataggio…' : 'Salva il profilo' }}
+          </button>
+        </form>
+      </section>
+
+      <!-- =============================== NEWSLETTER =============================== -->
+      <section class="riquadro" aria-labelledby="t-nl">
+        <header class="riq-testa"><h2 id="t-nl">Newsletter</h2></header>
+        @if (account(); as a) {
+          <p class="stato-nl" [class.attiva]="a.newsletter">
+            <span class="badge" [class.badge-strong]="a.newsletter">{{ a.newsletter ? 'Iscritto' : 'Non iscritto' }}</span>
+            {{ a.newsletter ? 'Ricevi report, eventi e linee guida a ' + a.email + '.' : 'Non ricevi la newsletter.' }}
+          </p>
+          <button type="button" [class]="a.newsletter ? 'btn-outline' : 'btn-primary'" [disabled]="cambioNewsletter()"
+                  (click)="newsletter(!a.newsletter)">
+            {{ a.newsletter ? 'Annulla l’iscrizione' : 'Iscriviti alla newsletter' }}
+          </button>
+          @if (!a.newsletter) {
+            <p class="nota">Iscrivendoti acconsenti a ricevere la newsletter. <a routerLink="/privacy">Informativa sulla privacy</a></p>
+          }
+        } @else {
+          <p class="nota">Lo stato dell'iscrizione non è disponibile in questo momento. Puoi sempre cancellarti dal collegamento in fondo a ogni email.</p>
+        }
+      </section>
+
+      <!-- ================================ PASSWORD ================================ -->
+      <section class="riquadro" aria-labelledby="t-pwd">
+        <header class="riq-testa"><h2 id="t-pwd">Password</h2></header>
+        <form class="modulo" (ngSubmit)="cambiaPassword(fw.invalid)" #fw="ngForm" novalidate>
+          <label><span>Password attuale</span>
+            <input type="password" name="attuale" [(ngModel)]="pwdAttuale" required autocomplete="current-password" />
+          </label>
+          <label><span>Nuova password</span>
+            <input type="password" name="nuova" [(ngModel)]="pwdNuova" required minlength="8" autocomplete="new-password" aria-describedby="aiuto-pwd" />
+          </label>
+          <p class="nota" id="aiuto-pwd">Almeno 8 caratteri. Meglio se con maiuscole, numeri e simboli.</p>
+          <label><span>Ripeti la nuova password</span>
+            <input type="password" name="conferma" [(ngModel)]="pwdConferma" required minlength="8" autocomplete="new-password" />
+          </label>
+          @if (pwdInviata() && fw.invalid) { <p class="errore" role="alert">Compila i tre campi; la nuova password deve avere almeno 8 caratteri.</p> }
+          @if (pwdErrore()) { <p class="errore" role="alert">{{ pwdErrore() }}</p> }
+          <button type="submit" class="btn-primary" [disabled]="pwdInCorso()">
+            {{ pwdInCorso() ? 'Aggiornamento…' : 'Cambia la password' }}
+          </button>
+        </form>
+      </section>
+
+      <!-- ================================= ACCOUNT ================================= -->
+      <section class="riquadro" aria-labelledby="t-account">
+        <header class="riq-testa"><h2 id="t-account">Il tuo account</h2></header>
+        <dl class="dati">
+          <div><dt>Livello</dt><dd>{{ auth.livello() }}</dd></div>
+          <div><dt>Che cosa puoi fare</dt><dd>{{ auth.riassunto() }}</dd></div>
+          @if (account(); as a) { <div><dt>Iscritto dal</dt><dd>{{ a.createdAt | date:'d MMMM yyyy' }}</dd></div> }
+        </dl>
+        <p class="nota">Puoi chiedere una copia dei tuoi dati o la loro correzione: trovi come nell'<a routerLink="/privacy">informativa sulla privacy</a>.</p>
+        <button type="button" class="btn-ghost" (click)="eliminaAccount()">Elimina l'account</button>
+      </section>
+    </div>
+  </section>
+</main>
+
+<fidc-piede-pubblico></fidc-piede-pubblico>

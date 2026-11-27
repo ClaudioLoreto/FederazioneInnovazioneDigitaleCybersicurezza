@@ -54,3 +54,16 @@ export function permessoGuard(...permessi: Permesso[]): CanActivateFn {
     return auth.puoUno(permessi) ? true : router.createUrlTree(['/admin/dashboard']);
   };
 }
+
+/**
+ * Ingresso nel backoffice: serve almeno un permesso. Un Socio (nessun
+ * permesso) viene portato alla sua area personale invece che in un
+ * pannello vuoto.
+ */
+export const backofficeGuard: CanActivateFn = (_route, state) => {
+  const auth = inject(AuthService);
+  const router = inject(Router);
+  if (!auth.autenticato())
+    return router.createUrlTree(['/admin/login'], { queryParams: { redirect: state.url } });
+  return auth.haBackoffice() ? true : router.createUrlTree(['/area-personale']);
+};

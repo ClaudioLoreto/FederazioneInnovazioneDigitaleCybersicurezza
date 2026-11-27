@@ -86,6 +86,8 @@ type ErroreAccesso = ReturnType<AuthService['classificaErrore']>;
           </div>
         }
 
+        <p class="dimenticata"><a routerLink="/password-dimenticata">Hai dimenticato la password?</a></p>
+
         <button type="submit" class="btn-primary invia" [disabled]="caricamento()">
           @if (caricamento()) { <span class="spinner" aria-hidden="true"></span> Verifica in corso }
           @else { Accedi }
@@ -151,7 +153,9 @@ export class AdminLoginComponent {
     this.auth.login(this.email.trim(), this.password).subscribe({
       next: () => {
         this.caricamento.set(false);
-        const redirect = this.route.snapshot.queryParamMap.get('redirect') || '/admin';
+        // Chi ha permessi entra nel backoffice; un socio va nella sua area personale.
+        const redirect = this.route.snapshot.queryParamMap.get('redirect')
+          || (this.auth.haBackoffice() ? '/admin' : '/area-personale');
         this.router.navigateByUrl(redirect);
       },
       error: (err: unknown) => {

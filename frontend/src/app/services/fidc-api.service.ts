@@ -119,6 +119,17 @@ export interface UtenteAdmin {
   permessi?: string[];
 }
 
+/** Profilo della persona collegata (area personale). */
+export interface Account {
+  id: number;
+  nome: string;
+  cognome: string;
+  email: string;
+  /** Iscritta alla newsletter con questo indirizzo. */
+  newsletter: boolean;
+  createdAt: string;
+}
+
 /** Iscritto newsletter (specchio di IscrizioneNewsletter). */
 export interface IscrittoNewsletter {
   id: number;
@@ -312,6 +323,48 @@ export class FidcApiService {
   /** Salva i permessi di una persona (solo Direzione). */
   salvaPermessi(id: number, assetto: { direzione: boolean; permessi: string[] }): Observable<UtenteAdmin> {
     return this.http.put<UtenteAdmin>(`${this.base}/utenti/${id}/permessi`, assetto);
+  }
+
+  // --- Area personale (docs/ACCOUNT.md) --------------------------------------
+
+  /** Profilo della persona collegata. */
+  getAccount(): Observable<Account> {
+    return this.http.get<Account>(`${this.base}/account`);
+  }
+
+  /** Aggiorna nome e cognome. L'email si cambia solo tramite la segreteria. */
+  aggiornaAccount(dati: { nome: string; cognome: string }): Observable<Account> {
+    return this.http.put<Account>(`${this.base}/account`, dati);
+  }
+
+  /** Cambia la password, chiedendo quella attuale. */
+  cambiaPassword(attuale: string, nuova: string): Observable<void> {
+    return this.http.post<void>(`${this.base}/account/password`, { attuale, nuova });
+  }
+
+  /** Iscrive o disiscrive dalla newsletter la persona collegata. */
+  impostaNewsletter(iscritto: boolean): Observable<void> {
+    return this.http.put<void>(`${this.base}/account/newsletter`, { iscritto });
+  }
+
+  /** Elimina il proprio account (diritto alla cancellazione). */
+  eliminaAccount(): Observable<void> {
+    return this.http.delete<void>(`${this.base}/account`);
+  }
+
+  /** Eventi a cui la persona collegata è iscritta. */
+  getMieIscrizioni(): Observable<Evento[]> {
+    return this.http.get<Evento[]>(`${this.base}/iscrizioni/mie`);
+  }
+
+  /** Chiede l'email per reimpostare la password. Risponde sempre allo stesso modo. */
+  passwordDimenticata(email: string): Observable<void> {
+    return this.http.post<void>(`${this.base}/auth/password-dimenticata`, { email });
+  }
+
+  /** Imposta una nuova password con il codice ricevuto per email. */
+  reimpostaPassword(token: string, password: string): Observable<void> {
+    return this.http.post<void>(`${this.base}/auth/reimposta-password`, { token, password });
   }
 
   // --- Flusso di revisione (news · eventi · documenti) ----------------------

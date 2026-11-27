@@ -13,6 +13,7 @@ import { Router, RouterLink } from '@angular/router';
 import { AnimatedLogoComponent } from '../animated-logo/animated-logo.component';
 import { MENU } from '../../content/home-content';
 import { VetrinaService } from '../../services/vetrina.service';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'fidc-testata-pubblica',
@@ -33,6 +34,7 @@ export class TestataPubblicaComponent implements OnInit, OnDestroy {
   @Output() vai = new EventEmitter<string>();
 
   private readonly vetrina = inject(VetrinaService);
+  readonly auth = inject(AuthService);
 
   /** Voci del menu: quelle di sezioni senza contenuti non compaiono. */
   readonly menu = computed(() => {

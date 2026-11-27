@@ -95,6 +95,14 @@ completo (login, `PUT /utenti/{id}/permessi`, stati dei contenuti, `approva`,
 Finché manca, il sito usa i testi di partenza e il salvataggio dal backoffice dà errore
 (l'anteprima funziona).
 
+### 5.3 Area personale e recupero password sul server
+Endpoint `/api/account*`, `/api/iscrizioni/mie`, `password-dimenticata`,
+`reimposta-password`: contratto in `docs/ACCOUNT.md`.
+
+### 5.4 Dati dimostrativi
+Il seeder non crea più contenuti finti (solo con `Seed:DatiDimostrativi`). Va
+compilato e provato su un database nuovo: in questo ambiente NuGet non è raggiungibile.
+
 ## Fatto
 
 | Data | Intervento | Dove |
@@ -150,3 +158,5 @@ Finché manca, il sito usa i testi di partenza e il salvataggio dal backoffice d
 | 2026-11-27 | Calendario degli eventi (/eventi) e archivio delle notizie (/news), collegati da home, dettagli e piè di pagina | `calendario-eventi`, `archivio-news` |
 | 2026-11-27 | Pagine legali modificabili (privacy, cookie, note legali, accessibilità) e consensi nei moduli | `pagina-legale`, `testi-legali.ts`, `registrazione`, `landing` |
 | 2026-11-27 | Corretto: il testo HTML di news e pagine legali ignorava la tipografia dell'articolo | `dettaglio.scss` |
+| 2026-11-27 | La mia area (eventi, profilo, newsletter, password, cancellazione) e recupero della password | `area-personale`, `password/*` |
+| 2026-11-27 | Dopo l'accesso un Socio va nella sua area; testata e piè di pagina cambiano da collegati | `admin-login`, `backofficeGuard`, `shared/pubblico` |

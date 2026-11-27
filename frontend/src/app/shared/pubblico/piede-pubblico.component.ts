@@ -8,6 +8,7 @@ import { Component, EventEmitter, Input, Output, computed, inject } from '@angul
 import { Router, RouterLink } from '@angular/router';
 import { AnimatedLogoComponent } from '../animated-logo/animated-logo.component';
 import { ContenutiService } from '../../services/contenuti.service';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'fidc-piede-pubblico',
@@ -23,6 +24,7 @@ export class PiedePubblicoComponent {
   @Output() vai = new EventEmitter<string>();
 
   private readonly servizio = inject(ContenutiService);
+  readonly auth = inject(AuthService);
   readonly identita = computed(() => this.servizio.attuali().identita);
   readonly contatti = computed(() => this.servizio.attuali().contatti);
   /** Social con un indirizzo compilato. */
